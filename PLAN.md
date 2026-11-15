@@ -101,7 +101,11 @@ Do not start three niches at once.
 ## Existing tools (keep, do not rewrite unless broken)
 
 - `/t/lon` — Salary calculator  
-- `/t/ladmeter` — Loading meter (unit **ldm**)  
+- `/t/ladmeter` — Loading meter (unit **ldm**); advanced trailer planner  
+  - Overflow alert must be **clearly yellow** (background, border, triangle)  
+  - Show which lines/pieces do not fit; mark them on the load list  
+  - Global **Fix it / Ret det** reduces quantities to what fits  
+
 - `/t/lommeregner` — Calculator  
 - `/t/countdown` — Countdown & takt  
 - Web catalog: AI, social, Gmail, Maps, Translate, Wikipedia, SKAT, Nationalbanken  

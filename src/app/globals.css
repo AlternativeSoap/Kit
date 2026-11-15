@@ -8,6 +8,10 @@
   --accent: #3f5d45;
   --accent-soft: #e8efe9;
   --surface: #ffffff;
+  --warning: #e5a100;
+  --warning-soft: #ffe9a3;
+  --warning-border: #f0c000;
+  --warning-ink: #5c4200;
   --shadow-suggest: 0 8px 28px rgba(20, 20, 20, 0.08);
   --scrollbar-thumb: rgba(20, 20, 20, 0.22);
 }

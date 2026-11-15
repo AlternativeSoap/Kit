@@ -770,6 +770,12 @@ export const da: Dictionary = {
     wasteArea: "Spildt gulvareal",
     remainingLength: "Resterende længde",
     overflow: "{count} stykker er ikke plads i traileren.",
+    overflowTitle: "Ikke plads til alt",
+    overflowNoSpace: "{label}: {count} stk. mangler gulvplads",
+    overflowTooWide: "{label}: {count} stk. er for brede til traileren",
+    overflowBadgeMissing: "{count} mangler plads",
+    overflowBadgeWide: "{count} for brede",
+    fixOverflow: "Ret det",
     heightOverflow: "Et eller flere stykker er højere end traileren.",
     advancedDisclaimer:
       "Listen er læsserækkefølgen: første stykke går ind til fronten, senere stykker fylder bagud mod døren. Auto-rotation vender kun et stykke på gulvet, så det passer i næste ledige felt. Restbredde som næste stykke ikke kan bruge, vises som spild.",

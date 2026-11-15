@@ -33,6 +33,23 @@ export type WasteRect = {
   lengthM: number;
 };
 
+export type OverflowReason = "no_floor_space" | "too_wide";
+
+export type OverflowItem = {
+  lineId: string;
+  label: string;
+  /** 1-based index within that line's quantity. */
+  pieceIndex: number;
+  reason: OverflowReason;
+};
+
+export type OverflowSummary = {
+  lineId: string;
+  label: string;
+  count: number;
+  reason: OverflowReason;
+};
+
 export type LayoutResult = {
   placements: Placement[];
   waste: WasteRect[];
@@ -44,6 +61,8 @@ export type LayoutResult = {
   /** Used floor length in meters (shown as ldm for a standard trailer floor). */
   usedLdm: number;
   overflowCount: number;
+  overflowItems: OverflowItem[];
+  overflowSummary: OverflowSummary[];
   placedCount: number;
 };
 
@@ -141,7 +160,7 @@ export function layoutLoad(
 
   let lane: Lane | null = null;
   let sequence = 0;
-  let overflowCount = 0;
+  const overflowItems: OverflowItem[] = [];
 
   const closeLane = (current: Lane) => {
     const leftover = trailer.widthM - current.xCursor;
@@ -188,7 +207,13 @@ export function layoutLoad(
       }
 
       if (!best) {
-        overflowCount += 1;
+        const tooWide = opts.every((opt) => opt.widthM > trailer.widthM + EPS);
+        overflowItems.push({
+          lineId: line.id,
+          label: line.label,
+          pieceIndex: i + 1,
+          reason: tooWide ? "too_wide" : "no_floor_space",
+        });
         continue;
       }
 
@@ -231,6 +256,8 @@ export function layoutLoad(
     0,
   );
 
+  const overflowSummary = summarizeOverflow(overflowItems);
+
   return {
     placements,
     waste,
@@ -240,7 +267,40 @@ export function layoutLoad(
     trailerAreaM2: trailer.lengthM * trailer.widthM,
     remainingLengthM: Math.max(0, trailer.lengthM - usedLengthM),
     usedLdm: usedLengthM,
-    overflowCount,
+    overflowCount: overflowItems.length,
+    overflowItems,
+    overflowSummary,
     placedCount: placements.length,
   };
+}
+
+function summarizeOverflow(items: OverflowItem[]): OverflowSummary[] {
+  const map = new Map<string, OverflowSummary>();
+  for (const item of items) {
+    const key = `${item.lineId}:${item.reason}`;
+    const existing = map.get(key);
+    if (existing) {
+      existing.count += 1;
+    } else {
+      map.set(key, {
+        lineId: item.lineId,
+        label: item.label,
+        count: 1,
+        reason: item.reason,
+      });
+    }
+  }
+  return Array.from(map.values());
+}
+
+/** How many pieces from each line were placed successfully. */
+export function placedCountByLine(result: LayoutResult): Map<string, number> {
+  const counts = new Map<string, number>();
+  for (const placement of result.placements) {
+    counts.set(
+      placement.lineId,
+      (counts.get(placement.lineId) ?? 0) + 1,
+    );
+  }
+  return counts;
 }

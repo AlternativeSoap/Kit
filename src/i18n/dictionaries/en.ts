@@ -474,6 +474,12 @@ export const en: Dictionary = {
     wasteArea: "Wasted floor area",
     remainingLength: "Remaining length",
     overflow: "{count} pieces do not fit in the trailer.",
+    overflowTitle: "Not everything fits",
+    overflowNoSpace: "{label}: {count} pcs lack floor space",
+    overflowTooWide: "{label}: {count} pcs are too wide for the trailer",
+    overflowBadgeMissing: "{count} lack space",
+    overflowBadgeWide: "{count} too wide",
+    fixOverflow: "Fix it",
     heightOverflow: "One or more pieces are taller than the trailer height.",
     advancedDisclaimer:
       "The list is load order: the first piece goes to the front, later pieces fill back toward the door. Auto-rotate only flips a piece on the floor so it fits the next free slot. Residual width that the next piece cannot use is shown as waste.",

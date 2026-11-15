@@ -242,6 +242,12 @@ export type Dictionary = {
     wasteArea: string;
     remainingLength: string;
     overflow: string;
+    overflowTitle: string;
+    overflowNoSpace: string;
+    overflowTooWide: string;
+    overflowBadgeMissing: string;
+    overflowBadgeWide: string;
+    fixOverflow: string;
     heightOverflow: string;
     advancedDisclaimer: string;
     loadList: string;

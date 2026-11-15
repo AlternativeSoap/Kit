@@ -3,7 +3,11 @@
 import { useMemo, useState } from "react";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { formatNumber } from "@/lib/format";
-import { layoutLoad, type LoadLine } from "./layout";
+import {
+  layoutLoad,
+  placedCountByLine,
+  type LoadLine,
+} from "./layout";
 import {
   PALLET_PRESETS,
   TRAILER_PRESETS,
@@ -117,6 +121,23 @@ export function AdvancedLoadPlanner() {
     [loadLines, trailer],
   );
 
+  const overflowByLine = useMemo(() => {
+    const map = new Map<
+      string,
+      { count: number; reason: "no_floor_space" | "too_wide" }
+    >();
+    for (const item of result.overflowSummary) {
+      const existing = map.get(item.lineId);
+      if (existing) {
+        existing.count += item.count;
+        if (item.reason === "too_wide") existing.reason = "too_wide";
+      } else {
+        map.set(item.lineId, { count: item.count, reason: item.reason });
+      }
+    }
+    return map;
+  }, [result.overflowSummary]);
+
   const updateLine = (id: string, patch: Partial<DraftLine>) => {
     setLines((prev) =>
       prev.map((line) => (line.id === id ? { ...line, ...patch } : line)),
@@ -162,6 +183,18 @@ export function AdvancedLoadPlanner() {
 
   const removeLine = (id: string) => {
     setLines((prev) => prev.filter((line) => line.id !== id));
+  };
+
+  const fixOverflow = () => {
+    const placed = placedCountByLine(result);
+    setLines((prev) =>
+      prev
+        .map((line) => {
+          const kept = placed.get(line.id) ?? 0;
+          return { ...line, quantity: String(kept) };
+        })
+        .filter((line) => Number(line.quantity) > 0),
+    );
   };
 
   // Horizontal floor: length along X, width along Y.
@@ -411,9 +444,61 @@ export function AdvancedLoadPlanner() {
         </div>
 
         {result.overflowCount > 0 ? (
-          <p className="mt-2 text-sm text-muted">
-            {t.overflow.replace("{count}", String(result.overflowCount))}
-          </p>
+          <div
+            role="alert"
+            className="mt-3 flex items-center gap-3 rounded-[10px] border-2 px-3 py-2.5"
+            style={{
+              background: "#ffe9a3",
+              borderColor: "#f0c000",
+              color: "#5c4200",
+            }}
+          >
+            <svg
+              viewBox="0 0 24 24"
+              width={22}
+              height={22}
+              className="shrink-0"
+              aria-hidden="true"
+            >
+              <path fill="#f0c000" stroke="#c48a00" strokeWidth="1.2" d="M12 3.4 21.5 20.5h-19L12 3.4Z" />
+              <rect x="11" y="9" width="2" height="5.5" rx="0.4" fill="#5c4200" />
+              <rect x="11" y="16" width="2" height="2" rx="0.4" fill="#5c4200" />
+            </svg>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium leading-snug" style={{ color: "#5c4200" }}>
+                {t.overflowTitle}
+                <span className="font-normal opacity-80">
+                  {" "}
+                  · {result.overflowCount}
+                </span>
+              </p>
+              <p className="mt-0.5 text-sm leading-snug opacity-90" style={{ color: "#5c4200" }}>
+                {result.overflowSummary
+                  .map((item) => {
+                    const template =
+                      item.reason === "too_wide"
+                        ? t.overflowTooWide
+                        : t.overflowNoSpace;
+                    return template
+                      .replace("{label}", item.label)
+                      .replace("{count}", String(item.count));
+                  })
+                  .join(" · ")}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={fixOverflow}
+              className="kit-touch-target shrink-0 rounded-[8px] px-3 py-1.5 text-sm font-medium sm:min-h-0"
+              style={{
+                background: "#fff8e0",
+                border: "1px solid #e0b000",
+                color: "#5c4200",
+              }}
+            >
+              {t.fixOverflow}
+            </button>
+          </div>
         ) : null}
         {result.placements.some((p) => p.tooTall) ? (
           <p className="mt-2 text-sm text-muted">{t.heightOverflow}</p>
@@ -435,19 +520,78 @@ export function AdvancedLoadPlanner() {
         <ul className="divide-y divide-border overflow-hidden rounded-[12px] border border-border bg-surface">
           {lines.map((line, index) => {
             const active = line.id === activeLineId;
+            const overflow = overflowByLine.get(line.id);
             return (
               <li
                 key={line.id}
                 className={`px-3 py-3 transition-colors ${
-                  active ? "bg-accent-soft/50" : ""
+                  overflow
+                    ? ""
+                    : active
+                      ? "bg-accent-soft/50"
+                      : ""
                 }`}
+                style={
+                  overflow
+                    ? {
+                        background: active ? "#ffe08a" : "#fff4cc",
+                        boxShadow: "inset 3px 0 0 #f0c000",
+                      }
+                    : undefined
+                }
                 onMouseEnter={() => setActiveLineId(line.id)}
                 onMouseLeave={() => setActiveLineId(null)}
               >
                 <div className="mb-2 flex items-center justify-between gap-2">
-                  <span className="text-xs font-medium tabular-nums text-muted">
-                    #{index + 1}
-                  </span>
+                  <div className="flex min-w-0 items-center gap-2">
+                    <span className="text-xs font-medium tabular-nums text-muted">
+                      #{index + 1}
+                    </span>
+                    {overflow ? (
+                      <span
+                        className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium"
+                        style={{
+                          background: "#ffe9a3",
+                          color: "#5c4200",
+                          border: "1px solid #f0c000",
+                        }}
+                      >
+                        <svg
+                          viewBox="0 0 24 24"
+                          width={12}
+                          height={12}
+                          aria-hidden="true"
+                        >
+                          <path
+                            fill="#f0c000"
+                            stroke="#c48a00"
+                            strokeWidth="1.2"
+                            d="M12 3.4 21.5 20.5h-19L12 3.4Z"
+                          />
+                          <rect
+                            x="11"
+                            y="9"
+                            width="2"
+                            height="5.5"
+                            rx="0.4"
+                            fill="#5c4200"
+                          />
+                          <rect
+                            x="11"
+                            y="16"
+                            width="2"
+                            height="2"
+                            rx="0.4"
+                            fill="#5c4200"
+                          />
+                        </svg>
+                        {(overflow.reason === "too_wide"
+                          ? t.overflowBadgeWide
+                          : t.overflowBadgeMissing
+                        ).replace("{count}", String(overflow.count))}
+                      </span>
+                    ) : null}
+                  </div>
                   <div className="flex items-center gap-0.5">
                     <button
                       type="button"
