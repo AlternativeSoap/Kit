@@ -1,36 +1,86 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Kit
 
-## Getting Started
+Search-first toolkit for everyday calculations and utilities. Open a tool, get an answer, move on. Built for Danish and English, runs locally in the browser when it can, and keeps personal data on the device.
 
-First, run the development server:
+**Live idea:** type what you need, pick a Kit tool or Instant Answer, and continue from there.
+
+## Features
+
+- **Search-first home** with Instant Answers and ranked tools
+- **Built-in calculators** for freight, pay, dates, math, network, text, and more
+- **Loading meter (advanced)** with top-down trailer planning, load order, auto-rotate, and waste
+- **Library** page to browse Kit tools and linked sites
+- **English and Danish**, with locale remembered locally
+- **Local-first** preferences, recent tools, and shortcuts (no account required)
+
+## Stack
+
+- [Next.js](https://nextjs.org/) 16 (App Router)
+- React 19
+- TypeScript
+- Tailwind CSS 4
+- Vitest for selected unit checks
+
+## Requirements
+
+- Node.js 20+ recommended
+- npm
+
+## Setup
 
 ```bash
+git clone https://github.com/AlternativeSoap/Kit.git
+cd Kit
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Command | What it does |
+|---------|----------------|
+| `npm run dev` | Start the development server |
+| `npm run build` | Production build |
+| `npm run start` | Serve the production build |
+| `npm run lint` | ESLint |
+| `npm test` | Run Vitest |
+| `npm run check:answers` | Smoke Instant Answers |
+| `npm run check:search` | Smoke search ranking |
+| `npm run check:formulas` | Smoke calculator formulas |
 
-## Learn More
+## Project layout
 
-To learn more about Next.js, take a look at the following resources:
+```
+src/
+  app/           # Routes, layout, energy API
+  components/    # Search, library, tool chrome
+  i18n/          # EN/DA dictionaries and locale helpers
+  lib/           # Search, Instant Answers, formatting, energy
+  tools/         # Tool registry and builtin tools
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Notable tools live under `src/tools/builtin/`, including `ladmeter` (simple + advanced load planner) and `braendstof` (fuel/EV cost with live spot power).
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Language
 
-## Deploy on Vercel
+Kit defaults from the browser language and a stored preference (`kit:locale`). UI copy ships in English and Danish.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Privacy
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Calculations and personal settings are intended to stay in the browser. Spot electricity prices are fetched through Kit’s own API route from Energi Data Service. Fuel pump prices are linked to external boards because there is no free hourly feed.
+
+## Deploy
+
+Any host that supports Next.js works. Example with Vercel:
+
+```bash
+npm run build
+```
+
+Set the project root to this repository and use the default Next.js build settings.
+
+## License
+
+Private project unless otherwise stated by the repository owner.

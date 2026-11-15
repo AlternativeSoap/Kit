@@ -1,26 +1,246 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #fafaf8;
+  --foreground: #141414;
+  --muted: #6b6b66;
+  --border: #e8e8e3;
+  --accent: #3f5d45;
+  --accent-soft: #e8efe9;
+  --surface: #ffffff;
+  --shadow-suggest: 0 8px 28px rgba(20, 20, 20, 0.08);
+  --scrollbar-thumb: rgba(20, 20, 20, 0.22);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-surface: var(--surface);
   --font-sans: var(--font-geist-sans);
+  --font-serif: var(--font-instrument-serif);
   --font-mono: var(--font-geist-mono);
+  --shadow-suggest: 0 8px 28px rgba(20, 20, 20, 0.08);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+html {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) transparent;
+}
+
+@media (min-width: 768px) {
+  html {
+    scrollbar-gutter: stable;
   }
+}
+
+html::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+html::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+html::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-thumb);
+  border: 3px solid transparent;
+  background-clip: padding-box;
+  border-radius: 999px;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), ui-sans-serif, sans-serif;
+}
+
+/* Keep form controls at 16px so iOS does not zoom on focus. */
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+textarea,
+select {
+  font-size: 16px;
+}
+
+/* Comfortable tap targets on touch devices. */
+@media (pointer: coarse) {
+  .kit-touch-target {
+    min-height: 2.75rem;
+    min-width: 2.75rem;
+  }
+
+  .kit-math-slot {
+    min-height: 2.5rem;
+    min-width: 2rem;
+    padding-inline: 0.2rem;
+  }
+}
+
+button,
+a,
+[role="button"] {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Nested panels (suggestions, etc.) share a quiet thin scrollbar. */
+.kit-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) transparent;
+}
+
+.kit-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.kit-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.kit-scrollbar::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-thumb);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  border-radius: 999px;
+}
+
+@keyframes kit-suggest-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes kit-tool-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.kit-suggest-enter {
+  animation: kit-suggest-in 140ms ease-out;
+}
+
+.kit-tool-enter {
+  animation: kit-tool-in 180ms ease-out;
+}
+
+@keyframes kit-mark-in {
+  from {
+    opacity: 0;
+    transform: scale(0.86);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes kit-takt-pulse {
+  0% {
+    opacity: 0.35;
+    transform: scale(0.96);
+  }
+  40% {
+    opacity: 0.9;
+    transform: scale(1.02);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.06);
+  }
+}
+
+.kit-takt-pulse {
+  animation: kit-takt-pulse 520ms ease-out;
+}
+
+/* Advanced calculator: textbook-style math layout. */
+.kit-frac {
+  vertical-align: middle;
+}
+
+.kit-sqrt {
+  vertical-align: middle;
+}
+
+.kit-math-slot {
+  min-height: 1.85rem;
+  color: var(--foreground);
+}
+
+/* Underline sits under the glyph, not beside it. */
+.kit-math-slot-value {
+  position: relative;
+  display: inline-block;
+  min-width: 1.1em;
+  padding: 0 0.12em 0.18em;
+  text-align: center;
+  line-height: 1.05;
+}
+
+.kit-math-slot-value::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  border-radius: 1px;
+  background: color-mix(in oklab, var(--foreground) 28%, transparent);
+}
+
+.kit-math-slot[data-filled="true"] .kit-math-slot-value::after {
+  background: color-mix(in oklab, var(--foreground) 50%, transparent);
+}
+
+.kit-math-slot[data-active="true"] .kit-math-slot-value::after {
+  height: 2.5px;
+  background: var(--accent);
+  animation: kit-math-underline-pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes kit-math-underline-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kit-math-slot[data-active="true"] .kit-math-slot-value::after {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+/* Tailwind preflight can leave closed <details> content visible. */
+details:not([open]) > :not(summary) {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

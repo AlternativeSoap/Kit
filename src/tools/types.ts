@@ -1,0 +1,86 @@
+export type BuiltinToolId =
+  | "lon"
+  | "ladmeter"
+  | "lommeregner"
+  | "countdown"
+  | "moms"
+  | "procent"
+  | "password"
+  | "enheder"
+  | "dato"
+  | "barsel"
+  | "qr"
+  | "json"
+  | "text"
+  | "color"
+  | "uuid"
+  | "timestamp"
+  | "kilometerpenge"
+  | "braendstof"
+  | "feriepenge"
+  | "stopur"
+  | "encode"
+  | "lan"
+  | "arbejdstid"
+  | "hash"
+  | "diff"
+  | "termin"
+  | "avance"
+  | "jwt"
+  | "cron"
+  | "cidr"
+  | "alder"
+  | "bmi"
+  | "tip"
+  | "opsparing"
+  | "inflation"
+  | "enhedspris"
+  | "ugenummer"
+  | "aspect"
+  | "slug"
+  | "breakeven"
+  | "cagr"
+  | "contrast";
+
+/** kit = first-party tools and closely related utilities; web = popular destinations */
+export type ToolSurface = "kit" | "web";
+
+/** Only use values you can verify. Prefer "unknown" over guessing. */
+export type ToolPricing = "free" | "freemium" | "paid" | "unknown";
+
+/** Account requirement for the primary use of the destination. */
+export type ToolRegistration = "none" | "optional" | "required" | "unknown";
+
+export type ToolPrivacy = "local" | "privacy-focused" | "standard" | "unknown";
+
+export type ToolPlatform = "web" | "desktop" | "mobile";
+
+export type ToolDefinition = {
+  id: string;
+  slug: string;
+  name: string;
+  description: string;
+  aliases: string[];
+  /** Intent keywords that should surface this entry (e.g. "ai"). */
+  intents?: string[];
+  /** 1–100. Higher means more likely to rank when intent matches. */
+  popularity?: number;
+  kind: "builtin" | "external";
+  surface: ToolSurface;
+  builtinId?: BuiltinToolId;
+  href?: string;
+  /** Outcome-oriented topics such as "pdf", "tax", "image". */
+  tags?: string[];
+  /** What the tool can do, such as "edit", "convert", "generate". */
+  capabilities?: string[];
+  pricing?: ToolPricing;
+  registration?: ToolRegistration;
+  privacy?: ToolPrivacy;
+  platforms?: ToolPlatform[];
+  /** File or data formats the tool is known to handle. */
+  formats?: string[];
+  /** Other tool ids that are often useful next. */
+  relatedIds?: string[];
+  /** Other tool ids that solve a similar job. */
+  alternatives?: string[];
+};
