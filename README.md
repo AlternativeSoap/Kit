@@ -1,86 +1,22 @@
 # Kit
 
-Search-first toolkit for everyday calculations and utilities. Open a tool, get an answer, move on. Built for Danish and English, runs locally in the browser when it can, and keeps personal data on the device.
+**Live site:** [https://alternativesoap.github.io/Kit/](https://alternativesoap.github.io/Kit/)
 
-**Live idea:** type what you need, pick a Kit tool or Instant Answer, and continue from there.
+Kit is a search-first toolkit for everyday tasks. You type what you need, and Kit opens a focused tool or a clear Instant Answer instead of sending you through menus and clutter.
 
-## Features
+## What it is for
 
-- **Search-first home** with Instant Answers and ranked tools
-- **Built-in calculators** for freight, pay, dates, math, network, text, and more
-- **Loading meter (advanced)** with top-down trailer planning, load order, auto-rotate, and waste
-- **Library** page to browse Kit tools and linked sites
-- **English and Danish**, with locale remembered locally
-- **Local-first** preferences, recent tools, and shortcuts (no account required)
+Kit is meant to remove friction from small, practical jobs: convert something, calculate a cost, plan a load, check a date, generate a value, or jump to the right place quickly. It is built for people who want a result now, not another dashboard to learn.
 
-## Stack
+## What it can do
 
-- [Next.js](https://nextjs.org/) 16 (App Router)
-- React 19
-- TypeScript
-- Tailwind CSS 4
-- Vitest for selected unit checks
+- Search across built-in tools and curated external sites
+- Run local calculators for freight, pay, dates, math, text, network, and more
+- Plan trailer loads with a simple and advanced loading-meter view
+- Estimate fuel and electricity costs, including live Danish spot power when available
+- Work in English and Danish
+- Keep preferences and recent tools on your device
 
-## Requirements
+## Why it was made
 
-- Node.js 20+ recommended
-- npm
-
-## Setup
-
-```bash
-git clone https://github.com/AlternativeSoap/Kit.git
-cd Kit
-npm install
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000).
-
-## Scripts
-
-| Command | What it does |
-|---------|----------------|
-| `npm run dev` | Start the development server |
-| `npm run build` | Production build |
-| `npm run start` | Serve the production build |
-| `npm run lint` | ESLint |
-| `npm test` | Run Vitest |
-| `npm run check:answers` | Smoke Instant Answers |
-| `npm run check:search` | Smoke search ranking |
-| `npm run check:formulas` | Smoke calculator formulas |
-
-## Project layout
-
-```
-src/
-  app/           # Routes, layout, energy API
-  components/    # Search, library, tool chrome
-  i18n/          # EN/DA dictionaries and locale helpers
-  lib/           # Search, Instant Answers, formatting, energy
-  tools/         # Tool registry and builtin tools
-```
-
-Notable tools live under `src/tools/builtin/`, including `ladmeter` (simple + advanced load planner) and `braendstof` (fuel/EV cost with live spot power).
-
-## Language
-
-Kit defaults from the browser language and a stored preference (`kit:locale`). UI copy ships in English and Danish.
-
-## Privacy
-
-Calculations and personal settings are intended to stay in the browser. Spot electricity prices are fetched through Kit’s own API route from Energi Data Service. Fuel pump prices are linked to external boards because there is no free hourly feed.
-
-## Deploy
-
-Any host that supports Next.js works. Example with Vercel:
-
-```bash
-npm run build
-```
-
-Set the project root to this repository and use the default Next.js build settings.
-
-## License
-
-Private project unless otherwise stated by the repository owner.
+Most “tool sites” bury useful things behind ads, accounts, and noisy layouts. Kit was made to stay calm, local-first, and useful: one search field, clear tools, and answers that help you finish the task.
