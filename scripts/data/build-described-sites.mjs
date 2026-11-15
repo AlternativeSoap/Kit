@@ -1,0 +1,337 @@
+/**
+ * Builds src/catalog/data/described-sites.json — useful destinations only,
+ * each with a clear EN + DA description of what the site does.
+ */
+import { writeFileSync, mkdirSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const ROOT = join(dirname(fileURLToPath(import.meta.url)), "../..");
+const OUT = join(ROOT, "src/catalog/data/described-sites.json");
+
+/** @typedef {{ domain: string, name: string, descriptionEn: string, descriptionDa: string, category: string, popularity?: number }} Site */
+
+/** @type {Site[]} */
+const SITES = [
+  // —— Security utilities ——
+  // Intentionally omitted: disposable-mail sites (10minutemail, temp-mail) — public inboxes + risky ad networks.
+  { domain: "haveibeenpwned.com", name: "Have I Been Pwned", descriptionEn: "Checks whether your email or password appeared in known data breaches.", descriptionDa: "Tjekker om din e-mail eller adgangskode indgår i kendte databrud.", category: "tools", popularity: 88 },
+  { domain: "1password.com", name: "1Password", descriptionEn: "Password manager for storing logins and generating strong passwords.", descriptionDa: "Adgangskodehusker til logins og generering af stærke kodeord.", category: "tools", popularity: 86 },
+  { domain: "bitwarden.com", name: "Bitwarden", descriptionEn: "Open-source password manager for logins, notes, and passkeys.", descriptionDa: "Open source-adgangskodehusker til logins, noter og passkeys.", category: "tools", popularity: 85 },
+  { domain: "lastpass.com", name: "LastPass", descriptionEn: "Password manager and autofill for websites and apps.", descriptionDa: "Adgangskodehusker med autofyld til websites og apps.", category: "tools", popularity: 74 },
+  { domain: "nordvpn.com", name: "NordVPN", descriptionEn: "VPN service that encrypts your connection on public networks.", descriptionDa: "VPN-tjeneste der krypterer din forbindelse på offentlige netværk.", category: "tools", popularity: 80 },
+  { domain: "expressvpn.com", name: "ExpressVPN", descriptionEn: "VPN for private browsing and streaming from more locations.", descriptionDa: "VPN til privat browsing og streaming fra flere lokationer.", category: "tools", popularity: 76 },
+  { domain: "proton.me", name: "Proton", descriptionEn: "Encrypted email, VPN, and cloud storage focused on privacy.", descriptionDa: "Krypteret mail, VPN og cloud-lager med fokus på privatliv.", category: "tools", popularity: 84 },
+  { domain: "signal.org", name: "Signal", descriptionEn: "Encrypted messaging app for private chats and calls.", descriptionDa: "Krypteret besked-app til private chats og opkald.", category: "tools", popularity: 82 },
+
+  // —— PDF / image / convert ——
+  // PDF / image / calculators with Kit replacements stay lighter in the site list.
+  { domain: "remove.bg", name: "remove.bg", descriptionEn: "Removes image backgrounds automatically.", descriptionDa: "Fjerner billedbaggrunde automatisk.", category: "tools", popularity: 86 },
+  { domain: "photopea.com", name: "Photopea", descriptionEn: "Browser photo editor similar to Photoshop, no install required.", descriptionDa: "Billedredigering i browseren i stil med Photoshop, uden installation.", category: "tools", popularity: 90 },
+  { domain: "pixlr.com", name: "Pixlr", descriptionEn: "Online photo editor for crop, filters, and quick fixes.", descriptionDa: "Online billedredigering til beskæring, filtre og hurtige rettelser.", category: "tools", popularity: 78 },
+  { domain: "ezgif.com", name: "Ezgif", descriptionEn: "GIF and video tools for resize, crop, optimize, and convert.", descriptionDa: "GIF- og videoværktøjer til skalering, beskæring, optimering og konvertering.", category: "tools", popularity: 80 },
+  { domain: "cloudconvert.com", name: "CloudConvert", descriptionEn: "Converts files between many document, image, and audio formats.", descriptionDa: "Konverterer filer mellem mange dokument-, billede- og lydformater.", category: "tools", popularity: 82 },
+  { domain: "draw.io", name: "draw.io", descriptionEn: "Free diagram editor for flowcharts and architecture sketches.", descriptionDa: "Gratis diagramværktøj til flowcharts og arkitekturskitser.", category: "tools", popularity: 87 },
+  { domain: "diagrams.net", name: "diagrams.net", descriptionEn: "Same diagram editor as draw.io under the diagrams.net name.", descriptionDa: "Samme diagramværktøj som draw.io under navnet diagrams.net.", category: "tools", popularity: 86 },
+  { domain: "excalidraw.com", name: "Excalidraw", descriptionEn: "Hand-drawn style whiteboard for quick sketches and diagrams.", descriptionDa: "Håndtegnet whiteboard til hurtige skitser og diagrammer.", category: "tools", popularity: 88 },
+  { domain: "caniuse.com", name: "Can I use", descriptionEn: "Browser support tables for HTML, CSS, and JavaScript features.", descriptionDa: "Browserunderstøttelse for HTML-, CSS- og JavaScript-funktioner.", category: "tools", popularity: 85 },
+  { domain: "webpagetest.org", name: "WebPageTest", descriptionEn: "Measures real-world website loading performance.", descriptionDa: "Måler en websites indlæsningsydelse i praksis.", category: "tools", popularity: 76 },
+
+  // —— AI ——
+  { domain: "chatgpt.com", name: "ChatGPT", descriptionEn: "OpenAI chat assistant for writing, coding, and questions.", descriptionDa: "OpenAI-chatassistent til skrivning, kodning og spørgsmål.", category: "ai", popularity: 100 },
+  { domain: "claude.ai", name: "Claude", descriptionEn: "Anthropic AI assistant for analysis, writing, and coding.", descriptionDa: "Anthropic AI-assistent til analyse, skrivning og kodning.", category: "ai", popularity: 94 },
+  { domain: "gemini.google.com", name: "Google Gemini", descriptionEn: "Google’s AI assistant across chat, docs, and search.", descriptionDa: "Googles AI-assistent til chat, dokumenter og søgning.", category: "ai", popularity: 92 },
+  { domain: "perplexity.ai", name: "Perplexity", descriptionEn: "AI search that answers with cited sources.", descriptionDa: "AI-søgning der svarer med kildehenvisninger.", category: "ai", popularity: 90 },
+  { domain: "copilot.microsoft.com", name: "Microsoft Copilot", descriptionEn: "Microsoft’s AI assistant in the browser.", descriptionDa: "Microsofts AI-assistent i browseren.", category: "ai", popularity: 88 },
+  { domain: "huggingface.co", name: "Hugging Face", descriptionEn: "Open models, datasets, and demos for machine learning.", descriptionDa: "Åbne modeller, datasæt og demoer til maskinlæring.", category: "ai", popularity: 84 },
+  { domain: "midjourney.com", name: "Midjourney", descriptionEn: "AI image generation from text prompts.", descriptionDa: "AI-billedgenerering ud fra tekstprompter.", category: "ai", popularity: 82 },
+  { domain: "character.ai", name: "Character.AI", descriptionEn: "Chat with AI characters for entertainment and roleplay.", descriptionDa: "Chat med AI-figurer til underholdning og rollespil.", category: "ai", popularity: 78 },
+  { domain: "poe.com", name: "Poe", descriptionEn: "Chat hub to try many AI models in one place.", descriptionDa: "Chat-hub hvor du kan prøve mange AI-modeller samme sted.", category: "ai", popularity: 76 },
+
+  // —— Search / reference ——
+  { domain: "google.com", name: "Google", descriptionEn: "Web search, maps, and Google account services.", descriptionDa: "Websøgning, kort og Google-kontotjenester.", category: "search", popularity: 100 },
+  { domain: "bing.com", name: "Bing", descriptionEn: "Microsoft search engine with Copilot answers.", descriptionDa: "Microsofts søgemaskine med Copilot-svar.", category: "search", popularity: 82 },
+  { domain: "duckduckgo.com", name: "DuckDuckGo", descriptionEn: "Search engine that does not track your search history.", descriptionDa: "Søgemaskine der ikke tracker din søgehistorik.", category: "search", popularity: 86 },
+  { domain: "brave.com", name: "Brave", descriptionEn: "Privacy browser and Brave Search.", descriptionDa: "Privatlivsbrowser og Brave Search.", category: "search", popularity: 78 },
+  { domain: "ecosia.org", name: "Ecosia", descriptionEn: "Search engine that uses ad revenue to plant trees.", descriptionDa: "Søgemaskine der bruger annonceindtægter til at plante træer.", category: "search", popularity: 74 },
+  { domain: "wikipedia.org", name: "Wikipedia", descriptionEn: "Free encyclopedia anyone can read and edit.", descriptionDa: "Gratis encyklopædi som alle kan læse og redigere.", category: "education", popularity: 96 },
+  { domain: "en.wikipedia.org", name: "Wikipedia (EN)", descriptionEn: "English Wikipedia articles and references.", descriptionDa: "Engelske Wikipedia-artikler og kilder.", category: "education", popularity: 94 },
+  { domain: "da.wikipedia.org", name: "Wikipedia (DA)", descriptionEn: "Danish Wikipedia articles and references.", descriptionDa: "Danske Wikipedia-artikler og kilder.", category: "education", popularity: 90 },
+  { domain: "archive.org", name: "Internet Archive", descriptionEn: "Digital library and Wayback Machine snapshots of old web pages.", descriptionDa: "Digitalt bibliotek og Wayback Machine-snapshots af gamle websider.", category: "education", popularity: 88 },
+  { domain: "wiktionary.org", name: "Wiktionary", descriptionEn: "Free dictionary with definitions and translations.", descriptionDa: "Gratis ordbog med definitioner og oversættelser.", category: "education", popularity: 76 },
+  { domain: "britannica.com", name: "Britannica", descriptionEn: "Encyclopedia articles written by editors and experts.", descriptionDa: "Encyklopædi-artikler skrevet af redaktører og eksperter.", category: "education", popularity: 74 },
+  { domain: "dictionary.com", name: "Dictionary.com", descriptionEn: "English definitions, pronunciation, and examples.", descriptionDa: "Engelske definitioner, udtale og eksempler.", category: "education", popularity: 80 },
+  { domain: "thesaurus.com", name: "Thesaurus.com", descriptionEn: "Synonyms and antonyms for English writing.", descriptionDa: "Synonymer og antonymer til engelsk skrivning.", category: "education", popularity: 78 },
+  { domain: "deepl.com", name: "DeepL", descriptionEn: "High-quality translation between many languages.", descriptionDa: "Højkvalitets oversættelse mellem mange sprog.", category: "tools", popularity: 90 },
+  { domain: "translate.google.com", name: "Google Translate", descriptionEn: "Instant translation for text, websites, and documents.", descriptionDa: "Hurtig oversættelse af tekst, websites og dokumenter.", category: "tools", popularity: 94 },
+
+  // —— Mail / productivity ——
+  { domain: "gmail.com", name: "Gmail", descriptionEn: "Google email with spam filtering and Drive links.", descriptionDa: "Google-mail med spamfilter og Drive-links.", category: "productivity", popularity: 98 },
+  { domain: "mail.google.com", name: "Gmail (app)", descriptionEn: "Gmail web app for reading and sending email.", descriptionDa: "Gmail-webapp til at læse og sende e-mail.", category: "productivity", popularity: 97 },
+  { domain: "outlook.com", name: "Outlook", descriptionEn: "Microsoft email and calendar in the browser.", descriptionDa: "Microsoft-mail og kalender i browseren.", category: "productivity", popularity: 92 },
+  { domain: "outlook.live.com", name: "Outlook Live", descriptionEn: "Outlook.com inbox for personal Microsoft accounts.", descriptionDa: "Outlook.com-indbakke til personlige Microsoft-konti.", category: "productivity", popularity: 90 },
+  { domain: "office.com", name: "Microsoft 365", descriptionEn: "Word, Excel, PowerPoint, and other Microsoft 365 apps.", descriptionDa: "Word, Excel, PowerPoint og andre Microsoft 365-apps.", category: "productivity", popularity: 94 },
+  { domain: "drive.google.com", name: "Google Drive", descriptionEn: "Cloud file storage linked to your Google account.", descriptionDa: "Cloud-filoplagring knyttet til din Google-konto.", category: "productivity", popularity: 95 },
+  { domain: "docs.google.com", name: "Google Docs", descriptionEn: "Collaborative documents in the browser.", descriptionDa: "Fælles dokumenter i browseren.", category: "productivity", popularity: 94 },
+  { domain: "sheets.google.com", name: "Google Sheets", descriptionEn: "Collaborative spreadsheets in the browser.", descriptionDa: "Fælles regneark i browseren.", category: "productivity", popularity: 92 },
+  { domain: "slides.google.com", name: "Google Slides", descriptionEn: "Collaborative presentations in the browser.", descriptionDa: "Fælles præsentationer i browseren.", category: "productivity", popularity: 88 },
+  { domain: "calendar.google.com", name: "Google Calendar", descriptionEn: "Calendar and scheduling with Google accounts.", descriptionDa: "Kalender og planlægning med Google-konti.", category: "productivity", popularity: 92 },
+  { domain: "dropbox.com", name: "Dropbox", descriptionEn: "Cloud storage and file sharing across devices.", descriptionDa: "Cloud-lager og fildeling på tværs af enheder.", category: "productivity", popularity: 86 },
+  { domain: "box.com", name: "Box", descriptionEn: "Business cloud storage and content collaboration.", descriptionDa: "Cloud-lager og samarbejde om indhold til virksomheder.", category: "productivity", popularity: 74 },
+  { domain: "notion.so", name: "Notion", descriptionEn: "Notes, wikis, and project docs in one workspace.", descriptionDa: "Noter, wikis og projektdokumenter i ét workspace.", category: "productivity", popularity: 90 },
+  { domain: "figma.com", name: "Figma", descriptionEn: "Collaborative UI design and prototyping in the browser.", descriptionDa: "Fælles UI-design og prototyper i browseren.", category: "productivity", popularity: 92 },
+  { domain: "canva.com", name: "Canva", descriptionEn: "Design templates for social posts, slides, and print.", descriptionDa: "Designskabeloner til sociale opslag, slides og print.", category: "productivity", popularity: 93 },
+  { domain: "miro.com", name: "Miro", descriptionEn: "Online whiteboard for workshops and brainstorming.", descriptionDa: "Online whiteboard til workshops og brainstorm.", category: "productivity", popularity: 84 },
+  { domain: "trello.com", name: "Trello", descriptionEn: "Kanban boards for task and project tracking.", descriptionDa: "Kanban-tavler til opgave- og projektstyring.", category: "productivity", popularity: 85 },
+  { domain: "asana.com", name: "Asana", descriptionEn: "Team task management with projects and timelines.", descriptionDa: "Team-opgavestyring med projekter og tidslinjer.", category: "productivity", popularity: 82 },
+  { domain: "todoist.com", name: "Todoist", descriptionEn: "Personal and team to-do lists with reminders.", descriptionDa: "Personlige og team to-do-lister med påmindelser.", category: "productivity", popularity: 84 },
+  { domain: "evernote.com", name: "Evernote", descriptionEn: "Note-taking app for text, clips, and attachments.", descriptionDa: "Note-app til tekst, klip og vedhæftninger.", category: "productivity", popularity: 76 },
+  { domain: "grammarly.com", descriptionEn: "Grammar and clarity checks while you write.", descriptionDa: "Grammatik- og klarhedstjek mens du skriver.", name: "Grammarly", category: "productivity", popularity: 86 },
+  { domain: "slack.com", name: "Slack", descriptionEn: "Team chat with channels, threads, and file sharing.", descriptionDa: "Team-chat med kanaler, tråde og fildeling.", category: "productivity", popularity: 90 },
+  { domain: "zoom.us", name: "Zoom", descriptionEn: "Video meetings and webinars in the browser or app.", descriptionDa: "Videomøder og webinarer i browser eller app.", category: "productivity", popularity: 92 },
+  { domain: "meet.google.com", name: "Google Meet", descriptionEn: "Video calls linked to Google Calendar and Workspace.", descriptionDa: "Videoopkald knyttet til Google Kalender og Workspace.", category: "productivity", popularity: 90 },
+  { domain: "teams.microsoft.com", name: "Microsoft Teams", descriptionEn: "Chat, meetings, and files for Microsoft 365 workspaces.", descriptionDa: "Chat, møder og filer til Microsoft 365-workspaces.", category: "productivity", popularity: 91 },
+  { domain: "web.whatsapp.com", name: "WhatsApp Web", descriptionEn: "WhatsApp messaging in the browser.", descriptionDa: "WhatsApp-beskeder i browseren.", category: "productivity", popularity: 95 },
+  { domain: "web.telegram.org", name: "Telegram Web", descriptionEn: "Telegram chats and channels in the browser.", descriptionDa: "Telegram-chats og kanaler i browseren.", category: "productivity", popularity: 86 },
+  { domain: "discord.com", name: "Discord", descriptionEn: "Voice, video, and text chat for communities and friends.", descriptionDa: "Stemme-, video- og tekstchat til communities og venner.", category: "productivity", popularity: 90 },
+  { domain: "icloud.com", name: "iCloud", descriptionEn: "Apple cloud for photos, Drive, mail, and Find My.", descriptionDa: "Apples cloud til fotos, Drive, mail og Find min.", category: "productivity", popularity: 88 },
+
+  // —— Maps / travel ——
+  { domain: "maps.google.com", name: "Google Maps", descriptionEn: "Maps, directions, transit, and local business info.", descriptionDa: "Kort, rutevejledning, kollektiv trafik og lokale virksomheder.", category: "travel", popularity: 98 },
+  { domain: "openstreetmap.org", name: "OpenStreetMap", descriptionEn: "Free, editable world map made by volunteers.", descriptionDa: "Gratis, redigerbart verdenskort lavet af frivillige.", category: "travel", popularity: 80 },
+  { domain: "booking.com", name: "Booking.com", descriptionEn: "Hotel and lodging search with reviews and filters.", descriptionDa: "Hotel- og overnatningssøgning med anmeldelser og filtre.", category: "travel", popularity: 92 },
+  { domain: "airbnb.com", name: "Airbnb", descriptionEn: "Book homes and rooms from private hosts.", descriptionDa: "Book boliger og værelser hos private værter.", category: "travel", popularity: 90 },
+  { domain: "tripadvisor.com", name: "Tripadvisor", descriptionEn: "Reviews for hotels, restaurants, and attractions.", descriptionDa: "Anmeldelser af hoteller, restauranter og attraktioner.", category: "travel", popularity: 86 },
+  { domain: "skyscanner.net", name: "Skyscanner", descriptionEn: "Compare flight prices across airlines and dates.", descriptionDa: "Sammenlign flypriser på tværs af selskaber og datoer.", category: "travel", popularity: 88 },
+  { domain: "kayak.com", name: "Kayak", descriptionEn: "Travel search for flights, hotels, and cars.", descriptionDa: "Rejsesøgning efter fly, hoteller og biler.", category: "travel", popularity: 84 },
+  { domain: "expedia.com", name: "Expedia", descriptionEn: "Flights, hotels, and holiday packages in one checkout.", descriptionDa: "Fly, hoteller og feriepakker i samme køb.", category: "travel", popularity: 82 },
+  { domain: "uber.com", name: "Uber", descriptionEn: "Ride-hailing and local delivery where available.", descriptionDa: "Taxature og lokal levering hvor tjenesten findes.", category: "travel", popularity: 88 },
+  { domain: "rome2rio.com", name: "Rome2Rio", descriptionEn: "Door-to-door travel routes across trains, buses, and flights.", descriptionDa: "Dør-til-dør ruter med tog, bus og fly.", category: "travel", popularity: 80 },
+  { domain: "trainline.com", name: "Trainline", descriptionEn: "Train and coach tickets across Europe.", descriptionDa: "Tog- og busbilletter i Europa.", category: "travel", popularity: 78 },
+  { domain: "momondo.com", name: "Momondo", descriptionEn: "Flight and hotel comparison search.", descriptionDa: "Sammenligning af fly- og hotelpriser.", category: "travel", popularity: 82 },
+
+  // —— Finance ——
+  { domain: "paypal.com", name: "PayPal", descriptionEn: "Online payments and money transfers.", descriptionDa: "Online betalinger og pengeoverførsler.", category: "finance", popularity: 92 },
+  { domain: "stripe.com", name: "Stripe", descriptionEn: "Payment infrastructure for online businesses.", descriptionDa: "Betalingsinfrastruktur til online forretninger.", category: "finance", popularity: 86 },
+  { domain: "wise.com", name: "Wise", descriptionEn: "International transfers with mid-market exchange rates.", descriptionDa: "Internationale overførsler med mid-market valutakurser.", category: "finance", popularity: 88 },
+  { domain: "revolut.com", name: "Revolut", descriptionEn: "Digital banking, cards, and multi-currency accounts.", descriptionDa: "Digital bank, kort og multi-valuta konti.", category: "finance", popularity: 86 },
+  { domain: "coinbase.com", name: "Coinbase", descriptionEn: "Buy, sell, and store cryptocurrency.", descriptionDa: "Køb, sælg og opbevar kryptovaluta.", category: "finance", popularity: 82 },
+  { domain: "binance.com", name: "Binance", descriptionEn: "Cryptocurrency exchange for trading digital assets.", descriptionDa: "Kryptobørs til handel med digitale aktiver.", category: "finance", popularity: 84 },
+  { domain: "tradingview.com", name: "TradingView", descriptionEn: "Charts and market analysis for stocks and crypto.", descriptionDa: "Grafer og markedsanalyse for aktier og krypto.", category: "finance", popularity: 86 },
+  { domain: "investing.com", name: "Investing.com", descriptionEn: "Live markets, quotes, and financial news.", descriptionDa: "Live markeder, kurser og finansnyheder.", category: "finance", popularity: 82 },
+  { domain: "finance.yahoo.com", name: "Yahoo Finance", descriptionEn: "Stock quotes, portfolios, and market news.", descriptionDa: "Aktiekurser, porteføljer og markedsnyheder.", category: "finance", popularity: 84 },
+  { domain: "mobilepay.dk", name: "MobilePay", descriptionEn: "Danish mobile payments between people and shops.", descriptionDa: "Danske mobilbetalinger mellem personer og butikker.", category: "finance", popularity: 94 },
+  { domain: "nordea.dk", name: "Nordea", descriptionEn: "Nordea Denmark online banking.", descriptionDa: "Nordea Danmarks netbank.", category: "finance", popularity: 88 },
+  { domain: "danskebank.dk", name: "Danske Bank", descriptionEn: "Danske Bank online banking and self-service.", descriptionDa: "Danske Banks netbank og selvbetjening.", category: "finance", popularity: 88 },
+  { domain: "jyskebank.dk", name: "Jyske Bank", descriptionEn: "Jyske Bank online banking.", descriptionDa: "Jyske Banks netbank.", category: "finance", popularity: 80 },
+  { domain: "sydbank.dk", name: "Sydbank", descriptionEn: "Sydbank online banking.", descriptionDa: "Sydbanks netbank.", category: "finance", popularity: 76 },
+  { domain: "lunar.app", name: "Lunar", descriptionEn: "Danish digital bank app for everyday accounts.", descriptionDa: "Dansk digital bank-app til hverdagskonti.", category: "finance", popularity: 82 },
+
+  // —— Denmark public / everyday ——
+  { domain: "borger.dk", name: "Borger.dk", descriptionEn: "Danish citizen portal for public self-service.", descriptionDa: "Dansk borgerportal til offentlig selvbetjening.", category: "denmark", popularity: 96 },
+  { domain: "skat.dk", name: "Skat.dk", descriptionEn: "Danish Tax Agency for tax, CPR, and payments.", descriptionDa: "Skattestyrelsen til skat, CPR og betalinger.", category: "denmark", popularity: 96 },
+  { domain: "virk.dk", name: "Virk.dk", descriptionEn: "Danish business portal for company self-service.", descriptionDa: "Erhvervsportal til virksomheders selvbetjening.", category: "denmark", popularity: 90 },
+  { domain: "sundhed.dk", name: "Sundhed.dk", descriptionEn: "Danish health portal for journal access and services.", descriptionDa: "Dansk sundhedsportal til journal og sundhedstjenester.", category: "denmark", popularity: 92 },
+  { domain: "mitid.dk", name: "MitID", descriptionEn: "Danish digital ID for logging into public and private services.", descriptionDa: "Dansk digital ID til login på offentlige og private tjenester.", category: "denmark", popularity: 95 },
+  { domain: "e-boks.dk", name: "e-Boks", descriptionEn: "Secure digital mailbox for letters from authorities and companies.", descriptionDa: "Sikker digital postkasse til breve fra myndigheder og virksomheder.", category: "denmark", popularity: 94 },
+  { domain: "postnord.dk", name: "PostNord", descriptionEn: "Parcel tracking and postage for Denmark and Sweden.", descriptionDa: "Pakketracking og porto i Danmark og Sverige.", category: "denmark", popularity: 90 },
+  { domain: "dsb.dk", name: "DSB", descriptionEn: "Danish train tickets, timetables, and travel info.", descriptionDa: "Danske togbilletter, køreplaner og rejseinfo.", category: "denmark", popularity: 92 },
+  { domain: "rejseplanen.dk", name: "Rejseplanen", descriptionEn: "Public transport journey planner for Denmark.", descriptionDa: "Rejseplanlægger for kollektiv trafik i Danmark.", category: "denmark", popularity: 94 },
+  { domain: "jobindex.dk", name: "Jobindex", descriptionEn: "Danish job listings and career search.", descriptionDa: "Danske jobopslag og jobsøgning.", category: "denmark", popularity: 90 },
+  { domain: "jobnet.dk", name: "Jobnet", descriptionEn: "Official Danish job center listings and unemployment services.", descriptionDa: "Officielle danske jobcenter-opslag og dagpenge-relaterede tjenester.", category: "denmark", popularity: 86 },
+  { domain: "boligsiden.dk", name: "Boligsiden", descriptionEn: "Danish home listings for sale with price statistics.", descriptionDa: "Danske boliger til salg med prisstatistik.", category: "denmark", popularity: 88 },
+  { domain: "boliga.dk", name: "Boliga", descriptionEn: "Danish property search and sold-price history.", descriptionDa: "Dansk boligsøgning og historik over salgspriser.", category: "denmark", popularity: 86 },
+  { domain: "dba.dk", name: "DBA", descriptionEn: "Danish classifieds for used goods and local sales.", descriptionDa: "Dansk markedsplads til brugte varer og lokale salg.", category: "denmark", popularity: 90 },
+  { domain: "guloggratis.dk", name: "Gul&Gratis", descriptionEn: "Danish classifieds marketplace.", descriptionDa: "Dansk markedsplads til køb og salg.", category: "denmark", popularity: 84 },
+  { domain: "bilbasen.dk", name: "Bilbasen", descriptionEn: "Danish used and new car listings.", descriptionDa: "Danske brugte og nye biler til salg.", category: "denmark", popularity: 88 },
+  { domain: "dr.dk", name: "DR", descriptionEn: "Danish Broadcasting Corporation news, TV, and radio.", descriptionDa: "Danmarks Radios nyheder, TV og radio.", category: "news", popularity: 94 },
+  { domain: "tv2.dk", name: "TV 2", descriptionEn: "Danish TV 2 news and streaming.", descriptionDa: "TV 2s nyheder og streaming.", category: "news", popularity: 92 },
+  { domain: "politiken.dk", name: "Politiken", descriptionEn: "Danish newspaper for news and analysis.", descriptionDa: "Dansk avis med nyheder og analyse.", category: "news", popularity: 84 },
+  { domain: "berlingske.dk", name: "Berlingske", descriptionEn: "Danish newspaper covering politics, business, and culture.", descriptionDa: "Dansk avis om politik, erhverv og kultur.", category: "news", popularity: 82 },
+  { domain: "bt.dk", name: "BT", descriptionEn: "Danish tabloid news and sports.", descriptionDa: "Danske tabloidnyheder og sport.", category: "news", popularity: 84 },
+  { domain: "ekstrabladet.dk", name: "Ekstra Bladet", descriptionEn: "Danish news, sports, and entertainment.", descriptionDa: "Danske nyheder, sport og underholdning.", category: "news", popularity: 86 },
+  { domain: "information.dk", name: "Information", descriptionEn: "Danish newspaper focused on in-depth journalism.", descriptionDa: "Dansk avis med vægt på dybdegående journalistik.", category: "news", popularity: 78 },
+  { domain: "finans.dk", name: "Finans", descriptionEn: "Danish business and markets news.", descriptionDa: "Danske erhvervs- og markedsnyheder.", category: "news", popularity: 80 },
+  { domain: "dmi.dk", name: "DMI", descriptionEn: "Official Danish weather forecasts and warnings.", descriptionDa: "Officielle danske vejrudsigter og varsler.", category: "denmark", popularity: 94 },
+  { domain: "yr.no", name: "Yr", descriptionEn: "Detailed weather forecasts from the Norwegian Meteorological Institute.", descriptionDa: "Detaljerede vejrudsigter fra Meteorologisk institutt i Norge.", category: "tools", popularity: 90 },
+  { domain: "fdm.dk", name: "FDM", descriptionEn: "Danish motoring club for car advice, tests, and member services.", descriptionDa: "Dansk bilistorganisation med bilråd, tests og medlemsfordele.", category: "denmark", popularity: 80 },
+  { domain: "apoteket.dk", name: "Apoteket", descriptionEn: "Danish pharmacy shopping and medicine information.", descriptionDa: "Dansk apotekshandel og medicininformation.", category: "health", popularity: 82 },
+  { domain: "min.medicin.dk", name: "min.medicin", descriptionEn: "Danish medicine information for patients.", descriptionDa: "Dansk medicininformation til patienter.", category: "health", popularity: 84 },
+  { domain: "gls.dk", name: "GLS Denmark", descriptionEn: "Parcel shipping and tracking with GLS Denmark.", descriptionDa: "Pakkeforsendelse og tracking med GLS Danmark.", category: "denmark", popularity: 82 },
+  { domain: "dao.as", name: "DAO", descriptionEn: "Danish parcel delivery and package shops.", descriptionDa: "Dansk pakkelevering og pakkeshops.", category: "denmark", popularity: 80 },
+  { domain: "trafikstyrelsen.dk", name: "Trafikstyrelsen", descriptionEn: "Danish transport authority for driving licences and vehicles.", descriptionDa: "Dansk transportmyndighed for kørekort og køretøjer.", category: "denmark", popularity: 78 },
+  { domain: "vejdirektoratet.dk", name: "Vejdirektoratet", descriptionEn: "Danish road directorate for traffic and roadworks info.", descriptionDa: "Vejdirektoratet med trafik- og vejarbejdsinfo.", category: "denmark", popularity: 76 },
+  { domain: "bibliotek.dk", name: "Bibliotek.dk", descriptionEn: "Search Danish public libraries and order materials.", descriptionDa: "Søg i danske folkebiblioteker og bestil materialer.", category: "denmark", popularity: 82 },
+  { domain: "ku.dk", name: "University of Copenhagen", descriptionEn: "University of Copenhagen programmes and services.", descriptionDa: "Københavns Universitets uddannelser og tjenester.", category: "education", popularity: 80 },
+  { domain: "au.dk", name: "Aarhus University", descriptionEn: "Aarhus University programmes and campus info.", descriptionDa: "Aarhus Universitets uddannelser og campusinfo.", category: "education", popularity: 78 },
+  { domain: "dtu.dk", name: "DTU", descriptionEn: "Technical University of Denmark programmes and research.", descriptionDa: "Danmarks Tekniske Universitets uddannelser og forskning.", category: "education", popularity: 80 },
+  { domain: "sdu.dk", name: "University of Southern Denmark", descriptionEn: "University of Southern Denmark programmes and services.", descriptionDa: "Syddansk Universitets uddannelser og tjenester.", category: "education", popularity: 76 },
+  { domain: "aau.dk", name: "Aalborg University", descriptionEn: "Aalborg University programmes and research.", descriptionDa: "Aalborg Universitets uddannelser og forskning.", category: "education", popularity: 76 },
+  { domain: "cbs.dk", name: "CBS", descriptionEn: "Copenhagen Business School programmes and events.", descriptionDa: "Copenhagen Business Schools uddannelser og events.", category: "education", popularity: 78 },
+  { domain: "3f.dk", name: "3F", descriptionEn: "Danish trade union for many private-sector workers.", descriptionDa: "Dansk fagforbund for mange lønmodtagere i privat sektor.", category: "denmark", popularity: 80 },
+  { domain: "hk.dk", name: "HK", descriptionEn: "Danish union for office, retail, and related professions.", descriptionDa: "Dansk fagforbund for kontor, handel og beslægtede fag.", category: "denmark", popularity: 78 },
+  { domain: "ida.dk", name: "IDA", descriptionEn: "Danish society of engineers for members and career services.", descriptionDa: "Ingeniørforeningen i Danmark med medlems- og karriereservice.", category: "denmark", popularity: 76 },
+  { domain: "prosa.dk", name: "PROSA", descriptionEn: "Danish union for IT professionals.", descriptionDa: "Dansk fagforbund for IT-professionelle.", category: "denmark", popularity: 74 },
+  { domain: "version2.dk", name: "Version2", descriptionEn: "Danish IT news and analysis.", descriptionDa: "Danske IT-nyheder og analyser.", category: "news", popularity: 78 },
+  { domain: "computerworld.dk", name: "Computerworld", descriptionEn: "Danish IT and business technology news.", descriptionDa: "Danske IT- og business-teknologinyheder.", category: "news", popularity: 76 },
+  { domain: "nemlig.com", name: "Nemlig", descriptionEn: "Danish online grocery delivery.", descriptionDa: "Dansk online dagligvarelevering.", category: "shopping", popularity: 84 },
+  { domain: "coop.dk", name: "Coop", descriptionEn: "Danish supermarket chain shopping and member deals.", descriptionDa: "Dansk dagligvarekæde med webshop og medlemsfordele.", category: "shopping", popularity: 86 },
+  { domain: "elgiganten.dk", name: "Elgiganten", descriptionEn: "Danish electronics and appliance retailer.", descriptionDa: "Dansk elektronik- og hårdehvidevarer-butik.", category: "shopping", popularity: 86 },
+  { domain: "power.dk", name: "Power", descriptionEn: "Danish electronics retailer.", descriptionDa: "Dansk elektronikbutik.", category: "shopping", popularity: 82 },
+  { domain: "proshop.dk", name: "Proshop", descriptionEn: "Danish online store for tech and gaming gear.", descriptionDa: "Dansk webshop til tech og gaming.", category: "shopping", popularity: 84 },
+  { domain: "coolshop.dk", name: "Coolshop", descriptionEn: "Danish online store for games, toys, and entertainment.", descriptionDa: "Dansk webshop til spil, legetøj og underholdning.", category: "shopping", popularity: 82 },
+  { domain: "zalando.dk", name: "Zalando", descriptionEn: "Fashion and shoe shopping for Denmark.", descriptionDa: "Mode- og skohandel til Danmark.", category: "shopping", popularity: 88 },
+  { domain: "ikea.dk", name: "IKEA Denmark", descriptionEn: "IKEA furniture and home goods for Denmark.", descriptionDa: "IKEA møbler og boligvarer i Danmark.", category: "shopping", popularity: 90 },
+  { domain: "just-eat.dk", name: "Just Eat", descriptionEn: "Food delivery from local restaurants in Denmark.", descriptionDa: "Madudbringning fra lokale restauranter i Danmark.", category: "shopping", popularity: 88 },
+  { domain: "wolt.com", name: "Wolt", descriptionEn: "Food and goods delivery in many cities.", descriptionDa: "Mad- og vareudbringning i mange byer.", category: "shopping", popularity: 88 },
+
+  // —— Social / media (also covered curated; keep for bulk completeness) ——
+  { domain: "facebook.com", name: "Facebook", descriptionEn: "Social network for friends, groups, and pages.", descriptionDa: "Socialt netværk til venner, grupper og sider.", category: "social", popularity: 96 },
+  { domain: "instagram.com", name: "Instagram", descriptionEn: "Photos, Reels, and stories from people you follow.", descriptionDa: "Fotos, Reels og stories fra dem du følger.", category: "social", popularity: 95 },
+  { domain: "x.com", name: "X", descriptionEn: "Public short posts and news feeds (formerly Twitter).", descriptionDa: "Offentlige korte opslag og nyhedsfeeds (tidligere Twitter).", category: "social", popularity: 93 },
+  { domain: "twitter.com", name: "Twitter", descriptionEn: "Redirects to X; short public posts and news.", descriptionDa: "Omdirigerer til X; korte offentlige opslag og nyheder.", category: "social", popularity: 70 },
+  { domain: "tiktok.com", name: "TikTok", descriptionEn: "Short-form video feed and creator tools.", descriptionDa: "Korte videoer og værktøjer til indholdsskabere.", category: "social", popularity: 94 },
+  { domain: "reddit.com", name: "Reddit", descriptionEn: "Community forums organized by topic (subreddits).", descriptionDa: "Community-fora opdelt efter emne (subreddits).", category: "social", popularity: 90 },
+  { domain: "linkedin.com", name: "LinkedIn", descriptionEn: "Professional networking and job search.", descriptionDa: "Professionelt netværk og jobsøgning.", category: "social", popularity: 92 },
+  { domain: "pinterest.com", name: "Pinterest", descriptionEn: "Visual boards for ideas, recipes, and design inspiration.", descriptionDa: "Visuelle boards til idéer, opskrifter og designinspiration.", category: "social", popularity: 86 },
+  { domain: "threads.net", name: "Threads", descriptionEn: "Text posts from Meta, linked with Instagram.", descriptionDa: "Tekstopslag fra Meta, knyttet til Instagram.", category: "social", popularity: 80 },
+  { domain: "bsky.app", name: "Bluesky", descriptionEn: "Open social network for short public posts.", descriptionDa: "Åbent socialt netværk til korte offentlige opslag.", category: "social", popularity: 78 },
+  { domain: "snapchat.com", name: "Snapchat", descriptionEn: "Snaps and stories messaging (web account hub).", descriptionDa: "Snaps og stories (web-konto).", category: "social", popularity: 84 },
+  { domain: "messenger.com", name: "Messenger", descriptionEn: "Facebook Messenger chat in the browser.", descriptionDa: "Facebook Messenger-chat i browseren.", category: "social", popularity: 88 },
+  { domain: "youtube.com", name: "YouTube", descriptionEn: "Watch, upload, and search videos.", descriptionDa: "Se, upload og søg efter videoer.", category: "video", popularity: 98 },
+  { domain: "netflix.com", name: "Netflix", descriptionEn: "Streaming movies and series by subscription.", descriptionDa: "Streaming af film og serier via abonnement.", category: "video", popularity: 96 },
+  { domain: "twitch.tv", name: "Twitch", descriptionEn: "Live streaming for games and creators.", descriptionDa: "Livestreaming af spil og creators.", category: "video", popularity: 90 },
+  { domain: "spotify.com", name: "Spotify", descriptionEn: "Music and podcast streaming.", descriptionDa: "Streaming af musik og podcasts.", category: "video", popularity: 95 },
+  { domain: "vimeo.com", name: "Vimeo", descriptionEn: "Video hosting and player for creators and businesses.", descriptionDa: "Videohosting og afspiller til creators og virksomheder.", category: "video", popularity: 78 },
+  { domain: "disneyplus.com", name: "Disney+", descriptionEn: "Disney, Pixar, Marvel, and Star Wars streaming.", descriptionDa: "Streaming af Disney, Pixar, Marvel og Star Wars.", category: "video", popularity: 88 },
+  { domain: "primevideo.com", name: "Prime Video", descriptionEn: "Amazon’s movie and series streaming service.", descriptionDa: "Amazons streaming af film og serier.", category: "video", popularity: 88 },
+  { domain: "max.com", name: "Max", descriptionEn: "HBO and related streaming titles.", descriptionDa: "HBO og beslægtede streamingtitler.", category: "video", popularity: 84 },
+  { domain: "soundcloud.com", name: "SoundCloud", descriptionEn: "Upload and listen to independent music and podcasts.", descriptionDa: "Upload og lyt til uafhængig musik og podcasts.", category: "video", popularity: 80 },
+  { domain: "imdb.com", name: "IMDb", descriptionEn: "Movie and TV credits, ratings, and trailers.", descriptionDa: "Film- og TV-krediteringer, ratings og trailere.", category: "video", popularity: 90 },
+  { domain: "rottentomatoes.com", name: "Rotten Tomatoes", descriptionEn: "Critic and audience scores for movies and TV.", descriptionDa: "Anmelder- og publikumsscores for film og TV.", category: "video", popularity: 84 },
+
+  // —— Shopping major ——
+  { domain: "amazon.com", name: "Amazon", descriptionEn: "Online marketplace for products, digital goods, and media.", descriptionDa: "Online markedsplads til varer, digitale produkter og medier.", category: "shopping", popularity: 96 },
+  { domain: "amazon.de", name: "Amazon Germany", descriptionEn: "Amazon storefront for Germany and nearby shipping.", descriptionDa: "Amazon-butik til Tyskland og nærliggende forsendelse.", category: "shopping", popularity: 88 },
+  { domain: "amazon.co.uk", name: "Amazon UK", descriptionEn: "Amazon storefront for the United Kingdom.", descriptionDa: "Amazon-butik til Storbritannien.", category: "shopping", popularity: 86 },
+  { domain: "ebay.com", name: "eBay", descriptionEn: "Auctions and fixed-price listings from sellers worldwide.", descriptionDa: "Auktioner og faste priser fra sælgere verden over.", category: "shopping", popularity: 90 },
+  { domain: "etsy.com", name: "Etsy", descriptionEn: "Marketplace for handmade, vintage, and craft goods.", descriptionDa: "Markedsplads til håndlavet, vintage og hobbyvarer.", category: "shopping", popularity: 86 },
+  { domain: "aliexpress.com", name: "AliExpress", descriptionEn: "Low-cost goods shipped from international sellers.", descriptionDa: "Billige varer fra internationale sælgere.", category: "shopping", popularity: 88 },
+  { domain: "ikea.com", name: "IKEA", descriptionEn: "Furniture and home goods shopping.", descriptionDa: "Møbler og boligvarer.", category: "shopping", popularity: 90 },
+  { domain: "zalando.com", name: "Zalando", descriptionEn: "European fashion and shoe retailer.", descriptionDa: "Europæisk mode- og skoforhandler.", category: "shopping", popularity: 86 },
+  { domain: "temu.com", name: "Temu", descriptionEn: "Discount marketplace for everyday goods.", descriptionDa: "Lavpris-markedsplads til hverdagsvarer.", category: "shopping", popularity: 84 },
+  { domain: "shein.com", name: "SHEIN", descriptionEn: "Fast-fashion clothing and accessories.", descriptionDa: "Hurtig mode inden for tøj og accessories.", category: "shopping", popularity: 82 },
+  { domain: "nike.com", name: "Nike", descriptionEn: "Nike shoes, apparel, and sports gear.", descriptionDa: "Nike sko, tøj og sportsudstyr.", category: "shopping", popularity: 88 },
+  { domain: "adidas.com", name: "adidas", descriptionEn: "adidas shoes, apparel, and sports gear.", descriptionDa: "adidas sko, tøj og sportsudstyr.", category: "shopping", popularity: 86 },
+  { domain: "apple.com", name: "Apple", descriptionEn: "Apple products, support, and account services.", descriptionDa: "Apple-produkter, support og kontotjenester.", category: "shopping", popularity: 95 },
+  { domain: "microsoft.com", name: "Microsoft", descriptionEn: "Microsoft products, accounts, and downloads.", descriptionDa: "Microsoft-produkter, konti og downloads.", category: "shopping", popularity: 92 },
+
+  // —— News major ——
+  { domain: "bbc.com", name: "BBC", descriptionEn: "British and international news, video, and radio.", descriptionDa: "Britiske og internationale nyheder, video og radio.", category: "news", popularity: 92 },
+  { domain: "cnn.com", name: "CNN", descriptionEn: "US and world news coverage.", descriptionDa: "Amerikanske og internationale nyheder.", category: "news", popularity: 86 },
+  { domain: "nytimes.com", name: "The New York Times", descriptionEn: "In-depth US and world news journalism.", descriptionDa: "Dybdegående amerikansk og international journalistik.", category: "news", popularity: 88 },
+  { domain: "theguardian.com", name: "The Guardian", descriptionEn: "UK and world news with investigative reporting.", descriptionDa: "Britiske og internationale nyheder med undersøgende journalistik.", category: "news", popularity: 86 },
+  { domain: "reuters.com", descriptionEn: "Global wire news for business and world events.", descriptionDa: "Globale nyheder om erhverv og verdensbegivenheder.", name: "Reuters", category: "news", popularity: 84 },
+  { domain: "forbes.com", name: "Forbes", descriptionEn: "Business, markets, and entrepreneurship coverage.", descriptionDa: "Erhverv, markeder og iværksætteri.", category: "news", popularity: 82 },
+  { domain: "bloomberg.com", name: "Bloomberg", descriptionEn: "Markets data and business news.", descriptionDa: "Markedsdata og erhvervsnyheder.", category: "news", popularity: 84 },
+  { domain: "techcrunch.com", name: "TechCrunch", descriptionEn: "Startup and technology industry news.", descriptionDa: "Nyheder om startups og tech-branchen.", category: "news", popularity: 82 },
+  { domain: "theverge.com", name: "The Verge", descriptionEn: "Technology, science, and culture news.", descriptionDa: "Nyheder om teknologi, videnskab og kultur.", category: "news", popularity: 84 },
+  { domain: "wired.com", name: "WIRED", descriptionEn: "Long-form technology and science journalism.", descriptionDa: "Længere tech- og videnskabsjournalistik.", category: "news", popularity: 80 },
+  { domain: "arstechnica.com", name: "Ars Technica", descriptionEn: "In-depth technology and science reporting.", descriptionDa: "Dybdegående tech- og videnskabsstof.", category: "news", popularity: 78 },
+  { domain: "9to5mac.com", name: "9to5Mac", descriptionEn: "Apple product news, rumors, and how-tos.", descriptionDa: "Apple-nyheder, rygter og guides.", category: "news", popularity: 80 },
+  { domain: "9to5google.com", name: "9to5Google", descriptionEn: "Google and Android product news and guides.", descriptionDa: "Google- og Android-nyheder og guides.", category: "news", popularity: 78 },
+
+  // —— Dev / tech ——
+  { domain: "github.com", name: "GitHub", descriptionEn: "Host git repositories, pull requests, and CI for code.", descriptionDa: "Host git-repositorier, pull requests og CI til kode.", category: "tech", popularity: 96 },
+  { domain: "gitlab.com", name: "GitLab", descriptionEn: "Git hosting with built-in CI/CD and DevOps tools.", descriptionDa: "Git-hosting med indbygget CI/CD og DevOps-værktøjer.", category: "tech", popularity: 84 },
+  { domain: "bitbucket.org", name: "Bitbucket", descriptionEn: "Git hosting from Atlassian, often paired with Jira.", descriptionDa: "Git-hosting fra Atlassian, ofte brugt med Jira.", category: "tech", popularity: 78 },
+  { domain: "stackoverflow.com", name: "Stack Overflow", descriptionEn: "Q&A for programming problems and answers.", descriptionDa: "Spørgsmål og svar om programmeringsproblemer.", category: "tech", popularity: 94 },
+  { domain: "npmjs.com", name: "npm", descriptionEn: "JavaScript package registry and documentation.", descriptionDa: "JavaScript-pakkeregister og dokumentation.", category: "tech", popularity: 90 },
+  { domain: "pypi.org", name: "PyPI", descriptionEn: "Python package index for installing libraries.", descriptionDa: "Python-pakkeregister til installation af biblioteker.", category: "tech", popularity: 86 },
+  { domain: "docker.com", name: "Docker", descriptionEn: "Container tools and Hub images for shipping software.", descriptionDa: "Container-værktøjer og Hub-images til at levere software.", category: "tech", popularity: 88 },
+  { domain: "cloudflare.com", name: "Cloudflare", descriptionEn: "CDN, DNS, security, and performance for websites.", descriptionDa: "CDN, DNS, sikkerhed og performance til websites.", category: "tech", popularity: 90 },
+  { domain: "vercel.com", name: "Vercel", descriptionEn: "Host and deploy frontend and full-stack web apps.", descriptionDa: "Host og deploy frontend- og fullstack-webapps.", category: "tech", popularity: 88 },
+  { domain: "netlify.com", name: "Netlify", descriptionEn: "Host static sites and serverless web projects.", descriptionDa: "Host statiske sites og serverless webprojekter.", category: "tech", popularity: 84 },
+  { domain: "aws.amazon.com", name: "AWS", descriptionEn: "Amazon cloud computing services and consoles.", descriptionDa: "Amazons cloud-tjenester og konsoller.", category: "tech", popularity: 92 },
+  { domain: "azure.microsoft.com", name: "Microsoft Azure", descriptionEn: "Microsoft cloud platform for apps and infrastructure.", descriptionDa: "Microsofts cloud-platform til apps og infrastruktur.", category: "tech", popularity: 88 },
+  { domain: "cloud.google.com", name: "Google Cloud", descriptionEn: "Google cloud console for compute, data, and AI.", descriptionDa: "Googles cloud-konsol til compute, data og AI.", category: "tech", popularity: 88 },
+  { domain: "digitalocean.com", name: "DigitalOcean", descriptionEn: "Simple cloud servers, databases, and Kubernetes.", descriptionDa: "Enkle cloud-servere, databaser og Kubernetes.", category: "tech", popularity: 82 },
+  { domain: "developer.mozilla.org", name: "MDN Web Docs", descriptionEn: "Authoritative docs for HTML, CSS, and JavaScript.", descriptionDa: "Autoritative docs for HTML, CSS og JavaScript.", category: "tech", popularity: 94 },
+  { domain: "w3schools.com", name: "W3Schools", descriptionEn: "Beginner tutorials for web development languages.", descriptionDa: "Begyndervenlige tutorials til webudvikling.", category: "education", popularity: 86 },
+  { domain: "stackoverflow.com", name: "Stack Overflow", descriptionEn: "Q&A for programming problems and answers.", descriptionDa: "Spørgsmål og svar om programmeringsproblemer.", category: "tech", popularity: 94 },
+  { domain: "news.ycombinator.com", name: "Hacker News", descriptionEn: "Tech and startup discussion links from Y Combinator.", descriptionDa: "Tech- og startup-diskussioner fra Y Combinator.", category: "news", popularity: 88 },
+  { domain: "producthunt.com", name: "Product Hunt", descriptionEn: "Daily launch board for new apps and products.", descriptionDa: "Daglig liste over nye apps og produkter.", category: "tech", popularity: 80 },
+  { domain: "dev.to", name: "DEV", descriptionEn: "Developer community articles and discussions.", descriptionDa: "Community-artikler og diskussioner for udviklere.", category: "tech", popularity: 82 },
+  { domain: "medium.com", name: "Medium", descriptionEn: "Long-form articles from writers and publications.", descriptionDa: "Længere artikler fra skribenter og medier.", category: "news", popularity: 84 },
+  { domain: "substack.com", name: "Substack", descriptionEn: "Newsletters and paid writer subscriptions.", descriptionDa: "Nyhedsbreve og betalte abonnementer fra skribenter.", category: "news", popularity: 82 },
+  { domain: "codepen.io", name: "CodePen", descriptionEn: "Front-end playground for HTML, CSS, and JS demos.", descriptionDa: "Frontend-legeplads til HTML-, CSS- og JS-demoer.", category: "tech", popularity: 84 },
+  { domain: "replit.com", name: "Replit", descriptionEn: "Browser IDE to write and run code online.", descriptionDa: "Browser-IDE til at skrive og køre kode online.", category: "tech", popularity: 82 },
+  { domain: "leetcode.com", name: "LeetCode", descriptionEn: "Coding interview practice problems and contests.", descriptionDa: "Programmeringsopgaver til interviewtræning og konkurrencer.", category: "education", popularity: 86 },
+  { domain: "hackerrank.com", name: "HackerRank", descriptionEn: "Coding challenges used for practice and hiring tests.", descriptionDa: "Kodeudfordringer til øvelse og rekrutteringstests.", category: "education", popularity: 80 },
+  { domain: "freecodecamp.org", name: "freeCodeCamp", descriptionEn: "Free coding curriculum and certifications.", descriptionDa: "Gratis kodeundervisning og certificeringer.", category: "education", popularity: 86 },
+  { domain: "coursera.org", name: "Coursera", descriptionEn: "Online courses and certificates from universities.", descriptionDa: "Onlinekurser og certifikater fra universiteter.", category: "education", popularity: 86 },
+  { domain: "udemy.com", name: "Udemy", descriptionEn: "Marketplace of video courses on many skills.", descriptionDa: "Markedsplads med videokurser inden for mange færdigheder.", category: "education", popularity: 88 },
+  { domain: "khanacademy.org", name: "Khan Academy", descriptionEn: "Free lessons in math, science, and more.", descriptionDa: "Gratis undervisning i matematik, naturfag og mere.", category: "education", popularity: 88 },
+  { domain: "duolingo.com", name: "Duolingo", descriptionEn: "Gamified language learning lessons.", descriptionDa: "Spilificeret sprogundervisning.", category: "education", popularity: 90 },
+  { domain: "quizlet.com", name: "Quizlet", descriptionEn: "Flashcards and study sets for memorization.", descriptionDa: "Flashcards og studiesæt til indlæring.", category: "education", popularity: 84 },
+
+  // —— Health ——
+  { domain: "webmd.com", name: "WebMD", descriptionEn: "Health articles and symptom information for patients.", descriptionDa: "Sundhedsartikler og symptominformation til patienter.", category: "health", popularity: 82 },
+  { domain: "mayoclinic.org", name: "Mayo Clinic", descriptionEn: "Medical information from Mayo Clinic experts.", descriptionDa: "Medicinsk information fra Mayo Clinic.", category: "health", popularity: 84 },
+  { domain: "healthline.com", name: "Healthline", descriptionEn: "Health guides reviewed for general audiences.", descriptionDa: "Sundhedsguides skrevet til et bredt publikum.", category: "health", popularity: 82 },
+  { domain: "nhs.uk", name: "NHS", descriptionEn: "UK National Health Service advice and services.", descriptionDa: "Det britiske sundhedsvæsens råd og tjenester.", category: "health", popularity: 86 },
+  { domain: "who.int", name: "WHO", descriptionEn: "World Health Organization news and health guidance.", descriptionDa: "WHO-nyheder og sundhedsanbefalinger.", category: "health", popularity: 84 },
+  { domain: "cdc.gov", name: "CDC", descriptionEn: "US public health guidance and disease information.", descriptionDa: "Amerikansk folkesundhedsvejledning og sygdomsinformation.", category: "health", popularity: 80 },
+
+  // —— Weather / misc useful ——
+  { domain: "weather.com", name: "Weather.com", descriptionEn: "Local and global weather forecasts.", descriptionDa: "Lokale og globale vejrudsigter.", category: "tools", popularity: 84 },
+  { domain: "accuweather.com", name: "AccuWeather", descriptionEn: "Hourly and daily weather forecasts worldwide.", descriptionDa: "Time- og dagsudsigter for vejret verden over.", category: "tools", popularity: 80 },
+  { domain: "unsplash.com", name: "Unsplash", descriptionEn: "Free high-resolution photos for projects and presentations.", descriptionDa: "Gratis højtopløselige fotos til projekter og præsentationer.", category: "tools", popularity: 86 },
+  { domain: "pexels.com", name: "Pexels", descriptionEn: "Free stock photos and videos.", descriptionDa: "Gratis stockfotos og videoer.", category: "tools", popularity: 84 },
+  { domain: "flickr.com", name: "Flickr", descriptionEn: "Photo hosting and communities for photographers.", descriptionDa: "Fotohosting og communities for fotografer.", category: "social", popularity: 72 },
+  { domain: "imgur.com", name: "Imgur", descriptionEn: "Image hosting and viral image community.", descriptionDa: "Billedhosting og community for billeder.", category: "social", popularity: 78 },
+  { domain: "giphy.com", name: "GIPHY", descriptionEn: "Search and share animated GIFs.", descriptionDa: "Søg og del animerede GIF’er.", category: "tools", popularity: 82 },
+  { domain: "quora.com", name: "Quora", descriptionEn: "Question-and-answer community on many topics.", descriptionDa: "Spørgsmål-og-svar-community om mange emner.", category: "social", popularity: 80 },
+  { domain: "craigslist.org", name: "Craigslist", descriptionEn: "Local classifieds for jobs, housing, and goods.", descriptionDa: "Lokale rubrikannoncer til job, bolig og varer.", category: "shopping", popularity: 78 },
+  { domain: "indeed.com", name: "Indeed", descriptionEn: "Job search across many employers and countries.", descriptionDa: "Jobsøgning på tværs af arbejdsgivere og lande.", category: "productivity", popularity: 88 },
+  { domain: "glassdoor.com", name: "Glassdoor", descriptionEn: "Company reviews, salaries, and job listings.", descriptionDa: "Virksomhedsanmeldelser, lønninger og jobopslag.", category: "productivity", popularity: 84 },
+  { domain: "patreon.com", name: "Patreon", descriptionEn: "Memberships that support creators with monthly payments.", descriptionDa: "Medlemskaber der støtter creators med månedlige betalinger.", category: "social", popularity: 80 },
+  { domain: "kickstarter.com", name: "Kickstarter", descriptionEn: "Crowdfunding for creative and product projects.", descriptionDa: "Crowdfunding til kreative og produktprojekter.", category: "finance", popularity: 80 },
+  { domain: "store.steampowered.com", name: "Steam", descriptionEn: "PC game store and library from Valve.", descriptionDa: "PC-spilbutik og bibliotek fra Valve.", category: "gaming", popularity: 92 },
+  { domain: "epicgames.com", name: "Epic Games", descriptionEn: "Epic Games Store and Unreal Engine downloads.", descriptionDa: "Epic Games Store og Unreal Engine-downloads.", category: "gaming", popularity: 86 },
+  { domain: "roblox.com", name: "Roblox", descriptionEn: "User-created games and avatar experiences.", descriptionDa: "Brugerskabte spil og avatar-oplevelser.", category: "gaming", popularity: 88 },
+  { domain: "minecraft.net", name: "Minecraft", descriptionEn: "Official Minecraft downloads and account services.", descriptionDa: "Officielle Minecraft-downloads og kontotjenester.", category: "gaming", popularity: 90 },
+  { domain: "chess.com", name: "Chess.com", descriptionEn: "Play chess online, puzzles, and lessons.", descriptionDa: "Spil skak online, løs opgaver og tag lektioner.", category: "gaming", popularity: 86 },
+  { domain: "lichess.org", name: "Lichess", descriptionEn: "Free open-source online chess with no ads.", descriptionDa: "Gratis open source online-skak uden reklamer.", category: "gaming", popularity: 84 },
+
+  // —— Airlines / transport useful for booking ——
+  { domain: "ryanair.com", name: "Ryanair", descriptionEn: "Low-cost airline booking for Europe.", descriptionDa: "Lavpris-flybilletter i Europa.", category: "travel", popularity: 84 },
+  { domain: "easyjet.com", name: "easyJet", descriptionEn: "Low-cost airline booking in Europe.", descriptionDa: "Lavpris-flybilletter i Europa.", category: "travel", popularity: 80 },
+  { domain: "norwegian.com", name: "Norwegian", descriptionEn: "Norwegian airline tickets and check-in.", descriptionDa: "Norwegian flybilletter og check-in.", category: "travel", popularity: 82 },
+  { domain: "sas.se", name: "SAS", descriptionEn: "SAS airline tickets for Scandinavia and beyond.", descriptionDa: "SAS-flybilletter i Skandinavien og videre.", category: "travel", popularity: 84 },
+
+  // —— Government useful ——
+  { domain: "usa.gov", name: "USA.gov", descriptionEn: "Official guide to US government services and information.", descriptionDa: "Officiel guide til amerikanske myndighedstjenester.", category: "gov", popularity: 74 },
+  { domain: "gov.uk", name: "GOV.UK", descriptionEn: "UK government services and information.", descriptionDa: "Britiske myndighedstjenester og information.", category: "gov", popularity: 82 },
+  { domain: "europa.eu", name: "Europa.eu", descriptionEn: "European Union official information and services.", descriptionDa: "EU’s officielle information og tjenester.", category: "gov", popularity: 80 },
+];
+
+function dedupe(sites) {
+  const seen = new Set();
+  const out = [];
+  for (const site of sites) {
+    const domain = site.domain.toLowerCase().replace(/^www\./, "");
+    if (seen.has(domain)) continue;
+    seen.add(domain);
+    out.push({ ...site, domain });
+  }
+  return out;
+}
+
+const unique = dedupe(SITES).sort((a, b) => a.name.localeCompare(b.name, "en"));
+mkdirSync(dirname(OUT), { recursive: true });
+writeFileSync(
+  OUT,
+  `${JSON.stringify({ generatedAt: new Date().toISOString().slice(0, 10), count: unique.length, sites: unique }, null, 2)}\n`,
+);
+console.log(`Wrote ${unique.length} described sites to ${OUT}`);

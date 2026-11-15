@@ -10,10 +10,12 @@
     "test": "vitest run",
     "check:answers": "tsx --tsconfig tsconfig.json scripts/check-answers.ts",
     "check:search": "tsx --tsconfig tsconfig.json scripts/check-search.ts",
-    "check:formulas": "tsx --tsconfig tsconfig.json scripts/check-formulas.ts"
+    "check:formulas": "tsx --tsconfig tsconfig.json scripts/check-formulas.ts",
+    "catalog:generate": "node scripts/data/build-described-sites.mjs"
   },
   "dependencies": {
     "next": "16.4.6",
+    "pdf-lib": "^1.17.1",
     "react": "19.3.0",
     "react-dom": "19.3.0"
   },

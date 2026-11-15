@@ -5,7 +5,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useDictionary, useLanguage } from "@/i18n/LanguageProvider";
 import type { Dictionary } from "@/i18n/types";
 import { getToolCopy } from "@/i18n/tools";
-import { listLibraryCatalog } from "@/lib/search";
+import { getUsageCounts } from "@/lib/personal";
+import { listLibraryCatalog, sortLibraryEntries } from "@/lib/search";
 import { normalize } from "@/lib/search/normalize";
 import type { ToolDefinition } from "@/tools/types";
 
@@ -82,28 +83,55 @@ export function LibraryCatalog() {
   const t = dictionary.library;
   const [filter, setFilter] = useState("");
   const [scope, setScope] = useState<LibraryScope>("tools");
+  const [usageCounts, setUsageCounts] = useState<Record<string, number>>({});
+  const [randomSalt] = useState(() => {
+    const day = Math.floor(Date.now() / 86_400_000);
+    return day * 9973 + 17;
+  });
 
   useEffect(() => {
     document.title = `${t.title} · ${dictionary.brand}`;
   }, [t.title, dictionary.brand]);
 
+  useEffect(() => {
+    const refresh = () => setUsageCounts(getUsageCounts());
+    refresh();
+    window.addEventListener("kit:personal-changed", refresh);
+    window.addEventListener("focus", refresh);
+    return () => {
+      window.removeEventListener("kit:personal-changed", refresh);
+      window.removeEventListener("focus", refresh);
+    };
+  }, []);
+
+  const sortOptions = useMemo(
+    () => ({ usage: usageCounts, randomSalt }),
+    [usageCounts, randomSalt],
+  );
+
   const catalog = useMemo(
-    () => listLibraryCatalog(dictionary),
-    [dictionary],
+    () => listLibraryCatalog(dictionary, sortOptions),
+    [dictionary, sortOptions],
   );
 
   const query = normalize(filter);
 
   const filtered = useMemo(() => {
     return {
-      builtins: catalog.builtins.filter((tool) =>
-        matchesFilter(tool, dictionary, query),
+      builtins: sortLibraryEntries(
+        catalog.builtins.filter((tool) =>
+          matchesFilter(tool, dictionary, query),
+        ),
+        sortOptions,
       ),
-      externals: catalog.externals.filter((tool) =>
-        matchesFilter(tool, dictionary, query),
+      externals: sortLibraryEntries(
+        catalog.externals.filter((tool) =>
+          matchesFilter(tool, dictionary, query),
+        ),
+        sortOptions,
       ),
     };
-  }, [catalog, dictionary, query]);
+  }, [catalog, dictionary, query, sortOptions]);
 
   const scopeOptions: Array<{
     id: LibraryScope;

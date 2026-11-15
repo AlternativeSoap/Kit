@@ -48,8 +48,14 @@ function getStoreSnapshot(): LocaleStore {
   return store;
 }
 
+/** Must be referentially stable — React warns (and can loop) if this allocates. */
+const SERVER_STORE_SNAPSHOT: LocaleStore = {
+  locale: "en",
+  ready: false,
+};
+
 function getServerStoreSnapshot(): LocaleStore {
-  return { locale: "en", ready: false };
+  return SERVER_STORE_SNAPSHOT;
 }
 
 function writeStore(next: Partial<LocaleStore>) {

@@ -1,5 +1,4 @@
 import type { ToolDefinition } from "@/tools/types";
-import { webExtras } from "./extras";
 
 const AI_INTENTS = [
   "ai",
@@ -16,7 +15,8 @@ const AI_INTENTS = [
  * `popularity` (1–100) only breaks ties within the same intent match.
  * Pricing/registration/privacy must be verified; use "unknown" when unsure.
  */
-export const webCatalog: ToolDefinition[] = [
+/** Hand-curated core destinations (extras + bulk merge in catalog/index.ts). */
+export const curatedWebCatalog: ToolDefinition[] = [
   // —— AI ——
   {
     id: "chatgpt",
@@ -472,6 +472,4 @@ export const webCatalog: ToolDefinition[] = [
     tags: ["code"],
     capabilities: ["lookup"],
   },
-
-  ...webExtras,
 ];

@@ -95,26 +95,108 @@ export function isLibraryQuery(query: string): boolean {
   );
 }
 
-/** Alphabetical catalog for the dedicated library page. */
-export function listLibraryCatalog(dictionary: Dictionary): {
+export type LibrarySortOptions = {
+  /** Local open counts from this device. */
+  usage?: Record<string, number>;
+  /**
+   * Salt for the “rest is random” tier so order stays stable within a session
+   * but can reshuffle across days/reloads.
+   */
+  randomSalt?: number;
+};
+
+function hashSortKey(id: string, salt: number): number {
+  let hash = salt >>> 0;
+  for (let i = 0; i < id.length; i++) {
+    hash = (Math.imul(hash, 31) + id.charCodeAt(i)) >>> 0;
+  }
+  return hash;
+}
+
+function isToolLikeSite(tool: ToolDefinition): boolean {
+  const tags = tool.tags ?? [];
+  const capabilities = tool.capabilities ?? [];
+  if (
+    tags.some((tag) =>
+      ["tools", "pdf", "image", "convert", "code", "dev"].includes(tag),
+    )
+  ) {
+    return true;
+  }
+  return capabilities.some((cap) =>
+    [
+      "compress",
+      "convert",
+      "edit",
+      "generate",
+      "calculate",
+      "test",
+      "merge",
+      "split",
+      "format",
+    ].includes(cap),
+  );
+}
+
+/**
+ * Library order: most used → generally popular → tool-useful → random rest.
+ */
+export function sortLibraryEntries(
+  entries: ToolDefinition[],
+  options: LibrarySortOptions = {},
+): ToolDefinition[] {
+  const usage = options.usage ?? {};
+  const salt = options.randomSalt ?? 1;
+
+  return [...entries].sort((a, b) => {
+    const usageA = usage[a.id] ?? 0;
+    const usageB = usage[b.id] ?? 0;
+    const popA = a.popularity ?? 50;
+    const popB = b.popularity ?? 50;
+
+    const tier = (tool: ToolDefinition, used: number, pop: number) => {
+      if (used > 0) return 0;
+      if (pop >= 85) return 1;
+      if (tool.kind === "builtin" || isToolLikeSite(tool)) return 2;
+      return 3;
+    };
+
+    const tierA = tier(a, usageA, popA);
+    const tierB = tier(b, usageB, popB);
+    if (tierA !== tierB) return tierA - tierB;
+
+    if (tierA === 0) {
+      return usageB - usageA || popB - popA;
+    }
+    if (tierA === 1 || tierA === 2) {
+      return popB - popA || a.id.localeCompare(b.id);
+    }
+    return (
+      hashSortKey(a.id, salt) - hashSortKey(b.id, salt) || a.id.localeCompare(b.id)
+    );
+  });
+}
+
+/** Ranked catalog for the dedicated library page. */
+export function listLibraryCatalog(
+  dictionary: Dictionary,
+  options: LibrarySortOptions = {},
+): {
   /** First-party calculators and utilities that run in Kit. */
   builtins: ToolDefinition[];
   /** Linked destinations that open elsewhere. */
   externals: ToolDefinition[];
 } {
-  const sortByName = (a: ToolDefinition, b: ToolDefinition) =>
-    getToolCopy(dictionary, a.id).name.localeCompare(
-      getToolCopy(dictionary, b.id).name,
-      "en",
-    );
-
+  void dictionary;
   return {
-    builtins: tools
-      .filter((tool) => tool.kind === "builtin")
-      .sort(sortByName),
-    externals: tools
-      .filter((tool) => tool.kind === "external")
-      .sort(sortByName),
+    builtins: sortLibraryEntries(
+      tools.filter((tool) => tool.kind === "builtin"),
+      options,
+    ),
+    externals: sortLibraryEntries(
+      tools.filter((tool) => tool.kind === "external"),
+      options,
+    ),
   };
 }
 

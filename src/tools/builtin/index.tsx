@@ -42,6 +42,21 @@ import { SlugTool } from "./slug/SlugTool";
 import { BreakevenTool } from "./breakeven/BreakevenTool";
 import { CagrTool } from "./cagr/CagrTool";
 import { ContrastTool } from "./contrast/ContrastTool";
+import { ImageTool } from "./media/ImageTool";
+import { VideoCompressTool } from "./media/VideoCompressTool";
+import { RegexTool } from "./regex/RegexTool";
+import { MyIpTool } from "./myip/MyIpTool";
+import { MarkdownTool } from "./markdown/MarkdownTool";
+import { WorldClockTool } from "./worldclock/WorldClockTool";
+import { PdfTool } from "./pdf/PdfTool";
+import { SpeedTool } from "./speed/SpeedTool";
+import { PaletteTool } from "./palette/PaletteTool";
+import { ImgBase64Tool } from "./imgbase64/ImgBase64Tool";
+import { CodeShotTool } from "./codeshot/CodeShotTool";
+import { UaTool } from "./ua/UaTool";
+import { MimeTool } from "./mime/MimeTool";
+import { SimpleTool } from "./simple/SimpleTool";
+import { SIMPLE_TOOL_IDS } from "./simple/defs";
 
 export function BuiltinToolView({
   id,
@@ -135,7 +150,44 @@ export function BuiltinToolView({
       return <CagrTool prefill={prefill} />;
     case "contrast":
       return <ContrastTool prefill={prefill} />;
+    case "crop":
+      return <ImageTool mode="crop" />;
+    case "resize":
+      return <ImageTool mode="resize" />;
+    case "imgcompress":
+      return <ImageTool mode="compress" />;
+    case "imgconvert":
+      return <ImageTool mode="convert" />;
+    case "imagerotate":
+      return <ImageTool mode="rotate" />;
+    case "vidcompress":
+      return <VideoCompressTool />;
+    case "regex":
+      return <RegexTool prefill={prefill} />;
+    case "myip":
+      return <MyIpTool />;
+    case "markdown":
+      return <MarkdownTool prefill={prefill} />;
+    case "worldclock":
+      return <WorldClockTool />;
+    case "pdf":
+      return <PdfTool />;
+    case "speedtest":
+      return <SpeedTool />;
+    case "palette":
+      return <PaletteTool prefill={prefill} />;
+    case "imgbase64":
+      return <ImgBase64Tool />;
+    case "codeshot":
+      return <CodeShotTool prefill={prefill} />;
+    case "ua":
+      return <UaTool />;
+    case "mime":
+      return <MimeTool />;
     default:
+      if ((SIMPLE_TOOL_IDS as readonly string[]).includes(id)) {
+        return <SimpleTool id={id} />;
+      }
       return null;
   }
 }
