@@ -3,7 +3,11 @@
 import { useEffect, useState } from "react";
 import { useDictionary, useLanguage } from "@/i18n/LanguageProvider";
 import { formatNumber } from "@/lib/format";
-import type { DayAheadSnapshot, PriceArea } from "@/lib/energy/dayAhead";
+import {
+  fetchDayAheadSnapshot,
+  type DayAheadSnapshot,
+  type PriceArea,
+} from "@/lib/energy/dayAhead";
 
 type LivePricesPanelProps = {
   onApplyElectricPrice: (krPerKwh: number) => void;
@@ -104,9 +108,9 @@ export function LivePricesPanel({ onApplyElectricPrice }: LivePricesPanelProps) 
 
     void (async () => {
       try {
-        const response = await fetch(`/api/energy/day-ahead?area=${area}`);
-        if (!response.ok) throw new Error("bad status");
-        const data = (await response.json()) as DayAheadSnapshot;
+        // Call Energi Data Service from the browser so static GitHub Pages
+        // builds do not need a Kit API route.
+        const data = await fetchDayAheadSnapshot(area);
         if (cancelled) return;
         setSnapshot(data);
         setStatus("ready");
