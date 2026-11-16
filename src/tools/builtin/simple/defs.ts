@@ -1867,6 +1867,274 @@ export const SIMPLE_TOOL_DEFS: SimpleToolDef[] = [
       ];
     },
   },
+  {
+    id: "promille",
+    nameEn: "Blood alcohol estimate",
+    nameDa: "Promilleberegner",
+    descriptionEn:
+      "Estimate blood alcohol (promille) from drinks, body weight, and time. Approximate only.",
+    descriptionDa:
+      "Estimer promille ud fra genstande, kropsvægt og tid. Kun et overslag.",
+    aliases: ["promille", "promilleberegner", "bac", "blood alcohol", "alkohol"],
+    intents: ["alcohol", "health", "promille"],
+    tags: ["health", "everyday"],
+    popularity: 85,
+    fields: [
+      {
+        key: "drinks",
+        labelEn: "Drinks",
+        labelDa: "Genstande",
+        defaultValue: "2",
+        hintEn: "One standard drink ≈ 12 g alcohol (e.g. 33 cl beer at 4.6%).",
+        hintDa: "Én genstand ≈ 12 g alkohol (fx 33 cl øl ved 4,6%).",
+      },
+      {
+        key: "weight",
+        labelEn: "Body weight (kg)",
+        labelDa: "Kropsvægt (kg)",
+        defaultValue: "75",
+      },
+      {
+        key: "sex",
+        labelEn: "Sex",
+        labelDa: "Køn",
+        kind: "select",
+        defaultValue: "male",
+        options: [
+          { value: "male", labelEn: "Male", labelDa: "Mand" },
+          { value: "female", labelEn: "Female", labelDa: "Kvinde" },
+        ],
+      },
+      {
+        key: "hours",
+        labelEn: "Hours since drinking started",
+        labelDa: "Timer siden du begyndte",
+        defaultValue: "2",
+      },
+    ],
+    compute: (v) => {
+      const drinks = num(v.drinks);
+      const weight = num(v.weight);
+      const hours = num(v.hours) ?? 0;
+      if (
+        drinks === undefined ||
+        weight === undefined ||
+        drinks < 0 ||
+        weight <= 0 ||
+        hours < 0
+      ) {
+        return null;
+      }
+      const grams = drinks * 12;
+      const r = v.sex === "female" ? 0.55 : 0.68;
+      const raw = grams / (weight * r) - 0.15 * hours;
+      const promille = Math.max(0, raw);
+      return [
+        {
+          labelEn: "Estimated BAC (‰)",
+          labelDa: "Estimeret promille (‰)",
+          value: round(promille, 2),
+        },
+        {
+          labelEn: "Alcohol intake",
+          labelDa: "Alkoholindtag",
+          value: `${round(grams, 1)} g`,
+        },
+        {
+          labelEn: "Note",
+          labelDa: "Bemærkning",
+          value:
+            "Approximate Widmark estimate only. Not for legal or medical decisions.",
+          valueDa:
+            "Kun et Widmark-overslag. Ikke til juridiske eller medicinske beslutninger.",
+        },
+      ];
+    },
+  },
+  {
+    id: "shoesize",
+    nameEn: "Shoe size converter",
+    nameDa: "Skostørrelse-omregner",
+    descriptionEn: "Compare EU, UK, and US shoe sizes for men, women, and children.",
+    descriptionDa: "Sammenlign EU-, UK- og US-skostørrelser til mænd, kvinder og børn.",
+    aliases: ["shoe size", "skostørrelse", "skostorrelse", "eu uk us shoes"],
+    intents: ["convert", "size", "shoes"],
+    tags: ["everyday", "convert"],
+    popularity: 82,
+    fields: [
+      { key: "size", labelEn: "Size", labelDa: "Størrelse", defaultValue: "42" },
+      {
+        key: "system",
+        labelEn: "From system",
+        labelDa: "Fra system",
+        kind: "select",
+        defaultValue: "eu",
+        options: [
+          { value: "eu", labelEn: "EU", labelDa: "EU" },
+          { value: "uk", labelEn: "UK", labelDa: "UK" },
+          { value: "usm", labelEn: "US men", labelDa: "US herrer" },
+          { value: "usw", labelEn: "US women", labelDa: "US damer" },
+          { value: "usk", labelEn: "US kids", labelDa: "US børn" },
+        ],
+      },
+    ],
+    compute: (v) => {
+      const size = num(v.size);
+      if (size === undefined) return null;
+      // Approximate mondopoint (mm) bridges.
+      let mm = size;
+      switch (v.system) {
+        case "eu":
+          mm = size * 6.67;
+          break;
+        case "uk":
+          mm = (size + 23) * 6.67;
+          break;
+        case "usm":
+          mm = (size + 22) * 6.67;
+          break;
+        case "usw":
+          mm = (size + 21) * 6.67;
+          break;
+        case "usk":
+          mm = (size + 12) * 6.67;
+          break;
+        default:
+          return null;
+      }
+      const eu = mm / 6.67;
+      return [
+        { labelEn: "EU", labelDa: "EU", value: round(eu, 1) },
+        { labelEn: "UK", labelDa: "UK", value: round(eu - 33, 1) },
+        { labelEn: "US men", labelDa: "US herrer", value: round(eu - 33 + 1, 1) },
+        { labelEn: "US women", labelDa: "US damer", value: round(eu - 33 + 2, 1) },
+        { labelEn: "US kids", labelDa: "US børn", value: round(eu - 33 - 11, 1) },
+        {
+          labelEn: "Note",
+          labelDa: "Bemærkning",
+          value: "Approximate chart. Brands vary.",
+          valueDa: "Cirka-tabel. Mærker varierer.",
+        },
+      ];
+    },
+  },
+  {
+    id: "clothingsize",
+    nameEn: "Clothing size converter",
+    nameDa: "Tøjstørrelse-omregner",
+    descriptionEn: "Translate international clothing sizes for tops.",
+    descriptionDa: "Oversæt internationale tøjstørrelser til overdele.",
+    aliases: ["clothing size", "tøjstørrelse", "tojstorrelse", "dress size"],
+    intents: ["convert", "size", "clothing"],
+    tags: ["everyday", "convert"],
+    popularity: 80,
+    fields: [
+      {
+        key: "size",
+        labelEn: "Size",
+        labelDa: "Størrelse",
+        kind: "select",
+        defaultValue: "M",
+        options: ["XXS", "XS", "S", "M", "L", "XL", "XXL", "3XL"].map((s) => ({
+          value: s,
+          labelEn: s,
+          labelDa: s,
+        })),
+      },
+      {
+        key: "who",
+        labelEn: "Fit",
+        labelDa: "Pasform",
+        kind: "select",
+        defaultValue: "women",
+        options: [
+          { value: "women", labelEn: "Women", labelDa: "Damer" },
+          { value: "men", labelEn: "Men", labelDa: "Herrer" },
+        ],
+      },
+    ],
+    compute: (v) => {
+      const letter = (v.size ?? "M").toUpperCase();
+      const women: Record<string, { eu: number; uk: number; us: number }> = {
+        XXS: { eu: 32, uk: 4, us: 0 },
+        XS: { eu: 34, uk: 6, us: 2 },
+        S: { eu: 36, uk: 8, us: 4 },
+        M: { eu: 40, uk: 12, us: 8 },
+        L: { eu: 44, uk: 16, us: 12 },
+        XL: { eu: 48, uk: 20, us: 16 },
+        XXL: { eu: 52, uk: 24, us: 20 },
+        "3XL": { eu: 56, uk: 28, us: 24 },
+      };
+      const men: Record<string, { eu: number; uk: number; us: number }> = {
+        XXS: { eu: 42, uk: 32, us: 32 },
+        XS: { eu: 44, uk: 34, us: 34 },
+        S: { eu: 46, uk: 36, us: 36 },
+        M: { eu: 50, uk: 40, us: 40 },
+        L: { eu: 54, uk: 44, us: 44 },
+        XL: { eu: 58, uk: 48, us: 48 },
+        XXL: { eu: 62, uk: 52, us: 52 },
+        "3XL": { eu: 66, uk: 56, us: 56 },
+      };
+      const row = (v.who === "men" ? men : women)[letter];
+      if (!row) return null;
+      return [
+        { labelEn: "Letter", labelDa: "Bogstav", value: letter },
+        { labelEn: "EU", labelDa: "EU", value: String(row.eu) },
+        { labelEn: "UK", labelDa: "UK", value: String(row.uk) },
+        { labelEn: "US", labelDa: "US", value: String(row.us) },
+        {
+          labelEn: "Note",
+          labelDa: "Bemærkning",
+          value: "Approximate chart for tops. Brands vary.",
+          valueDa: "Cirka-tabel for overdele. Mærker varierer.",
+        },
+      ];
+    },
+  },
+  {
+    id: "pdfclean",
+    nameEn: "PDF text cleaner",
+    nameDa: "PDF-tekstoprydning",
+    descriptionEn:
+      "Clean up text copied from PDFs: joins hyphenated line breaks, removes stray newlines, and collapses whitespace.",
+    descriptionDa:
+      "Ryd op i tekst kopieret fra PDF: sammensætter orddelings-linjeskift, fjerner løse linjeskift og sammensætter whitespace.",
+    aliases: [
+      "pdf clean",
+      "pdf text",
+      "clean text",
+      "fix pdf",
+      "pdf copy",
+      "pdf-tekstoprydning",
+      "pdfclean",
+    ],
+    intents: ["pdf", "text", "clean", "format"],
+    tags: ["text", "pdf"],
+    popularity: 75,
+    fields: [
+      {
+        key: "text",
+        labelEn: "PDF text",
+        labelDa: "PDF-tekst",
+        multiline: true,
+        defaultValue:
+          "This is an ex-\nample of bro-\nken text from a PDF.\nIt continues here.\n\nA new paragraph starts here.",
+      },
+    ],
+    compute: (v) => {
+      const text = v.text ?? "";
+      if (!text.trim()) return null;
+      // 1. Join hyphenated line breaks: "word-\nrest" → "wordrest"
+      let cleaned = text.replace(/-\r?\n(\S)/g, "$1");
+      // 2. Join lines that look like mid-sentence breaks (line ends without terminal punctuation, next line starts lowercase)
+      cleaned = cleaned.replace(/([^\n.!?:;–—])\r?\n(?=[a-zæøå])/g, "$1 ");
+      // 3. Collapse 3+ newlines to two (preserve paragraph breaks)
+      cleaned = cleaned.replace(/\n{3,}/g, "\n\n");
+      // 4. Collapse excess spaces within lines
+      cleaned = cleaned.replace(/[ \t]{2,}/g, " ");
+      return [{ labelEn: "Cleaned text", labelDa: "Renset tekst", value: cleaned.trim() }];
+    },
+  },
 ];
 
 export const SIMPLE_TOOL_IDS = SIMPLE_TOOL_DEFS.map((d) => d.id);

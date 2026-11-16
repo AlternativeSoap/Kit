@@ -108,7 +108,16 @@ export type BuiltinToolId =
   | "mime"
   | "luhn"
   | "iban"
-  | "dice";
+  | "dice"
+  | "promille"
+  | "shoesize"
+  | "clothingsize"
+  | "pdfclean"
+  | "spinwheel"
+  | "wordcount"
+  | "doctopdf"
+  | "bgremove"
+  | "csvexcel";
 
 /** kit = first-party tools and closely related utilities; web = popular destinations */
 export type ToolSurface = "kit" | "web";

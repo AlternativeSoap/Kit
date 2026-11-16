@@ -1,4 +1,4 @@
-export type UnitCategory = "length" | "weight" | "volume" | "temperature" | "data";
+export type UnitCategory = "length" | "weight" | "volume" | "temperature" | "data" | "area" | "speed" | "cooking";
 
 type UnitDef = {
   id: string;
@@ -45,6 +45,33 @@ const DATA: UnitDef[] = [
   { id: "tib", toBase: 1024 ** 4 },
 ];
 
+const AREA: UnitDef[] = [
+  { id: "m2", toBase: 1 },
+  { id: "km2", toBase: 1_000_000 },
+  { id: "ha", toBase: 10_000 },
+  { id: "acre", toBase: 4046.8564224 },
+  { id: "tdl", toBase: 5516.2 },
+  { id: "ft2", toBase: 0.09290304 },
+  { id: "mi2", toBase: 2_589_988.110336 },
+];
+
+const SPEED: UnitDef[] = [
+  { id: "ms", toBase: 1 },
+  { id: "kmh", toBase: 1000 / 3600 },
+  { id: "mph", toBase: 0.44704 },
+  { id: "kn", toBase: 0.514444 },
+];
+
+const COOKING: UnitDef[] = [
+  { id: "ml", toBase: 1 },
+  { id: "dl", toBase: 100 },
+  { id: "l", toBase: 1000 },
+  { id: "tsp", toBase: 5 },
+  { id: "tbsp", toBase: 15 },
+  { id: "cup", toBase: 240 },
+  { id: "floz", toBase: 29.5735 },
+];
+
 export const UNITS: Record<UnitCategory, UnitDef[]> = {
   length: LENGTH,
   weight: WEIGHT,
@@ -55,6 +82,9 @@ export const UNITS: Record<UnitCategory, UnitDef[]> = {
     { id: "f", toBase: 1 },
     { id: "k", toBase: 1 },
   ],
+  area: AREA,
+  speed: SPEED,
+  cooking: COOKING,
 };
 
 function toCelsius(value: number, from: string): number | null {

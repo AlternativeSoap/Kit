@@ -55,6 +55,12 @@ import { ImgBase64Tool } from "./imgbase64/ImgBase64Tool";
 import { CodeShotTool } from "./codeshot/CodeShotTool";
 import { UaTool } from "./ua/UaTool";
 import { MimeTool } from "./mime/MimeTool";
+import { SpinWheelTool } from "./spinwheel/SpinWheelTool";
+import { WordCountTool } from "./wordcount/WordCountTool";
+import { DocToPdfTool } from "./doctopdf/DocToPdfTool";
+import { BgRemoveTool } from "./bgremove/BgRemoveTool";
+import { CsvExcelTool } from "./csvexcel/CsvExcelTool";
+import { PdfCleanTool } from "./pdfclean/PdfCleanTool";
 import { SimpleTool } from "./simple/SimpleTool";
 import { SIMPLE_TOOL_IDS } from "./simple/defs";
 
@@ -184,6 +190,18 @@ export function BuiltinToolView({
       return <UaTool />;
     case "mime":
       return <MimeTool />;
+    case "spinwheel":
+      return <SpinWheelTool />;
+    case "wordcount":
+      return <WordCountTool prefill={prefill} />;
+    case "doctopdf":
+      return <DocToPdfTool />;
+    case "bgremove":
+      return <BgRemoveTool />;
+    case "csvexcel":
+      return <CsvExcelTool prefill={prefill} />;
+    case "pdfclean":
+      return <PdfCleanTool prefill={prefill} />;
     default:
       if ((SIMPLE_TOOL_IDS as readonly string[]).includes(id)) {
         return <SimpleTool id={id} prefill={prefill} />;

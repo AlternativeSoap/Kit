@@ -50,7 +50,15 @@ export function ImgBase64Tool() {
         ? "webp"
         : mime.includes("gif")
           ? "gif"
-          : "png";
+          : mime.includes("bmp")
+            ? "bmp"
+            : mime.includes("avif")
+              ? "avif"
+              : mime.includes("svg")
+                ? "svg"
+                : mime.includes("icon") || mime.includes("x-icon")
+                  ? "ico"
+                  : "png";
     a.download = `${fileName || "image"}.${ext}`;
     a.click();
   }
@@ -84,7 +92,7 @@ export function ImgBase64Tool() {
           <span className="mb-1.5 block text-sm font-medium">{t.pickImage}</span>
           <input
             type="file"
-            accept="image/*"
+            accept="image/*,.heic,.heif,.avif,.bmp,.gif,.svg,.ico,.webp,.jpg,.jpeg,.png"
             onChange={(event) => void onPick(event.target.files?.[0] ?? null)}
             className="block w-full text-sm text-muted file:mr-3 file:rounded-[8px] file:border-0 file:bg-accent file:px-3 file:py-2 file:text-sm file:font-medium file:text-white"
           />

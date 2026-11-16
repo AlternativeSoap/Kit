@@ -52,12 +52,25 @@ function initialConversion(prefill: ToolPrefill | undefined) {
   return { category: "length" as UnitCategory, value: "100", from: "cm", to: "m" };
 }
 
-export function EnhederTool({ prefill }: { prefill?: ToolPrefill }) {
+export function EnhederTool({
+  prefill,
+  forcedCategory,
+}: {
+  prefill?: ToolPrefill;
+  forcedCategory?: UnitCategory;
+}) {
   const { locale } = useLanguage();
   const dictionary = useDictionary();
   const t = dictionary.enheder;
 
-  const [initial] = useState(() => initialConversion(prefill));
+  const [initial] = useState(() => {
+    if (forcedCategory) {
+      const first = UNITS[forcedCategory][0]!;
+      const second = UNITS[forcedCategory][1] ?? first;
+      return { category: forcedCategory, value: "1", from: first.id, to: second.id };
+    }
+    return initialConversion(prefill);
+  });
   const [category, setCategory] = useState<UnitCategory>(initial.category);
   const [value, setValue] = useState(initial.value);
   const [fromId, setFromId] = useState(initial.from);
@@ -82,8 +95,11 @@ export function EnhederTool({ prefill }: { prefill?: ToolPrefill }) {
     { id: "length", label: t.length },
     { id: "weight", label: t.weight },
     { id: "volume", label: t.volume },
-    { id: "data", label: t.data },
     { id: "temperature", label: t.temperature },
+    { id: "area", label: t.area },
+    { id: "speed", label: t.speed },
+    { id: "cooking", label: t.cooking },
+    { id: "data", label: t.data },
   ];
 
   const units = UNITS[category];
@@ -95,22 +111,24 @@ export function EnhederTool({ prefill }: { prefill?: ToolPrefill }) {
 
   return (
     <div className="mx-auto max-w-xl space-y-6">
-      <div className="flex flex-wrap gap-2">
-        {categories.map((item) => (
-          <button
-            key={item.id}
-            type="button"
-            onClick={() => selectCategory(item.id)}
-            className={`kit-touch-target rounded-[10px] border px-3 py-2 text-sm sm:min-h-0 ${
-              category === item.id
-                ? "border-accent bg-accent text-white"
-                : "border-border bg-surface text-muted hover:text-foreground"
-            }`}
-          >
-            {item.label}
-          </button>
-        ))}
-      </div>
+      {!forcedCategory && (
+        <div className="flex flex-wrap gap-2">
+          {categories.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => selectCategory(item.id)}
+              className={`kit-touch-target rounded-[10px] border px-3 py-2 text-sm sm:min-h-0 ${
+                category === item.id
+                  ? "border-accent bg-accent text-white"
+                  : "border-border bg-surface text-muted hover:text-foreground"
+              }`}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+      )}
 
       <label className="block">
         <span className="mb-1.5 block text-sm font-medium">{t.value}</span>

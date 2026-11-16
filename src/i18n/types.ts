@@ -28,6 +28,10 @@ export type Dictionary = {
     png: string;
     jpeg: string;
     webp: string;
+    bmp: string;
+    gif: string;
+    ico: string;
+    formatsNote: string;
     heicNote: string;
   };
   videoTool: {
@@ -436,6 +440,9 @@ export type Dictionary = {
     volume: string;
     data: string;
     temperature: string;
+    area: string;
+    speed: string;
+    cooking: string;
     value: string;
     from: string;
     to: string;
@@ -503,6 +510,7 @@ export type Dictionary = {
     kebab: string;
     snake: string;
     camel: string;
+    pdfClean: string;
     chars: string;
     words: string;
     lines: string;
@@ -1113,6 +1121,79 @@ export type Dictionary = {
     unknown: string;
     mimeType: string;
     extensions: string;
+    copy: string;
+    copied: string;
+  };
+  spinwheelTool: {
+    intro: string;
+    spin: string;
+    spinning: string;
+    needItems: string;
+    placeholder: string;
+    add: string;
+    remove: string;
+    resultTitle: string;
+    close: string;
+  };
+  wordcountTool: {
+    intro: string;
+    pickFile: string;
+    text: string;
+    working: string;
+    loadError: string;
+    unsupported: string;
+    chars: string;
+    charsNoSpaces: string;
+    words: string;
+    lines: string;
+    readingTime: string;
+    minutes: string;
+    copy: string;
+    copied: string;
+  };
+  doctopdfTool: {
+    intro: string;
+    note: string;
+    pickFile: string;
+    working: string;
+    ready: string;
+    empty: string;
+    unsupported: string;
+    processError: string;
+  };
+  bgremoveTool: {
+    intro: string;
+    note: string;
+    pickImage: string;
+    working: string;
+    progress: string;
+    invalidImage: string;
+    processError: string;
+    original: string;
+    result: string;
+    empty: string;
+    emptyResult: string;
+    download: string;
+  };
+  csvexcelTool: {
+    intro: string;
+    csvToJson: string;
+    jsonToCsv: string;
+    input: string;
+    output: string;
+    invalidCsv: string;
+    invalidJson: string;
+    copy: string;
+    copied: string;
+    downloadJson: string;
+    downloadCsv: string;
+    downloadExcel: string;
+  };
+  pdfcleanTool: {
+    intro: string;
+    input: string;
+    output: string;
+    placeholder: string;
     copy: string;
     copied: string;
   };

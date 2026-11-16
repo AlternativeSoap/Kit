@@ -19,6 +19,7 @@ export function TextTool({ prefill }: { prefill?: ToolPrefill }) {
     { id: "lower", label: t.lower },
     { id: "title", label: t.title },
     { id: "trim", label: t.trim },
+    { id: "pdfclean", label: t.pdfClean },
     { id: "dedupe", label: t.dedupe },
     { id: "slug", label: t.slug },
     { id: "kebab", label: t.kebab },

@@ -10,17 +10,25 @@ import {
 } from "react";
 import { useDictionary } from "@/i18n/LanguageProvider";
 import {
+  ALL_EXPORT_FORMATS,
+  LOSSY_FORMATS,
+  canEncodeFormat,
   canvasToBlob,
   compressToTarget,
   cropImage,
   downloadBlob,
   drawToCanvas,
+  extensionForFormat,
   formatBytes,
+  formatFromMimeOrName,
   loadImageFromFile,
   rotateImage,
   type ImageFormat,
 } from "./canvas";
 import { ProgressBar } from "./ProgressBar";
+
+const FILE_ACCEPT =
+  "image/*,.heic,.heif,.avif,.bmp,.gif,.svg,.ico,.tif,.tiff,.webp,.jpg,.jpeg,.png";
 
 export type ImageToolMode =
   | "crop"
@@ -116,14 +124,16 @@ export function ImageTool({ mode }: Props) {
         });
         setWidth(String(loaded.naturalWidth));
         setHeight(String(loaded.naturalHeight));
-        if (f.type === "image/png") setFormat("image/png");
-        else if (f.type === "image/webp") setFormat("image/webp");
-        else setFormat("image/jpeg");
+        const detected = formatFromMimeOrName(f.type, f.name);
+        if (detected && mode !== "compress") setFormat(detected);
+        else if (detected && LOSSY_FORMATS.includes(detected)) setFormat(detected);
+        else if (mode === "compress") setFormat("image/jpeg");
+        else setFormat("image/png");
       } catch {
         setError(t.loadError);
       }
     },
-    [clearReady, sourceUrl, t.loadError],
+    [clearReady, mode, sourceUrl, t.loadError],
   );
 
   const aspect = useMemo(() => {
@@ -135,9 +145,6 @@ export function ImageTool({ mode }: Props) {
     const base = (file?.name ?? "image").replace(/\.[^.]+$/, "");
     return `${base}-${mode}.${ext}`;
   };
-
-  const extFor = (fmt: ImageFormat) =>
-    fmt === "image/png" ? "png" : fmt === "image/webp" ? "webp" : "jpg";
 
   function markSettingsChanged() {
     clearReady();
@@ -171,9 +178,13 @@ export function ImageTool({ mode }: Props) {
         setProgress(30);
         await yieldFrame();
         canvas = cropImage(img, { x, y, w, h });
-        outFormat = "image/png";
+        outFormat = format;
         setProgress(70);
-        blob = await canvasToBlob(canvas, outFormat);
+        blob = await canvasToBlob(
+          canvas,
+          outFormat,
+          LOSSY_FORMATS.includes(outFormat) ? q : undefined,
+        );
       } else if (mode === "resize") {
         let w = Number(width);
         let h = Number(height);
@@ -192,11 +203,11 @@ export function ImageTool({ mode }: Props) {
         blob = await canvasToBlob(
           canvas,
           outFormat,
-          outFormat === "image/png" ? undefined : q,
+          LOSSY_FORMATS.includes(outFormat) ? q : undefined,
         );
       } else if (mode === "compress") {
         const maxBytes = Math.max(1, Number(maxKb) || 200) * 1024;
-        const outType = format === "image/png" ? "image/jpeg" : format;
+        const outType = LOSSY_FORMATS.includes(format) ? format : "image/jpeg";
         const { blob: compressed, quality: usedQ } = await compressToTarget(
           img,
           outType,
@@ -211,24 +222,28 @@ export function ImageTool({ mode }: Props) {
         await yieldFrame();
         canvas = drawToCanvas(img, img.naturalWidth, img.naturalHeight);
         outFormat = format;
-        q = format === "image/png" ? 1 : Number(quality) || 0.92;
+        q = LOSSY_FORMATS.includes(format) ? Number(quality) || 0.92 : 1;
         setProgress(70);
         blob = await canvasToBlob(
           canvas,
           outFormat,
-          outFormat === "image/png" ? undefined : q,
+          LOSSY_FORMATS.includes(outFormat) ? q : undefined,
         );
       } else {
         setProgress(35);
         await yieldFrame();
         canvas = rotateImage(img, degrees, flipH, flipV);
-        outFormat = "image/png";
+        outFormat = format;
         setProgress(70);
-        blob = await canvasToBlob(canvas, outFormat);
+        blob = await canvasToBlob(
+          canvas,
+          outFormat,
+          LOSSY_FORMATS.includes(outFormat) ? Number(quality) || 0.92 : undefined,
+        );
       }
 
       setProgress(100);
-      const filename = exportName(extFor(outFormat));
+      const filename = exportName(extensionForFormat(outFormat));
       const previewUrl = URL.createObjectURL(blob);
       setReady({
         blob,
@@ -262,7 +277,7 @@ export function ImageTool({ mode }: Props) {
           </span>
           <input
             type="file"
-            accept="image/*,.heic,.heif"
+            accept={FILE_ACCEPT}
             className={fileInputClass}
             onChange={(e) => void onFile(e.target.files?.[0] ?? null)}
           />
@@ -312,6 +327,14 @@ export function ImageTool({ mode }: Props) {
                 }}
               />
             </div>
+            <FormatSelect
+              value={format}
+              onChange={(v) => {
+                setFormat(v);
+                markSettingsChanged();
+              }}
+              labels={t}
+            />
           </div>
         ) : null}
 
@@ -375,13 +398,13 @@ export function ImageTool({ mode }: Props) {
               }}
             />
             <FormatSelect
-              value={format === "image/png" ? "image/jpeg" : format}
+              value={LOSSY_FORMATS.includes(format) ? format : "image/jpeg"}
               onChange={(v) => {
                 setFormat(v);
                 markSettingsChanged();
               }}
               labels={t}
-              hidePng
+              lossyOnly
             />
           </div>
         ) : null}
@@ -396,7 +419,7 @@ export function ImageTool({ mode }: Props) {
               }}
               labels={t}
             />
-            {format !== "image/png" ? (
+            {LOSSY_FORMATS.includes(format) ? (
               <Num
                 label={t.quality}
                 value={quality}
@@ -454,6 +477,14 @@ export function ImageTool({ mode }: Props) {
               />
               {t.flipV}
             </label>
+            <FormatSelect
+              value={format}
+              onChange={(v) => {
+                setFormat(v);
+                markSettingsChanged();
+              }}
+              labels={t}
+            />
           </div>
         ) : null}
 
@@ -491,9 +522,8 @@ export function ImageTool({ mode }: Props) {
         )}
 
         {error ? <p className="text-sm text-muted">{error}</p> : null}
-        {mode === "convert" || mode === "compress" ? (
-          <p className="text-xs text-muted">{t.heicNote}</p>
-        ) : null}
+        <p className="text-xs text-muted">{t.formatsNote}</p>
+        <p className="text-xs text-muted">{t.heicNote}</p>
       </div>
 
       <div className="order-first space-y-4 lg:order-none">
@@ -670,26 +700,85 @@ function FormatSelect({
   value,
   onChange,
   labels,
-  hidePng,
+  lossyOnly,
 }: {
   value: ImageFormat;
   onChange: (v: ImageFormat) => void;
-  labels: { png: string; jpeg: string; webp: string; format: string };
-  hidePng?: boolean;
+  labels: {
+    png: string;
+    jpeg: string;
+    webp: string;
+    bmp: string;
+    gif: string;
+    ico: string;
+    format: string;
+  };
+  lossyOnly?: boolean;
 }) {
+  const [options, setOptions] = useState<ImageFormat[]>(
+    lossyOnly ? [...LOSSY_FORMATS] : [...ALL_EXPORT_FORMATS],
+  );
+
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      const candidates = lossyOnly ? LOSSY_FORMATS : ALL_EXPORT_FORMATS;
+      const supported: ImageFormat[] = [];
+      for (const fmt of candidates) {
+        if (await canEncodeFormat(fmt)) supported.push(fmt);
+      }
+      if (cancelled) return;
+      const next =
+        supported.length > 0
+          ? supported
+          : (["image/png", "image/jpeg"] as ImageFormat[]);
+      setOptions(next);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [lossyOnly]);
+
+  useEffect(() => {
+    if (!options.includes(value) && options[0]) onChange(options[0]);
+    // Parent passes an inline onChange; only re-sync when options/value change.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [options, value]);
+
+  const labelFor = (fmt: ImageFormat) => {
+    switch (fmt) {
+      case "image/png":
+        return labels.png;
+      case "image/jpeg":
+        return labels.jpeg;
+      case "image/webp":
+        return labels.webp;
+      case "image/bmp":
+        return labels.bmp;
+      case "image/gif":
+        return labels.gif;
+      case "image/x-icon":
+        return labels.ico;
+    }
+  };
+
+  const selectValue = options.includes(value) ? value : options[0] ?? value;
+
   return (
     <label className="block">
       <span className="mb-1.5 block text-sm font-medium text-foreground">
         {labels.format}
       </span>
       <select
-        value={value}
+        value={selectValue}
         onChange={(e) => onChange(e.target.value as ImageFormat)}
         className={fieldClass}
       >
-        {hidePng ? null : <option value="image/png">{labels.png}</option>}
-        <option value="image/jpeg">{labels.jpeg}</option>
-        <option value="image/webp">{labels.webp}</option>
+        {options.map((fmt) => (
+          <option key={fmt} value={fmt}>
+            {labelFor(fmt)}
+          </option>
+        ))}
       </select>
     </label>
   );

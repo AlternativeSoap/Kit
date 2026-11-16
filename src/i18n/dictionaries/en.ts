@@ -191,7 +191,8 @@ export const en: Dictionary = {
   imageTool: {
     localNote: "The file is processed only in your browser. Nothing is uploaded to Kit.",
     pickImage: "Choose image",
-    loadError: "Could not load the image. Try PNG, JPEG, or WebP.",
+    loadError:
+      "Could not load the image. Try PNG, JPEG, WebP, GIF, BMP, AVIF, SVG, or HEIC.",
     processError: "Processing failed. Try another format or a smaller file.",
     invalid: "Check that the dimensions are valid numbers.",
     process: "Process image",
@@ -215,7 +216,13 @@ export const en: Dictionary = {
     png: "PNG",
     jpeg: "JPEG",
     webp: "WebP",
-    heicNote: "HEIC works only if your browser can decode it.",
+    bmp: "BMP",
+    gif: "GIF",
+    ico: "ICO",
+    formatsNote:
+      "Open PNG, JPEG, WebP, GIF, BMP, AVIF, SVG, ICO, and HEIC when the browser can decode them. Export to PNG, JPEG, WebP, BMP, GIF, or ICO.",
+    heicNote:
+      "HEIC from iPhone photos is converted locally in the browser when needed.",
   },
   videoTool: {
     localNote: "Video is compressed locally with ffmpeg.wasm. Nothing is uploaded to Kit.",
@@ -274,7 +281,7 @@ export const en: Dictionary = {
     enheder: {
       name: "Unit converter",
       description:
-        "Convert length, weight, volume, data sizes, and temperature.",
+        "Convert length, weight, area, speed, volume, cooking measures, data sizes, and temperature.",
     },
     dato: {
       name: "Date calculator",
@@ -511,7 +518,8 @@ export const en: Dictionary = {
     },
     "csvjson": {
       name: "CSV ↔ JSON",
-      description: "Convert simple CSV to JSON objects or flatten JSON arrays to CSV.",
+      description:
+        "Convert simple CSV to JSON objects or flatten JSON arrays to CSV. The CSV output opens directly in Excel.",
     },
     "lorem": {
       name: "Lorem ipsum",
@@ -568,6 +576,50 @@ export const en: Dictionary = {
     "dice": {
       name: "Dice roller",
       description: "Roll one or more dice with a chosen number of sides.",
+    },
+    "promille": {
+      name: "BAC calculator",
+      description:
+        "Estimate blood alcohol content (BAC in ‰) from drinks consumed. For informational use only, not legal advice.",
+    },
+    "shoesize": {
+      name: "Shoe size converter",
+      description: "Convert between EU, UK, US men's, and US women's shoe sizes.",
+    },
+    "clothingsize": {
+      name: "Clothing size converter",
+      description:
+        "Convert letter sizes (XS–XXL) to EU, UK, and US numeric sizes for tops. Approximate fit ranges included.",
+    },
+    "pdfclean": {
+      name: "PDF text cleaner",
+      description:
+        "Clean up text copied from PDFs: joins hyphenated line breaks, removes stray newlines, and collapses whitespace.",
+    },
+    "spinwheel": {
+      name: "Spin wheel",
+      description:
+        "Add options to a wheel, spin it, and get a random result when it slows to a stop.",
+    },
+    "wordcount": {
+      name: "Word and character counter",
+      description:
+        "Count words and characters from text, PDF, or Word documents in your browser.",
+    },
+    "doctopdf": {
+      name: "Document to PDF",
+      description:
+        "Convert Word (.docx) or plain text to PDF locally in your browser.",
+    },
+    "bgremove": {
+      name: "Background remover",
+      description:
+        "Remove the background from an image locally with an on-device model.",
+    },
+    "csvexcel": {
+      name: "CSV Excel JSON",
+      description:
+        "Convert CSV and JSON, and download Excel-friendly files in your browser.",
     },
     "palette": {
       name: "Color palette",
@@ -1004,6 +1056,9 @@ export const en: Dictionary = {
     volume: "Volume",
     data: "Data",
     temperature: "Temperature",
+    area: "Area",
+    speed: "Speed",
+    cooking: "Cooking",
     value: "Value",
     from: "From",
     to: "To",
@@ -1042,6 +1097,22 @@ export const en: Dictionary = {
       mib: "Mebibytes (MiB)",
       gib: "Gibibytes (GiB)",
       tib: "Tebibytes (TiB)",
+      m2: "Square metres (m²)",
+      km2: "Square kilometres (km²)",
+      ha: "Hectares (ha)",
+      acre: "Acres (acre)",
+      tdl: "Tønde land (tdl)",
+      ft2: "Square feet (ft²)",
+      mi2: "Square miles (mi²)",
+      ms: "Metres per second (m/s)",
+      kmh: "Kilometres per hour (km/h)",
+      mph: "Miles per hour (mph)",
+      kn: "Knots (kn)",
+      dl: "Decilitres (dl)",
+      tsp: "Teaspoons (tsp)",
+      tbsp: "Tablespoons (tbsp)",
+      cup: "Cups (cup)",
+      floz: "Fluid ounces (fl oz)",
     },
   },
   qr: {
@@ -1076,6 +1147,7 @@ export const en: Dictionary = {
     kebab: "kebab-case",
     snake: "snake_case",
     camel: "camelCase",
+    pdfClean: "Clean PDF text",
     chars: "Characters",
     words: "Words",
     lines: "Lines",
@@ -1734,6 +1806,86 @@ export const en: Dictionary = {
     unknown: "No match for that extension or MIME type.",
     mimeType: "MIME type",
     extensions: "Extensions",
+    copy: "Copy",
+    copied: "Copied",
+  },
+  spinwheelTool: {
+    intro: "Add options to the wheel, then spin. The wheel slows down and lands on one result.",
+    spin: "Spin",
+    spinning: "Spinning…",
+    needItems: "Add at least two options before you spin.",
+    placeholder: "New option",
+    add: "Add",
+    remove: "Remove",
+    resultTitle: "Result",
+    close: "Close",
+  },
+  wordcountTool: {
+    intro:
+      "Count words and characters from pasted text, or load a PDF, Word (.docx), or plain text file.",
+    pickFile: "Open PDF, Word, or text file",
+    text: "Text",
+    working: "Reading file…",
+    loadError: "Could not read that file. Try another PDF, DOCX, or text file.",
+    unsupported: "Use PDF, DOCX, TXT, or Markdown.",
+    chars: "Characters",
+    charsNoSpaces: "Characters (no spaces)",
+    words: "Words",
+    lines: "Lines",
+    readingTime: "Reading time",
+    minutes: "min",
+    copy: "Copy",
+    copied: "Copied",
+  },
+  doctopdfTool: {
+    intro:
+      "Convert a Word (.docx) or plain text file to PDF in your browser. Nothing is uploaded.",
+    note:
+      "The PDF keeps the text layout as continuous pages. Complex Word formatting, images, and tables are flattened to text.",
+    pickFile: "Choose Word or text file",
+    working: "Creating PDF…",
+    ready: "Ready. {from} → {to}",
+    empty: "That file has no text to convert.",
+    unsupported: "Use a .docx, .txt, or .md file.",
+    processError: "Conversion failed. Try another file.",
+  },
+  bgremoveTool: {
+    intro:
+      "Remove the background from a photo locally in your browser. The first run downloads a small AI model.",
+    note: "Works best with a clear subject. Output is a transparent PNG.",
+    pickImage: "Choose image",
+    working: "Removing background…",
+    progress: "Progress",
+    invalidImage: "Choose an image file.",
+    processError:
+      "Could not remove the background. Try a smaller image or another format.",
+    original: "Original",
+    result: "Without background",
+    empty: "Choose an image to begin.",
+    emptyResult: "Result appears here.",
+    download: "Download PNG",
+  },
+  csvexcelTool: {
+    intro:
+      "Convert between CSV and JSON locally. Download CSV for Excel, JSON for apps, or a simple Excel (.xls) sheet.",
+    csvToJson: "CSV → JSON",
+    jsonToCsv: "JSON → CSV",
+    input: "Input",
+    output: "Output",
+    invalidCsv: "Could not parse that CSV.",
+    invalidJson: "JSON must be a non-empty array of objects.",
+    copy: "Copy",
+    copied: "Copied",
+    downloadJson: "Download JSON",
+    downloadCsv: "Download CSV",
+    downloadExcel: "Download Excel",
+  },
+  pdfcleanTool: {
+    intro:
+      "Clean text copied from a PDF. Removes soft line breaks, hyphen splits, and extra spaces.",
+    input: "Pasted PDF text",
+    output: "Cleaned text",
+    placeholder: "Paste text copied from a PDF…",
     copy: "Copy",
     copied: "Copied",
   },

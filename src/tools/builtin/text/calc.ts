@@ -4,6 +4,7 @@ export type TextTransform =
   | "title"
   | "trim"
   | "dedupe"
+  | "pdfclean"
   | "slug"
   | "camel"
   | "snake"
@@ -58,6 +59,15 @@ export function transformText(text: string, action: TextTransform): string {
         .join("\n");
     case "trim":
       return text.trim();
+    case "pdfclean": {
+      let cleaned = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+      cleaned = cleaned.replace(/(\S)-\n(\S)/g, "$1$2");
+      cleaned = cleaned.replace(/([^\n])\n(?!\n)/g, "$1 ");
+      cleaned = cleaned.replace(/[ \t\f\v]+/g, " ");
+      cleaned = cleaned.replace(/ *\n */g, "\n");
+      cleaned = cleaned.replace(/\n{3,}/g, "\n\n");
+      return cleaned.trim();
+    }
     case "dedupe": {
       const seen = new Set<string>();
       const out: string[] = [];

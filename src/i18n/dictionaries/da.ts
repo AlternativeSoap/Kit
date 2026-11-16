@@ -191,7 +191,8 @@ export const da: Dictionary = {
   imageTool: {
     localNote: "Filen behandles kun i din browser. Intet uploades til Kit.",
     pickImage: "Vælg billede",
-    loadError: "Billedet kunne ikke indlæses. Prøv PNG, JPEG eller WebP.",
+    loadError:
+      "Billedet kunne ikke indlæses. Prøv PNG, JPEG, WebP, GIF, BMP, AVIF, SVG eller HEIC.",
     processError: "Behandlingen mislykkedes. Prøv et andet format eller en mindre fil.",
     invalid: "Tjek at målene er gyldige tal.",
     process: "Behandl billede",
@@ -215,7 +216,13 @@ export const da: Dictionary = {
     png: "PNG",
     jpeg: "JPEG",
     webp: "WebP",
-    heicNote: "HEIC understøttes kun hvis din browser kan åbne det.",
+    bmp: "BMP",
+    gif: "GIF",
+    ico: "ICO",
+    formatsNote:
+      "Åbn PNG, JPEG, WebP, GIF, BMP, AVIF, SVG, ICO og HEIC, når browseren kan læse dem. Eksportér til PNG, JPEG, WebP, BMP, GIF eller ICO.",
+    heicNote:
+      "HEIC fra iPhone-fotos konverteres lokalt i browseren, når det er nødvendigt.",
   },
   videoTool: {
     localNote: "Videoen komprimeres lokalt med ffmpeg.wasm. Intet uploades til Kit.",
@@ -273,7 +280,8 @@ export const da: Dictionary = {
     },
     enheder: {
       name: "Enhedsomregner",
-      description: "Omregn længde, vægt, volumen, datastørrelser og temperatur.",
+      description:
+        "Omregn længde, vægt, areal, hastighed, volumen, madlavningsmål, datastørrelser og temperatur.",
     },
     dato: {
       name: "Datoberegner",
@@ -508,7 +516,8 @@ export const da: Dictionary = {
     },
     "csvjson": {
       name: "CSV ↔ JSON",
-      description: "Konvertér simpel CSV til JSON eller JSON-arrays til CSV.",
+      description:
+        "Konvertér simpel CSV til JSON eller JSON-arrays til CSV. CSV-output åbner direkte i Excel.",
     },
     "lorem": {
       name: "Lorem ipsum",
@@ -565,6 +574,50 @@ export const da: Dictionary = {
     "dice": {
       name: "Terning",
       description: "Kast en eller flere terninger med valgt antal sider.",
+    },
+    "promille": {
+      name: "Promilleberegner",
+      description:
+        "Estimer blodalkohol (promille) ud fra drikkevarer og vægt. Kun vejledende. Ikke juridisk rådgivning.",
+    },
+    "shoesize": {
+      name: "Skostørrelsesomregner",
+      description: "Omregn mellem EU-, UK-, US-herre- og US-dameskostørrelser.",
+    },
+    "clothingsize": {
+      name: "Tøjstørrelsesomregner",
+      description:
+        "Omregn bogstavstørrelser (XS–XXL) til EU-, UK- og US-tal for overdele. Omtrentlige størrelsesintervaller er inkluderet.",
+    },
+    "pdfclean": {
+      name: "PDF-tekstoprydning",
+      description:
+        "Ryd op i tekst kopieret fra PDF: sammensætter orddelings-linjeskift, fjerner løse linjeskift og sammensætter whitespace.",
+    },
+    "spinwheel": {
+      name: "Spinhjul",
+      description:
+        "Tilføj valg til et hjul, spin det, og få et tilfældigt resultat når det stopper.",
+    },
+    "wordcount": {
+      name: "Ord- og tegntæller",
+      description:
+        "Tæl ord og tegn fra tekst, PDF eller Word-dokumenter i browseren.",
+    },
+    "doctopdf": {
+      name: "Dokument til PDF",
+      description:
+        "Konvertér Word (.docx) eller almindelig tekst til PDF lokalt i browseren.",
+    },
+    "bgremove": {
+      name: "Baggrundsfjerner",
+      description:
+        "Fjern baggrunden fra et billede lokalt med en model på enheden.",
+    },
+    "csvexcel": {
+      name: "CSV Excel JSON",
+      description:
+        "Konvertér CSV og JSON, og download Excel-venlige filer i browseren.",
     },
     "palette": {
       name: "Farvepalette",
@@ -1296,6 +1349,9 @@ export const da: Dictionary = {
     volume: "Volumen",
     data: "Data",
     temperature: "Temperatur",
+    area: "Areal",
+    speed: "Hastighed",
+    cooking: "Madlavning",
     value: "Værdi",
     from: "Fra",
     to: "Til",
@@ -1334,6 +1390,22 @@ export const da: Dictionary = {
       mib: "Mebibytes (MiB)",
       gib: "Gibibytes (GiB)",
       tib: "Tebibytes (TiB)",
+      m2: "Kvadratmeter (m²)",
+      km2: "Kvadratkilometer (km²)",
+      ha: "Hektar (ha)",
+      acre: "Acres (acre)",
+      tdl: "Tønde land (tdl)",
+      ft2: "Kvadratfod (ft²)",
+      mi2: "Kvadratmiles (mi²)",
+      ms: "Meter pr. sekund (m/s)",
+      kmh: "Kilometer i timen (km/t)",
+      mph: "Miles i timen (mph)",
+      kn: "Knob (kn)",
+      dl: "Deciliter (dl)",
+      tsp: "Teskeer (tsk)",
+      tbsp: "Spiseskeer (spsk)",
+      cup: "Cups (cup)",
+      floz: "Fluid ounces (fl oz)",
     },
   },
   qr: {
@@ -1368,6 +1440,7 @@ export const da: Dictionary = {
     kebab: "kebab-case",
     snake: "snake_case",
     camel: "camelCase",
+    pdfClean: "Ryd PDF-tekst op",
     chars: "Tegn",
     words: "Ord",
     lines: "Linjer",
@@ -2026,6 +2099,86 @@ export const da: Dictionary = {
     unknown: "Ingen match for den filendelse eller MIME-type.",
     mimeType: "MIME-type",
     extensions: "Filendelser",
+    copy: "Kopiér",
+    copied: "Kopieret",
+  },
+  spinwheelTool: {
+    intro: "Tilføj valg til hjulet, og spin. Hjulet sænker farten og lander på ét resultat.",
+    spin: "Spin",
+    spinning: "Spinner…",
+    needItems: "Tilføj mindst to valg, før du spinner.",
+    placeholder: "Nyt valg",
+    add: "Tilføj",
+    remove: "Fjern",
+    resultTitle: "Resultat",
+    close: "Luk",
+  },
+  wordcountTool: {
+    intro:
+      "Tæl ord og tegn fra indsat tekst, eller åbn en PDF, Word (.docx) eller almindelig tekstfil.",
+    pickFile: "Åbn PDF, Word eller tekstfil",
+    text: "Tekst",
+    working: "Læser fil…",
+    loadError: "Filen kunne ikke læses. Prøv en anden PDF, DOCX eller tekstfil.",
+    unsupported: "Brug PDF, DOCX, TXT eller Markdown.",
+    chars: "Tegn",
+    charsNoSpaces: "Tegn (uden mellemrum)",
+    words: "Ord",
+    lines: "Linjer",
+    readingTime: "Læsetid",
+    minutes: "min",
+    copy: "Kopiér",
+    copied: "Kopieret",
+  },
+  doctopdfTool: {
+    intro:
+      "Konvertér Word (.docx) eller almindelig tekst til PDF i browseren. Intet uploades.",
+    note:
+      "PDF-en beholder teksten som løbende sider. Kompleks Word-formatering, billeder og tabeller bliver til ren tekst.",
+    pickFile: "Vælg Word- eller tekstfil",
+    working: "Laver PDF…",
+    ready: "Klar. {from} → {to}",
+    empty: "Filen indeholder ingen tekst at konvertere.",
+    unsupported: "Brug en .docx-, .txt- eller .md-fil.",
+    processError: "Konvertering mislykkedes. Prøv en anden fil.",
+  },
+  bgremoveTool: {
+    intro:
+      "Fjern baggrunden fra et billede lokalt i browseren. Første gang hentes en lille AI-model.",
+    note: "Virker bedst med et tydeligt motiv. Resultatet er en transparent PNG.",
+    pickImage: "Vælg billede",
+    working: "Fjerner baggrund…",
+    progress: "Status",
+    invalidImage: "Vælg en billedfil.",
+    processError:
+      "Baggrunden kunne ikke fjernes. Prøv et mindre billede eller et andet format.",
+    original: "Original",
+    result: "Uden baggrund",
+    empty: "Vælg et billede for at starte.",
+    emptyResult: "Resultatet vises her.",
+    download: "Download PNG",
+  },
+  csvexcelTool: {
+    intro:
+      "Konvertér mellem CSV og JSON lokalt. Download CSV til Excel, JSON til apps, eller et enkelt Excel-ark (.xls).",
+    csvToJson: "CSV → JSON",
+    jsonToCsv: "JSON → CSV",
+    input: "Input",
+    output: "Output",
+    invalidCsv: "CSV-en kunne ikke læses.",
+    invalidJson: "JSON skal være et ikke-tomt array af objekter.",
+    copy: "Kopiér",
+    copied: "Kopieret",
+    downloadJson: "Download JSON",
+    downloadCsv: "Download CSV",
+    downloadExcel: "Download Excel",
+  },
+  pdfcleanTool: {
+    intro:
+      "Ryd op i tekst kopieret fra en PDF. Fjerner bløde linjeskift, orddeling og ekstra mellemrum.",
+    input: "Indsat PDF-tekst",
+    output: "Renset tekst",
+    placeholder: "Indsæt tekst kopieret fra en PDF…",
     copy: "Kopiér",
     copied: "Kopieret",
   },
