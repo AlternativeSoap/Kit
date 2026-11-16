@@ -95,12 +95,20 @@ export function ImgBase64Tool() {
           <textarea
             value={dataUrl}
             onChange={(event) => {
-              setDataUrl(event.target.value.trim());
+              const raw = event.target.value.trim().replace(/\s+/g, "");
+              if (raw.startsWith("data:image/")) {
+                setDataUrl(raw);
+              } else if (raw.length > 0) {
+                // Accept raw base64 paste and wrap as a PNG data URL.
+                setDataUrl(`data:image/png;base64,${raw}`);
+              } else {
+                setDataUrl("");
+              }
               setError(null);
             }}
             rows={6}
             spellCheck={false}
-            placeholder="data:image/png;base64,..."
+            placeholder="data:image/png;base64,... or raw base64"
             className="w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 font-mono text-[13px] outline-none focus:border-accent"
           />
         </label>

@@ -32,11 +32,23 @@ type ReadyResult = {
   info: string;
 };
 
+type Phase = "idle" | "loading" | "encoding";
+
+const fieldClass =
+  "w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 text-sm outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)]";
+const primaryBtn =
+  "rounded-[10px] bg-accent px-4 py-2.5 text-sm font-medium text-white disabled:opacity-40";
+const secondaryBtn =
+  "rounded-[10px] border border-border bg-surface px-4 py-2.5 text-sm font-medium text-foreground";
+const fileInputClass =
+  "block w-full text-sm text-muted file:mr-3 file:rounded-[8px] file:border-0 file:bg-accent file:px-3 file:py-2 file:text-sm file:font-medium file:text-white";
+
 export function VideoCompressTool() {
   const dictionary = useDictionary();
   const t = dictionary.videoTool;
   const [file, setFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
+  const [phase, setPhase] = useState<Phase>("idle");
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [ready, setReady] = useState<ReadyResult | null>(null);
@@ -50,6 +62,7 @@ export function VideoCompressTool() {
       setError(null);
       setReady(null);
       setProgress(0);
+      setPhase("idle");
       setFile(null);
       if (!f) return;
       if (f.size > MAX_BYTES) {
@@ -64,6 +77,7 @@ export function VideoCompressTool() {
   function markSettingsChanged() {
     setReady(null);
     setProgress(0);
+    setPhase("idle");
   }
 
   async function run() {
@@ -72,6 +86,7 @@ export function VideoCompressTool() {
     setBusy(true);
     setError(null);
     setReady(null);
+    setPhase("loading");
     setProgress(2);
     try {
       const ffmpegMod = await importFromUrl<{ FFmpeg: new () => FFmpegLike }>(
@@ -82,10 +97,11 @@ export function VideoCompressTool() {
         toBlobURL: (url: string, type: string) => Promise<string>;
       }>(UTIL_ESM);
 
-      setProgress(8);
+      setProgress(6);
       const ffmpeg = new ffmpegMod.FFmpeg();
       ffmpeg.on("progress", ({ progress: p }) => {
-        setProgress(Math.min(96, 12 + Math.round((p || 0) * 84)));
+        setPhase("encoding");
+        setProgress(Math.min(96, 18 + Math.round((p || 0) * 78)));
       });
       await ffmpeg.load({
         coreURL: await utilMod.toBlobURL(
@@ -98,7 +114,8 @@ export function VideoCompressTool() {
         ),
       });
 
-      setProgress(12);
+      setProgress(14);
+      setPhase("encoding");
       const inputName = "input" + (file.name.match(/\.[^.]+$/)?.[0] ?? ".mp4");
       await ffmpeg.writeFile(inputName, await utilMod.fetchFile(file));
 
@@ -140,6 +157,7 @@ export function VideoCompressTool() {
       const base = file.name.replace(/\.[^.]+$/, "");
       const filename = `${base}-compressed.mp4`;
       setProgress(100);
+      setPhase("idle");
       setReady({
         blob,
         filename,
@@ -149,6 +167,7 @@ export function VideoCompressTool() {
     } catch {
       setError(t.processError);
       setProgress(0);
+      setPhase("idle");
     } finally {
       setBusy(false);
       loadingRef.current = false;
@@ -159,6 +178,16 @@ export function VideoCompressTool() {
     if (!ready) return;
     downloadBlob(ready.blob, ready.filename);
   }
+
+  const progressLabel =
+    phase === "loading"
+      ? t.loadingEngine
+      : phase === "encoding"
+        ? t.encoding
+        : t.progress;
+
+  const workingLabel =
+    phase === "loading" ? t.loadingEngine : t.working;
 
   return (
     <div className="mx-auto max-w-xl space-y-5">
@@ -173,7 +202,7 @@ export function VideoCompressTool() {
         <input
           type="file"
           accept="video/*"
-          className="block w-full text-sm text-muted file:mr-3 file:rounded-md file:border-0 file:bg-foreground file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-background"
+          className={fileInputClass}
           onChange={(e) => onFile(e.target.files?.[0] ?? null)}
         />
       </label>
@@ -194,7 +223,7 @@ export function VideoCompressTool() {
             setCrf(e.target.value);
             markSettingsChanged();
           }}
-          className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
+          className={fieldClass}
         />
         <span className="mt-1 block text-xs text-muted">{t.crfHint}</span>
       </label>
@@ -212,7 +241,7 @@ export function VideoCompressTool() {
               markSettingsChanged();
             }}
             placeholder="0"
-            className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
+            className={fieldClass}
           />
         </label>
         <label className="block">
@@ -228,47 +257,45 @@ export function VideoCompressTool() {
               markSettingsChanged();
             }}
             placeholder={t.optional}
-            className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
+            className={fieldClass}
           />
         </label>
       </div>
 
       {busy || (progress > 0 && !ready) ? (
-        <ProgressBar value={progress} label={t.progress} />
+        <ProgressBar value={progress} label={progressLabel} />
       ) : null}
 
       {ready ? (
         <div className="space-y-3">
           <p className="text-sm text-muted">{ready.info}</p>
           <p className="text-sm font-medium text-foreground">{t.ready}</p>
-          <button
-            type="button"
-            onClick={downloadReady}
-            className="rounded-md bg-foreground px-4 py-2 text-sm font-medium text-background"
-          >
-            {t.download}
-          </button>
-          <button
-            type="button"
-            disabled={!file || busy}
-            onClick={() => void run()}
-            className="ml-2 rounded-md border border-border px-4 py-2 text-sm font-medium text-foreground"
-          >
-            {t.processAgain}
-          </button>
+          <div className="flex flex-wrap gap-2">
+            <button type="button" onClick={downloadReady} className={primaryBtn}>
+              {t.download}
+            </button>
+            <button
+              type="button"
+              disabled={!file || busy}
+              onClick={() => void run()}
+              className={secondaryBtn}
+            >
+              {t.processAgain}
+            </button>
+          </div>
         </div>
       ) : (
         <button
           type="button"
           disabled={!file || busy}
           onClick={() => void run()}
-          className="rounded-md bg-foreground px-4 py-2 text-sm font-medium text-background disabled:opacity-40"
+          className={primaryBtn}
         >
-          {busy ? t.working : t.process}
+          {busy ? workingLabel : t.process}
         </button>
       )}
 
-      {error ? <p className="text-sm text-red-600">{error}</p> : null}
+      {error ? <p className="text-sm text-muted">{error}</p> : null}
     </div>
   );
 }

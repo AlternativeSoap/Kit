@@ -24,7 +24,7 @@ export function ProgressBar({
         aria-valuenow={pct}
       >
         <div
-          className="h-full rounded-full bg-foreground transition-[width] duration-150 ease-out"
+          className="h-full rounded-full bg-accent transition-[width] duration-150 ease-out"
           style={{ width: `${pct}%` }}
         />
       </div>

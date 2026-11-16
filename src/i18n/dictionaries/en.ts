@@ -201,6 +201,7 @@ export const en: Dictionary = {
     progress: "Progress",
     ready: "Ready. Download when you want the file.",
     previewEmpty: "Preview appears here.",
+    cropHint: "Drag on the image to choose the crop area. You can fine-tune the numbers below.",
     format: "Format",
     x: "X",
     y: "Y",
@@ -231,6 +232,8 @@ export const en: Dictionary = {
     processAgain: "Compress again",
     download: "Download",
     working: "Compressing…",
+    loadingEngine: "Loading compressor…",
+    encoding: "Encoding…",
     progress: "Progress",
     ready: "Ready. Download when you want the file.",
   },
@@ -551,8 +554,20 @@ export const en: Dictionary = {
       description: "Merge PDFs or extract page ranges in your browser. Files stay on your device.",
     },
     "speedtest": {
-      name: "Download speed test",
-      description: "Estimate download speed with a short browser test.",
+      name: "Download speed check",
+      description: "Estimate download speed with a short browser check. Download only.",
+    },
+    "luhn": {
+      name: "Luhn check",
+      description: "Check whether a number passes the Luhn algorithm (cards, IMEI).",
+    },
+    "iban": {
+      name: "IBAN check",
+      description: "Validate IBAN format and mod-97 checksum locally.",
+    },
+    "dice": {
+      name: "Dice roller",
+      description: "Roll one or more dice with a chosen number of sides.",
     },
     "palette": {
       name: "Color palette",
@@ -1293,6 +1308,8 @@ export const en: Dictionary = {
     textB: "Text B",
     summary: "+{added} / −{removed} / {same} unchanged",
     empty: "Paste or type text in both fields to compare.",
+    copy: "Copy",
+    copied: "Copied",
   },
   avance: {
     cost: "Cost price",
@@ -1618,6 +1635,7 @@ export const en: Dictionary = {
   worldclockTool: {
     live: "Live clocks update every second.",
     meeting: "Compare a meeting time",
+    localHint: "The date and time field uses your device’s local clock.",
     when: "Date and time",
     fromZone: "From",
     toZone: "To",
@@ -1646,11 +1664,11 @@ export const en: Dictionary = {
   },
   speedTool: {
     privacy: "Downloads a test file from Cloudflare to estimate download speed.",
-    start: "Start test",
+    start: "Check download",
     working: "Measuring…",
     downloadSpeed: "Download speed",
-    error: "Speed test failed. Check your connection and try again.",
-    note: "This is an estimate of download throughput, not a full ISP quality report.",
+    error: "Download check failed. Check your connection and try again.",
+    note: "Download only. This is not a full upload and latency speed test.",
   },
   paletteTool: {
     privacy: "Palettes are generated in your browser from the seed color.",
@@ -1690,6 +1708,9 @@ export const en: Dictionary = {
     themePaper: "Paper",
     themeForest: "Forest",
     download: "Download PNG",
+    copyImage: "Copy image",
+    copiedImage: "Copied",
+    copyFailed: "Could not copy. Download the PNG instead.",
   },
   uaTool: {
     privacy: "Parsing runs locally from the user-agent string you provide.",

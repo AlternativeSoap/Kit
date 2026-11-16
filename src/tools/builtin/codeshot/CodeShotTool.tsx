@@ -12,6 +12,11 @@ const THEMES = {
 
 type ThemeId = keyof typeof THEMES;
 
+const primaryBtn =
+  "rounded-[10px] bg-accent px-4 py-2.5 text-sm font-medium text-white disabled:opacity-40";
+const secondaryBtn =
+  "rounded-[10px] border border-border bg-surface px-4 py-2.5 text-sm font-medium text-foreground disabled:opacity-40";
+
 export function CodeShotTool({ prefill }: { prefill?: ToolPrefill }) {
   const dictionary = useDictionary();
   const t = dictionary.codeshotTool;
@@ -24,6 +29,7 @@ export function CodeShotTool({ prefill }: { prefill?: ToolPrefill }) {
   const [theme, setTheme] = useState<ThemeId>("dusk");
   const [filename, setFilename] = useState("snippet");
   const [ready, setReady] = useState(false);
+  const [copyState, setCopyState] = useState<"idle" | "ok" | "fail">("idle");
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -87,6 +93,7 @@ export function CodeShotTool({ prefill }: { prefill?: ToolPrefill }) {
       y += lineHeight;
     }
     setReady(true);
+    setCopyState("idle");
   }, [code, filename, theme]);
 
   function download() {
@@ -97,6 +104,34 @@ export function CodeShotTool({ prefill }: { prefill?: ToolPrefill }) {
     a.download = `${(filename || "snippet").replace(/[^\w.-]+/g, "-")}.png`;
     a.click();
   }
+
+  async function copyImage() {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    try {
+      const blob = await new Promise<Blob | null>((resolve) =>
+        canvas.toBlob((b) => resolve(b), "image/png"),
+      );
+      if (!blob) throw new Error("blob");
+      if (!navigator.clipboard || typeof ClipboardItem === "undefined") {
+        throw new Error("clipboard");
+      }
+      await navigator.clipboard.write([
+        new ClipboardItem({ "image/png": blob }),
+      ]);
+      setCopyState("ok");
+      window.setTimeout(() => setCopyState("idle"), 1800);
+    } catch {
+      setCopyState("fail");
+    }
+  }
+
+  const copyLabel =
+    copyState === "ok"
+      ? t.copiedImage
+      : copyState === "fail"
+        ? t.copyFailed
+        : t.copyImage;
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
@@ -110,7 +145,7 @@ export function CodeShotTool({ prefill }: { prefill?: ToolPrefill }) {
             onChange={(event) => setCode(event.target.value)}
             rows={12}
             spellCheck={false}
-            className="w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 font-mono text-[13px] outline-none focus:border-accent"
+            className="w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 font-mono text-[13px] outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)]"
           />
         </label>
         <div className="space-y-4">
@@ -119,7 +154,7 @@ export function CodeShotTool({ prefill }: { prefill?: ToolPrefill }) {
             <input
               value={filename}
               onChange={(event) => setFilename(event.target.value)}
-              className="w-full rounded-[10px] border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-accent"
+              className="w-full rounded-[10px] border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)]"
             />
           </label>
           <div>
@@ -136,7 +171,11 @@ export function CodeShotTool({ prefill }: { prefill?: ToolPrefill }) {
                       : "border-border bg-surface text-muted hover:text-foreground"
                   }`}
                 >
-                  {id === "dusk" ? t.themeDusk : id === "paper" ? t.themePaper : t.themeForest}
+                  {id === "dusk"
+                    ? t.themeDusk
+                    : id === "paper"
+                      ? t.themePaper
+                      : t.themeForest}
                 </button>
               ))}
             </div>
@@ -148,14 +187,24 @@ export function CodeShotTool({ prefill }: { prefill?: ToolPrefill }) {
         <canvas ref={canvasRef} className="mx-auto max-w-full" />
       </div>
 
-      <button
-        type="button"
-        onClick={download}
-        disabled={!ready}
-        className="rounded-[10px] bg-accent px-4 py-2.5 text-sm font-medium text-white disabled:opacity-40"
-      >
-        {t.download}
-      </button>
+      <div className="flex flex-wrap gap-2">
+        <button
+          type="button"
+          onClick={download}
+          disabled={!ready}
+          className={primaryBtn}
+        >
+          {t.download}
+        </button>
+        <button
+          type="button"
+          onClick={() => void copyImage()}
+          disabled={!ready}
+          className={secondaryBtn}
+        >
+          {copyLabel}
+        </button>
+      </div>
     </div>
   );
 }

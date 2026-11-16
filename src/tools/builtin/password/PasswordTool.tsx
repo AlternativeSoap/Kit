@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { CopyButton } from "@/components/tools/CopyButton";
 import { useDictionary } from "@/i18n/LanguageProvider";
 import { prefillNumber, type ToolPrefill } from "@/tools/prefill";
@@ -29,7 +29,13 @@ export function PasswordTool({ prefill }: { prefill?: ToolPrefill }) {
   const [numbers, setNumbers] = useState(true);
   const [symbols, setSymbols] = useState(true);
   const [password, setPassword] = useState(() =>
-    generatePassword({ length, lower: true, upper: true, numbers: true, symbols: true }) ?? "",
+    generatePassword({
+      length,
+      lower: true,
+      upper: true,
+      numbers: true,
+      symbols: true,
+    }) ?? "",
   );
 
   const canGenerate = useMemo(
@@ -41,6 +47,15 @@ export function PasswordTool({ prefill }: { prefill?: ToolPrefill }) {
     const next = generatePassword({ length, lower, upper, numbers, symbols });
     if (next) setPassword(next);
   };
+
+  useEffect(() => {
+    if (!canGenerate) {
+      setPassword("");
+      return;
+    }
+    const next = generatePassword({ length, lower, upper, numbers, symbols });
+    if (next) setPassword(next);
+  }, [canGenerate, length, lower, numbers, symbols, upper]);
 
   return (
     <div className="mx-auto max-w-xl space-y-6">

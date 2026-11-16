@@ -12,7 +12,13 @@ export type SimpleField = {
   options?: { value: string; labelEn: string; labelDa: string }[];
 };
 
-export type SimpleResultRow = { labelEn: string; labelDa: string; value: string };
+export type SimpleResultRow = {
+  labelEn: string;
+  labelDa: string;
+  value: string;
+  /** Optional localized display for non-numeric human text. */
+  valueDa?: string;
+};
 
 export type SimpleToolDef = {
   id: string;
@@ -25,6 +31,10 @@ export type SimpleToolDef = {
   tags: string[];
   popularity: number;
   fields: SimpleField[];
+  /** When true, results can change without field edits (random tools). */
+  volatile?: boolean;
+  actionEn?: string;
+  actionDa?: string;
   compute: (values: Record<string, string>) => SimpleResultRow[] | null;
 };
 
@@ -432,6 +442,9 @@ export const SIMPLE_TOOL_DEFS: SimpleToolDef[] = [
     intents: ["random", "generate"],
     tags: ["dev"],
     popularity: 76,
+    volatile: true,
+    actionEn: "Generate again",
+    actionDa: "Generér igen",
     fields: [
       { key: "length", labelEn: "Length", labelDa: "Længde", defaultValue: "24" },
       {
@@ -1392,6 +1405,9 @@ export const SIMPLE_TOOL_DEFS: SimpleToolDef[] = [
     intents: ["random", "number"],
     tags: ["math"],
     popularity: 74,
+    volatile: true,
+    actionEn: "Pick again",
+    actionDa: "Vælg igen",
     fields: [
       { key: "min", labelEn: "Min", labelDa: "Min", defaultValue: "1" },
       { key: "max", labelEn: "Max", labelDa: "Max", defaultValue: "100" },
@@ -1620,13 +1636,32 @@ export const SIMPLE_TOOL_DEFS: SimpleToolDef[] = [
       if (/[a-z]/.test(p) && /[A-Z]/.test(p)) score += 1;
       if (/\d/.test(p)) score += 1;
       if (/[^A-Za-z0-9]/.test(p)) score += 1;
-      const labels = ["very weak", "weak", "fair", "good", "strong", "very strong", "excellent"];
+      const labelsEn = [
+        "very weak",
+        "weak",
+        "fair",
+        "good",
+        "strong",
+        "very strong",
+        "excellent",
+      ];
+      const labelsDa = [
+        "meget svag",
+        "svag",
+        "middel",
+        "god",
+        "stærk",
+        "meget stærk",
+        "fremragende",
+      ];
+      const idx = Math.min(score, labelsEn.length - 1);
       return [
         { labelEn: "Score", labelDa: "Score", value: `${score}/6` },
         {
           labelEn: "Label",
           labelDa: "Niveau",
-          value: labels[Math.min(score, labels.length - 1)]!,
+          value: labelsEn[idx]!,
+          valueDa: labelsDa[idx]!,
         },
       ];
     },
@@ -1711,6 +1746,124 @@ export const SIMPLE_TOOL_DEFS: SimpleToolDef[] = [
       return [
         { labelEn: "Megapixels", labelDa: "Megapixel", value: round((w * h) / 1e6, 2) },
         { labelEn: "Aspect", labelDa: "Format", value: `${a0 / a}:${b0 / a}` },
+      ];
+    },
+  },
+  {
+    id: "luhn",
+    nameEn: "Luhn check",
+    nameDa: "Luhn-tjek",
+    descriptionEn: "Check whether a number passes the Luhn algorithm (cards, IMEI).",
+    descriptionDa: "Tjek om et nummer består Luhn-algoritmen (kort, IMEI).",
+    aliases: ["luhn", "credit card check", "card valid", "imei check"],
+    intents: ["luhn", "card", "validate"],
+    tags: ["dev", "everyday"],
+    popularity: 80,
+    fields: [
+      {
+        key: "number",
+        labelEn: "Number",
+        labelDa: "Nummer",
+        defaultValue: "4532015112830366",
+        hintEn: "Digits only. Spaces are ignored.",
+        hintDa: "Kun cifre. Mellemrum ignoreres.",
+      },
+    ],
+    compute: (v) => {
+      const digits = (v.number ?? "").replace(/\D/g, "");
+      if (digits.length < 2) return null;
+      let sum = 0;
+      let alt = false;
+      for (let i = digits.length - 1; i >= 0; i--) {
+        let n = Number(digits[i]);
+        if (alt) {
+          n *= 2;
+          if (n > 9) n -= 9;
+        }
+        sum += n;
+        alt = !alt;
+      }
+      const ok = sum % 10 === 0;
+      return [
+        {
+          labelEn: "Valid",
+          labelDa: "Gyldigt",
+          value: ok ? "Yes" : "No",
+          valueDa: ok ? "Ja" : "Nej",
+        },
+        { labelEn: "Digits", labelDa: "Cifre", value: String(digits.length) },
+      ];
+    },
+  },
+  {
+    id: "iban",
+    nameEn: "IBAN check",
+    nameDa: "IBAN-tjek",
+    descriptionEn: "Validate IBAN format and mod-97 checksum locally.",
+    descriptionDa: "Validér IBAN-format og mod-97-kontrolsum lokalt.",
+    aliases: ["iban", "iban checker", "bank account", "kontonummer"],
+    intents: ["iban", "bank", "validate"],
+    tags: ["finance", "everyday"],
+    popularity: 86,
+    fields: [
+      {
+        key: "iban",
+        labelEn: "IBAN",
+        labelDa: "IBAN",
+        defaultValue: "DK50 0040 0440 1162 43",
+      },
+    ],
+    compute: (v) => {
+      const raw = (v.iban ?? "").replace(/\s+/g, "").toUpperCase();
+      if (!/^[A-Z]{2}\d{2}[A-Z0-9]{10,30}$/.test(raw)) return null;
+      const rearranged = raw.slice(4) + raw.slice(0, 4);
+      const expanded = rearranged.replace(/[A-Z]/g, (c) => String(c.charCodeAt(0) - 55));
+      let remainder = 0;
+      for (const ch of expanded) {
+        remainder = (remainder * 10 + Number(ch)) % 97;
+      }
+      const ok = remainder === 1;
+      const pretty = raw.replace(/(.{4})/g, "$1 ").trim();
+      return [
+        {
+          labelEn: "Valid",
+          labelDa: "Gyldigt",
+          value: ok ? "Yes" : "No",
+          valueDa: ok ? "Ja" : "Nej",
+        },
+        { labelEn: "Normalized", labelDa: "Normaliseret", value: pretty },
+        { labelEn: "Country", labelDa: "Land", value: raw.slice(0, 2) },
+      ];
+    },
+  },
+  {
+    id: "dice",
+    nameEn: "Dice roller",
+    nameDa: "Terning",
+    descriptionEn: "Roll one or more dice with a chosen number of sides.",
+    descriptionDa: "Kast en eller flere terninger med valgt antal sider.",
+    aliases: ["dice", "roll dice", "terning", "coin flip", "mønt"],
+    intents: ["dice", "random", "game"],
+    tags: ["everyday"],
+    popularity: 78,
+    volatile: true,
+    actionEn: "Roll again",
+    actionDa: "Kast igen",
+    fields: [
+      { key: "count", labelEn: "Dice", labelDa: "Antal", defaultValue: "1" },
+      { key: "sides", labelEn: "Sides", labelDa: "Sider", defaultValue: "6" },
+    ],
+    compute: (v) => {
+      const count = Math.min(20, Math.max(1, Math.floor(num(v.count) ?? 1)));
+      const sides = Math.min(1000, Math.max(2, Math.floor(num(v.sides) ?? 6)));
+      const rolls: number[] = [];
+      for (let i = 0; i < count; i++) {
+        rolls.push(1 + Math.floor(Math.random() * sides));
+      }
+      const total = rolls.reduce((a, b) => a + b, 0);
+      return [
+        { labelEn: "Rolls", labelDa: "Kast", value: rolls.join(", ") },
+        { labelEn: "Total", labelDa: "Sum", value: String(total) },
       ];
     },
   },

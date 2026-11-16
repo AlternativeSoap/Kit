@@ -176,14 +176,37 @@ export function PdfTool() {
             key={item.id}
             type="button"
             onClick={() => {
-              setMode(item.id);
-              setFiles([]);
-              setPageCount(null);
+              const next = item.id;
+              setMode(next);
               setReadyUrl((prev) => {
                 if (prev) URL.revokeObjectURL(prev);
                 return null;
               });
               setError(null);
+              // Keep a single PDF when moving between extract and rotate.
+              if (next === "merge") {
+                // Keep all files for merge; page count only matters for one-file modes.
+                setPageCount(null);
+                return;
+              }
+              setFiles((prev) => {
+                const first = prev[0];
+                if (!first) {
+                  setPageCount(null);
+                  return [];
+                }
+                void first.arrayBuffer().then(async (bytes) => {
+                  try {
+                    const doc = await PDFDocument.load(bytes);
+                    const count = doc.getPageCount();
+                    setPageCount(count);
+                    setRange(count > 1 ? `1-${count}` : "1");
+                  } catch {
+                    setPageCount(null);
+                  }
+                });
+                return [first];
+              });
             }}
             className={`rounded-[10px] border px-3 py-2 text-sm ${
               mode === item.id

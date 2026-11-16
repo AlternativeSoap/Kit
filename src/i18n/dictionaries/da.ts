@@ -201,6 +201,7 @@ export const da: Dictionary = {
     progress: "Status",
     ready: "Klar. Download når du vil have filen.",
     previewEmpty: "Forhåndsvisning vises her.",
+    cropHint: "Træk på billedet for at vælge udsnittet. Du kan finjustere tallene herunder.",
     format: "Format",
     x: "X",
     y: "Y",
@@ -231,6 +232,8 @@ export const da: Dictionary = {
     processAgain: "Komprimer igen",
     download: "Download",
     working: "Komprimerer…",
+    loadingEngine: "Henter kompressor…",
+    encoding: "Encoder…",
     progress: "Status",
     ready: "Klar. Download når du vil have filen.",
   },
@@ -548,8 +551,20 @@ export const da: Dictionary = {
       description: "Sammenføj PDF’er eller udtræk sider i browseren. Filerne bliver på din enhed.",
     },
     "speedtest": {
-      name: "Download-hastighedstest",
-      description: "Estimer downloadhastighed med en kort browsertest.",
+      name: "Download-hastighedstjek",
+      description: "Estimer downloadhastighed med et kort browser-tjek. Kun download.",
+    },
+    "luhn": {
+      name: "Luhn-tjek",
+      description: "Tjek om et nummer består Luhn-algoritmen (kort, IMEI).",
+    },
+    "iban": {
+      name: "IBAN-tjek",
+      description: "Validér IBAN-format og mod-97-kontrolsum lokalt.",
+    },
+    "dice": {
+      name: "Terning",
+      description: "Kast en eller flere terninger med valgt antal sider.",
     },
     "palette": {
       name: "Farvepalette",
@@ -1583,6 +1598,8 @@ export const da: Dictionary = {
     textB: "Tekst B",
     summary: "+{added} / −{removed} / {same} uændret",
     empty: "Indsæt eller skriv tekst i begge felter for at sammenligne.",
+    copy: "Kopiér",
+    copied: "Kopieret",
   },
   avance: {
     cost: "Kostpris",
@@ -1910,6 +1927,7 @@ export const da: Dictionary = {
   worldclockTool: {
     live: "Ure opdateres hvert sekund.",
     meeting: "Sammenlign et mødetidspunkt",
+    localHint: "Dato- og tidsfeltet bruger din enheds lokale ur.",
     when: "Dato og tid",
     fromZone: "Fra",
     toZone: "Til",
@@ -1938,11 +1956,11 @@ export const da: Dictionary = {
   },
   speedTool: {
     privacy: "Downloader en testfil fra Cloudflare for at estimere downloadhastighed.",
-    start: "Start test",
+    start: "Tjek download",
     working: "Måler…",
     downloadSpeed: "Downloadhastighed",
-    error: "Hastighedstest mislykkedes. Tjek forbindelsen og prøv igen.",
-    note: "Dette er et estimat af download, ikke en fuld ISP-kvalitetsrapport.",
+    error: "Download-tjek mislykkedes. Tjek forbindelsen og prøv igen.",
+    note: "Kun download. Dette er ikke en fuld upload- og latenstest.",
   },
   paletteTool: {
     privacy: "Paletter genereres i din browser ud fra startfarven.",
@@ -1982,6 +2000,9 @@ export const da: Dictionary = {
     themePaper: "Paper",
     themeForest: "Forest",
     download: "Download PNG",
+    copyImage: "Kopiér billede",
+    copiedImage: "Kopieret",
+    copyFailed: "Kunne ikke kopiere. Download PNG i stedet.",
   },
   uaTool: {
     privacy: "Parsning kører lokalt på den user-agent-streng du angiver.",

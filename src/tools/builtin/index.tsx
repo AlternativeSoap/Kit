@@ -115,7 +115,7 @@ export function BuiltinToolView({
     case "hash":
       return <HashTool prefill={prefill} />;
     case "diff":
-      return <DiffTool />;
+      return <DiffTool prefill={prefill} />;
     case "termin":
       return <TerminTool prefill={prefill} />;
     case "avance":
@@ -186,7 +186,7 @@ export function BuiltinToolView({
       return <MimeTool />;
     default:
       if ((SIMPLE_TOOL_IDS as readonly string[]).includes(id)) {
-        return <SimpleTool id={id} />;
+        return <SimpleTool id={id} prefill={prefill} />;
       }
       return null;
   }

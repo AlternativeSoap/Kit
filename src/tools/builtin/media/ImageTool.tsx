@@ -1,6 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type PointerEvent as ReactPointerEvent,
+} from "react";
 import { useDictionary } from "@/i18n/LanguageProvider";
 import {
   canvasToBlob,
@@ -31,29 +38,36 @@ type ReadyResult = {
   previewUrl: string;
 };
 
+type CropRect = { x: number; y: number; w: number; h: number };
+
 function yieldFrame(): Promise<void> {
   return new Promise((resolve) => {
     requestAnimationFrame(() => resolve());
   });
 }
 
+const fieldClass =
+  "w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 text-sm outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)]";
+const primaryBtn =
+  "rounded-[10px] bg-accent px-4 py-2.5 text-sm font-medium text-white disabled:opacity-40";
+const secondaryBtn =
+  "rounded-[10px] border border-border bg-surface px-4 py-2.5 text-sm font-medium text-foreground";
+const fileInputClass =
+  "block w-full text-sm text-muted file:mr-3 file:rounded-[8px] file:border-0 file:bg-accent file:px-3 file:py-2 file:text-sm file:font-medium file:text-white";
+
 export function ImageTool({ mode }: Props) {
   const dictionary = useDictionary();
   const t = dictionary.imageTool;
-  const inputRef = useRef<HTMLInputElement>(null);
 
   const [file, setFile] = useState<File | null>(null);
   const [img, setImg] = useState<HTMLImageElement | null>(null);
-  const [preview, setPreview] = useState<string | null>(null);
+  const [sourceUrl, setSourceUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [progress, setProgress] = useState(0);
   const [ready, setReady] = useState<ReadyResult | null>(null);
 
-  const [cropX, setCropX] = useState("0");
-  const [cropY, setCropY] = useState("0");
-  const [cropW, setCropW] = useState("");
-  const [cropH, setCropH] = useState("");
+  const [crop, setCrop] = useState<CropRect>({ x: 0, y: 0, w: 0, h: 0 });
   const [width, setWidth] = useState("");
   const [height, setHeight] = useState("");
   const [keepAspect, setKeepAspect] = useState(true);
@@ -76,8 +90,9 @@ export function ImageTool({ mode }: Props) {
   useEffect(() => {
     return () => {
       clearReady();
+      if (sourceUrl?.startsWith("blob:")) URL.revokeObjectURL(sourceUrl);
     };
-  }, [clearReady]);
+  }, [clearReady, sourceUrl]);
 
   const onFile = useCallback(
     async (f: File | null) => {
@@ -85,16 +100,20 @@ export function ImageTool({ mode }: Props) {
       clearReady();
       setProgress(0);
       setFile(f);
-      if (preview?.startsWith("blob:")) URL.revokeObjectURL(preview);
-      setPreview(null);
+      if (sourceUrl?.startsWith("blob:")) URL.revokeObjectURL(sourceUrl);
+      setSourceUrl(null);
       setImg(null);
       if (!f) return;
       try {
         const { img: loaded, objectUrl } = await loadImageFromFile(f);
         setImg(loaded);
-        setPreview(objectUrl);
-        setCropW(String(loaded.naturalWidth));
-        setCropH(String(loaded.naturalHeight));
+        setSourceUrl(objectUrl);
+        setCrop({
+          x: 0,
+          y: 0,
+          w: loaded.naturalWidth,
+          h: loaded.naturalHeight,
+        });
         setWidth(String(loaded.naturalWidth));
         setHeight(String(loaded.naturalHeight));
         if (f.type === "image/png") setFormat("image/png");
@@ -104,7 +123,7 @@ export function ImageTool({ mode }: Props) {
         setError(t.loadError);
       }
     },
-    [clearReady, preview, t.loadError],
+    [clearReady, sourceUrl, t.loadError],
   );
 
   const aspect = useMemo(() => {
@@ -140,10 +159,7 @@ export function ImageTool({ mode }: Props) {
       let infoExtra = "";
 
       if (mode === "crop") {
-        const x = Number(cropX);
-        const y = Number(cropY);
-        const w = Number(cropW);
-        const h = Number(cropH);
+        const { x, y, w, h } = crop;
         if (
           ![x, y, w, h].every((n) => Number.isFinite(n) && n >= 0) ||
           w < 1 ||
@@ -214,7 +230,6 @@ export function ImageTool({ mode }: Props) {
       setProgress(100);
       const filename = exportName(extFor(outFormat));
       const previewUrl = URL.createObjectURL(blob);
-      setPreview(previewUrl);
       setReady({
         blob,
         filename,
@@ -234,14 +249,11 @@ export function ImageTool({ mode }: Props) {
     downloadBlob(ready.blob, ready.filename);
   }
 
-  const primaryLabel = busy
-    ? t.working
-    : ready
-      ? t.download
-      : t.process;
+  const showSource = Boolean(sourceUrl);
+  const showResult = Boolean(ready?.previewUrl);
 
   return (
-    <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+    <div className="mx-auto grid w-full max-w-5xl gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
       <div className="space-y-5">
         <p className="text-sm text-muted">{t.localNote}</p>
         <label className="block">
@@ -249,10 +261,9 @@ export function ImageTool({ mode }: Props) {
             {t.pickImage}
           </span>
           <input
-            ref={inputRef}
             type="file"
             accept="image/*,.heic,.heif"
-            className="block w-full text-sm text-muted file:mr-3 file:rounded-md file:border-0 file:bg-foreground file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-background"
+            className={fileInputClass}
             onChange={(e) => void onFile(e.target.files?.[0] ?? null)}
           />
         </label>
@@ -265,39 +276,42 @@ export function ImageTool({ mode }: Props) {
         ) : null}
 
         {mode === "crop" ? (
-          <div className="grid grid-cols-2 gap-3">
-            <Num
-              label={t.x}
-              value={cropX}
-              onChange={(v) => {
-                setCropX(v);
-                markSettingsChanged();
-              }}
-            />
-            <Num
-              label={t.y}
-              value={cropY}
-              onChange={(v) => {
-                setCropY(v);
-                markSettingsChanged();
-              }}
-            />
-            <Num
-              label={t.width}
-              value={cropW}
-              onChange={(v) => {
-                setCropW(v);
-                markSettingsChanged();
-              }}
-            />
-            <Num
-              label={t.height}
-              value={cropH}
-              onChange={(v) => {
-                setCropH(v);
-                markSettingsChanged();
-              }}
-            />
+          <div className="space-y-3">
+            <p className="text-sm text-muted">{t.cropHint}</p>
+            <div className="grid grid-cols-2 gap-3">
+              <Num
+                label={t.x}
+                value={String(Math.round(crop.x))}
+                onChange={(v) => {
+                  setCrop((c) => ({ ...c, x: Number(v) || 0 }));
+                  markSettingsChanged();
+                }}
+              />
+              <Num
+                label={t.y}
+                value={String(Math.round(crop.y))}
+                onChange={(v) => {
+                  setCrop((c) => ({ ...c, y: Number(v) || 0 }));
+                  markSettingsChanged();
+                }}
+              />
+              <Num
+                label={t.width}
+                value={String(Math.round(crop.w))}
+                onChange={(v) => {
+                  setCrop((c) => ({ ...c, w: Number(v) || 0 }));
+                  markSettingsChanged();
+                }}
+              />
+              <Num
+                label={t.height}
+                value={String(Math.round(crop.h))}
+                onChange={(v) => {
+                  setCrop((c) => ({ ...c, h: Number(v) || 0 }));
+                  markSettingsChanged();
+                }}
+              />
+            </div>
           </div>
         ) : null}
 
@@ -335,6 +349,7 @@ export function ImageTool({ mode }: Props) {
                   setKeepAspect(e.target.checked);
                   markSettingsChanged();
                 }}
+                className="accent-[var(--accent)]"
               />
               {t.keepAspect}
             </label>
@@ -401,10 +416,10 @@ export function ImageTool({ mode }: Props) {
                 <button
                   key={d}
                   type="button"
-                  className={`rounded-md border px-3 py-1.5 text-sm ${
+                  className={`rounded-[10px] border px-3 py-2 text-sm ${
                     degrees === d
-                      ? "border-foreground bg-foreground text-background"
-                      : "border-border"
+                      ? "border-accent bg-accent text-white"
+                      : "border-border bg-surface text-muted hover:text-foreground"
                   }`}
                   onClick={() => {
                     setDegrees(d);
@@ -423,6 +438,7 @@ export function ImageTool({ mode }: Props) {
                   setFlipH(e.target.checked);
                   markSettingsChanged();
                 }}
+                className="accent-[var(--accent)]"
               />
               {t.flipH}
             </label>
@@ -434,6 +450,7 @@ export function ImageTool({ mode }: Props) {
                   setFlipV(e.target.checked);
                   markSettingsChanged();
                 }}
+                className="accent-[var(--accent)]"
               />
               {t.flipV}
             </label>
@@ -448,53 +465,178 @@ export function ImageTool({ mode }: Props) {
           <div className="space-y-3">
             <p className="text-sm text-muted">{ready.info}</p>
             <p className="text-sm font-medium text-foreground">{t.ready}</p>
-            <button
-              type="button"
-              onClick={downloadReady}
-              className="rounded-md bg-foreground px-4 py-2 text-sm font-medium text-background"
-            >
-              {t.download}
-            </button>
-            <button
-              type="button"
-              disabled={!img || busy}
-              onClick={() => void run()}
-              className="ml-2 rounded-md border border-border px-4 py-2 text-sm font-medium text-foreground"
-            >
-              {t.processAgain}
-            </button>
+            <div className="flex flex-wrap gap-2">
+              <button type="button" onClick={downloadReady} className={primaryBtn}>
+                {t.download}
+              </button>
+              <button
+                type="button"
+                disabled={!img || busy}
+                onClick={() => void run()}
+                className={secondaryBtn}
+              >
+                {t.processAgain}
+              </button>
+            </div>
           </div>
         ) : (
           <button
             type="button"
             disabled={!img || busy}
             onClick={() => void run()}
-            className="rounded-md bg-foreground px-4 py-2 text-sm font-medium text-background disabled:opacity-40"
+            className={primaryBtn}
           >
-            {primaryLabel}
+            {busy ? t.working : t.process}
           </button>
         )}
 
-        {error ? <p className="text-sm text-red-600">{error}</p> : null}
+        {error ? <p className="text-sm text-muted">{error}</p> : null}
         {mode === "convert" || mode === "compress" ? (
           <p className="text-xs text-muted">{t.heicNote}</p>
         ) : null}
       </div>
 
-      <div className="min-h-48 overflow-hidden rounded-lg border border-border bg-black/5 p-3">
-        {preview ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={preview}
-            alt=""
-            className="mx-auto max-h-[28rem] max-w-full object-contain"
-          />
-        ) : (
-          <p className="flex h-48 items-center justify-center text-sm text-muted">
-            {t.previewEmpty}
-          </p>
-        )}
+      <div className="space-y-4">
+        <div className="min-h-48 overflow-hidden rounded-[12px] border border-border bg-black/5 p-3">
+          {mode === "crop" && showSource && img ? (
+            <CropStage
+              src={sourceUrl!}
+              naturalW={img.naturalWidth}
+              naturalH={img.naturalHeight}
+              crop={crop}
+              onCropChange={(next) => {
+                setCrop(next);
+                markSettingsChanged();
+              }}
+            />
+          ) : showResult ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={ready!.previewUrl}
+              alt=""
+              className="mx-auto max-h-[28rem] max-w-full object-contain"
+            />
+          ) : showSource ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={sourceUrl!}
+              alt=""
+              className="mx-auto max-h-[28rem] max-w-full object-contain"
+            />
+          ) : (
+            <p className="flex h-48 items-center justify-center text-sm text-muted">
+              {t.previewEmpty}
+            </p>
+          )}
+        </div>
+
+        {mode === "crop" && showResult ? (
+          <div className="overflow-hidden rounded-[12px] border border-border bg-black/5 p-3">
+            <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted">
+              {t.ready}
+            </p>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={ready!.previewUrl}
+              alt=""
+              className="mx-auto max-h-40 max-w-full object-contain"
+            />
+          </div>
+        ) : null}
       </div>
+    </div>
+  );
+}
+
+function CropStage({
+  src,
+  naturalW,
+  naturalH,
+  crop,
+  onCropChange,
+}: {
+  src: string;
+  naturalW: number;
+  naturalH: number;
+  crop: CropRect;
+  onCropChange: (next: CropRect) => void;
+}) {
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const dragRef = useRef<{
+    startX: number;
+    startY: number;
+    originX: number;
+    originY: number;
+  } | null>(null);
+
+  function clientToNatural(clientX: number, clientY: number) {
+    const el = wrapRef.current;
+    if (!el) return { x: 0, y: 0 };
+    const rect = el.getBoundingClientRect();
+    const scaleX = naturalW / rect.width;
+    const scaleY = naturalH / rect.height;
+    const x = Math.min(naturalW, Math.max(0, (clientX - rect.left) * scaleX));
+    const y = Math.min(naturalH, Math.max(0, (clientY - rect.top) * scaleY));
+    return { x, y };
+  }
+
+  function onPointerDown(event: ReactPointerEvent<HTMLDivElement>) {
+    event.currentTarget.setPointerCapture(event.pointerId);
+    const point = clientToNatural(event.clientX, event.clientY);
+    dragRef.current = {
+      startX: point.x,
+      startY: point.y,
+      originX: point.x,
+      originY: point.y,
+    };
+    onCropChange({ x: point.x, y: point.y, w: 1, h: 1 });
+  }
+
+  function onPointerMove(event: ReactPointerEvent<HTMLDivElement>) {
+    const drag = dragRef.current;
+    if (!drag) return;
+    const point = clientToNatural(event.clientX, event.clientY);
+    const x = Math.min(drag.originX, point.x);
+    const y = Math.min(drag.originY, point.y);
+    const w = Math.max(1, Math.abs(point.x - drag.originX));
+    const h = Math.max(1, Math.abs(point.y - drag.originY));
+    onCropChange({ x, y, w, h });
+  }
+
+  function onPointerUp() {
+    dragRef.current = null;
+  }
+
+  const left = (crop.x / naturalW) * 100;
+  const top = (crop.y / naturalH) * 100;
+  const width = (crop.w / naturalW) * 100;
+  const height = (crop.h / naturalH) * 100;
+
+  return (
+    <div
+      ref={wrapRef}
+      className="relative mx-auto inline-block max-h-[28rem] max-w-full cursor-crosshair touch-none select-none overflow-hidden rounded-[8px]"
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerUp}
+      onPointerCancel={onPointerUp}
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={src}
+        alt=""
+        draggable={false}
+        className="block max-h-[28rem] max-w-full object-contain"
+      />
+      <div
+        className="pointer-events-none absolute border-2 border-white shadow-[0_0_0_9999px_rgba(0,0,0,0.4)]"
+        style={{
+          left: `${left}%`,
+          top: `${top}%`,
+          width: `${width}%`,
+          height: `${height}%`,
+        }}
+      />
     </div>
   );
 }
@@ -518,7 +660,7 @@ function Num({
         inputMode="decimal"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
+        className={fieldClass}
       />
     </label>
   );
@@ -543,7 +685,7 @@ function FormatSelect({
       <select
         value={value}
         onChange={(e) => onChange(e.target.value as ImageFormat)}
-        className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
+        className={fieldClass}
       >
         {hidePng ? null : <option value="image/png">{labels.png}</option>}
         <option value="image/jpeg">{labels.jpeg}</option>

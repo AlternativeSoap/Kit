@@ -14,6 +14,7 @@ export type Dictionary = {
     progress: string;
     ready: string;
     previewEmpty: string;
+    cropHint: string;
     format: string;
     x: string;
     y: string;
@@ -44,6 +45,8 @@ export type Dictionary = {
     processAgain: string;
     download: string;
     working: string;
+    loadingEngine: string;
+    encoding: string;
     progress: string;
     ready: string;
   };
@@ -695,6 +698,8 @@ export type Dictionary = {
     textB: string;
     summary: string;
     empty: string;
+    copy: string;
+    copied: string;
   };
   avance: {
     cost: string;
@@ -1009,6 +1014,7 @@ export type Dictionary = {
   worldclockTool: {
     live: string;
     meeting: string;
+    localHint: string;
     when: string;
     fromZone: string;
     toZone: string;
@@ -1081,6 +1087,9 @@ export type Dictionary = {
     themePaper: string;
     themeForest: string;
     download: string;
+    copyImage: string;
+    copiedImage: string;
+    copyFailed: string;
   };
   uaTool: {
     privacy: string;

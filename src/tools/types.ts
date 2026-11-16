@@ -105,7 +105,10 @@ export type BuiltinToolId =
   | "imgbase64"
   | "codeshot"
   | "ua"
-  | "mime";
+  | "mime"
+  | "luhn"
+  | "iban"
+  | "dice";
 
 /** kit = first-party tools and closely related utilities; web = popular destinations */
 export type ToolSurface = "kit" | "web";
