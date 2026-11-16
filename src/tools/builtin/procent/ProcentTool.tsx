@@ -48,7 +48,7 @@ export function ProcentTool({ prefill }: { prefill?: ToolPrefill }) {
               key={item.id}
               type="button"
               onClick={() => setMode(item.id)}
-              className={`rounded-[10px] border px-3 py-2 text-sm transition-colors ${
+              className={`kit-touch-target rounded-[10px] border px-3 py-2 text-sm transition-colors sm:min-h-0 ${
                 mode === item.id
                   ? "border-accent bg-accent text-white"
                   : "border-border bg-surface text-muted hover:text-foreground"

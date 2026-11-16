@@ -79,7 +79,7 @@ export function TerminTool({ prefill }: { prefill?: ToolPrefill }) {
               key={item}
               type="button"
               onClick={() => setMode(item)}
-              className={`rounded-[8px] px-3 py-1.5 text-sm transition-colors ${
+              className={`kit-touch-target rounded-[8px] px-3 py-1.5 text-sm transition-colors sm:min-h-0 ${
                 mode === item
                   ? "bg-accent text-white"
                   : "text-muted hover:text-foreground"

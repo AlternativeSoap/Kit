@@ -57,7 +57,7 @@ export function MomsTool({ prefill }: { prefill?: ToolPrefill }) {
           <button
             type="button"
             onClick={() => setMode("add")}
-            className={`rounded-[8px] px-3 py-1.5 text-sm transition-colors ${
+            className={`kit-touch-target rounded-[8px] px-3 py-1.5 text-sm transition-colors sm:min-h-0 ${
               mode === "add"
                 ? "bg-accent text-white"
                 : "text-muted hover:text-foreground"
@@ -68,7 +68,7 @@ export function MomsTool({ prefill }: { prefill?: ToolPrefill }) {
           <button
             type="button"
             onClick={() => setMode("remove")}
-            className={`rounded-[8px] px-3 py-1.5 text-sm transition-colors ${
+            className={`kit-touch-target rounded-[8px] px-3 py-1.5 text-sm transition-colors sm:min-h-0 ${
               mode === "remove"
                 ? "bg-accent text-white"
                 : "text-muted hover:text-foreground"

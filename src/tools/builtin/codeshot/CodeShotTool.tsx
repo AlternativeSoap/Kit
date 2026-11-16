@@ -13,9 +13,9 @@ const THEMES = {
 type ThemeId = keyof typeof THEMES;
 
 const primaryBtn =
-  "rounded-[10px] bg-accent px-4 py-2.5 text-sm font-medium text-white disabled:opacity-40";
+  "kit-touch-target rounded-[10px] bg-accent px-4 py-2.5 text-sm font-medium text-white disabled:opacity-40 sm:min-h-0";
 const secondaryBtn =
-  "rounded-[10px] border border-border bg-surface px-4 py-2.5 text-sm font-medium text-foreground disabled:opacity-40";
+  "kit-touch-target rounded-[10px] border border-border bg-surface px-4 py-2.5 text-sm font-medium text-foreground disabled:opacity-40 sm:min-h-0";
 
 export function CodeShotTool({ prefill }: { prefill?: ToolPrefill }) {
   const dictionary = useDictionary();
@@ -165,7 +165,7 @@ export function CodeShotTool({ prefill }: { prefill?: ToolPrefill }) {
                   key={id}
                   type="button"
                   onClick={() => setTheme(id)}
-                  className={`rounded-[10px] border px-3 py-2 text-left text-sm ${
+                  className={`kit-touch-target rounded-[10px] border px-3 py-2 text-left text-sm sm:min-h-0 ${
                     theme === id
                       ? "border-accent bg-accent text-white"
                       : "border-border bg-surface text-muted hover:text-foreground"

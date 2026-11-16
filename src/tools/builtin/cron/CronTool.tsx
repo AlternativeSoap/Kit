@@ -49,7 +49,7 @@ export function CronTool({ prefill }: { prefill?: ToolPrefill }) {
               key={sample}
               type="button"
               onClick={() => setExpression(sample)}
-              className="rounded-[10px] border border-border bg-surface px-3 py-1.5 font-mono text-xs text-muted hover:text-foreground"
+              className="kit-touch-target rounded-[10px] border border-border bg-surface px-3 py-1.5 font-mono text-xs text-muted hover:text-foreground sm:min-h-0"
             >
               {sample}
             </button>

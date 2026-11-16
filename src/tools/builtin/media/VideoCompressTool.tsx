@@ -37,9 +37,9 @@ type Phase = "idle" | "loading" | "encoding";
 const fieldClass =
   "w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 text-sm outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)]";
 const primaryBtn =
-  "rounded-[10px] bg-accent px-4 py-2.5 text-sm font-medium text-white disabled:opacity-40";
+  "kit-touch-target rounded-[10px] bg-accent px-4 py-2.5 text-sm font-medium text-white disabled:opacity-40 sm:min-h-0";
 const secondaryBtn =
-  "rounded-[10px] border border-border bg-surface px-4 py-2.5 text-sm font-medium text-foreground";
+  "kit-touch-target rounded-[10px] border border-border bg-surface px-4 py-2.5 text-sm font-medium text-foreground sm:min-h-0";
 const fileInputClass =
   "block w-full text-sm text-muted file:mr-3 file:rounded-[8px] file:border-0 file:bg-accent file:px-3 file:py-2 file:text-sm file:font-medium file:text-white";
 

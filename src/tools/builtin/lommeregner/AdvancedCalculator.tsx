@@ -454,7 +454,7 @@ export function AdvancedCalculator({ prefill }: AdvancedCalculatorProps) {
             key={key.label}
             type="button"
             onClick={key.action}
-            className={`rounded-[12px] border border-border px-3 py-3.5 text-lg font-medium transition-colors ${
+            className={`kit-touch-target rounded-[12px] border border-border px-3 py-3.5 text-lg font-medium transition-colors sm:min-h-0 ${
               key.tone === "accent"
                 ? "bg-accent text-white hover:opacity-90"
                 : key.tone === "muted"

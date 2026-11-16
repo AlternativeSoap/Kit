@@ -115,7 +115,7 @@ export function SimpleLadmeter({ prefill }: { prefill?: ToolPrefill }) {
           <select
             value={palletType}
             onChange={(event) => setPalletType(event.target.value as PalletType)}
-            className="w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 text-base outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)] sm:text-[15px]"
+            className="kit-touch-target w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 text-base outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)] sm:min-h-0 sm:text-[15px]"
           >
             <option value="eur">{t.eur}</option>
             <option value="industri">{t.industrial}</option>

@@ -82,6 +82,17 @@ select {
     min-width: 2rem;
     padding-inline: 0.2rem;
   }
+
+  .kit-range {
+    min-height: 2.75rem;
+  }
+
+  button:active,
+  a:active,
+  [role="button"]:active,
+  .kit-touch-target:active {
+    opacity: 0.82;
+  }
 }
 
 button,

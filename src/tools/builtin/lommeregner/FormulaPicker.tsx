@@ -41,7 +41,7 @@ export function FormulaPicker({ value, onChange }: FormulaPickerProps) {
 
   useEffect(() => {
     if (!open) return;
-    const onPointer = (event: MouseEvent) => {
+    const onPointer = (event: PointerEvent) => {
       if (!rootRef.current?.contains(event.target as Node)) {
         setOpen(false);
         setQuery("");
@@ -53,10 +53,10 @@ export function FormulaPicker({ value, onChange }: FormulaPickerProps) {
         setQuery("");
       }
     };
-    window.addEventListener("mousedown", onPointer);
+    window.addEventListener("pointerdown", onPointer);
     window.addEventListener("keydown", onKey);
     return () => {
-      window.removeEventListener("mousedown", onPointer);
+      window.removeEventListener("pointerdown", onPointer);
       window.removeEventListener("keydown", onKey);
     };
   }, [open]);

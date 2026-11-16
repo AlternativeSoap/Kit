@@ -208,7 +208,7 @@ export function PdfTool() {
                 return [first];
               });
             }}
-            className={`rounded-[10px] border px-3 py-2 text-sm ${
+            className={`kit-touch-target rounded-[10px] border px-3 py-2 text-sm sm:min-h-0 ${
               mode === item.id
                 ? "border-accent bg-accent text-white"
                 : "border-border bg-surface text-muted hover:text-foreground"
@@ -265,7 +265,7 @@ export function PdfTool() {
               key={deg}
               type="button"
               onClick={() => setRotateBy(deg)}
-              className={`rounded-[10px] border px-3 py-2 text-sm ${
+              className={`kit-touch-target rounded-[10px] border px-3 py-2 text-sm sm:min-h-0 ${
                 rotateBy === deg
                   ? "border-accent bg-accent text-white"
                   : "border-border bg-surface text-muted hover:text-foreground"
@@ -285,7 +285,7 @@ export function PdfTool() {
           type="button"
           disabled={!canRun}
           onClick={() => void run()}
-          className="rounded-[10px] bg-accent px-4 py-2.5 text-sm font-medium text-white disabled:opacity-40"
+          className="kit-touch-target rounded-[10px] bg-accent px-4 py-2.5 text-sm font-medium text-white disabled:opacity-40 sm:min-h-0"
         >
           {busy
             ? t.working
@@ -299,7 +299,7 @@ export function PdfTool() {
           <a
             href={readyUrl}
             download={readyName}
-            className="rounded-[10px] border border-border bg-surface px-4 py-2.5 text-sm font-medium text-foreground"
+            className="kit-touch-target rounded-[10px] border border-border bg-surface px-4 py-2.5 text-sm font-medium text-foreground sm:min-h-0"
           >
             {t.download}
           </a>

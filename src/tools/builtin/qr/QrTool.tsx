@@ -62,7 +62,7 @@ export function QrTool({ prefill }: { prefill?: ToolPrefill }) {
           type="button"
           onClick={downloadPng}
           disabled={!ready}
-          className="rounded-[10px] bg-accent px-4 py-2.5 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50"
+          className="kit-touch-target rounded-[10px] bg-accent px-4 py-2.5 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50 sm:min-h-0"
         >
           {t.download}
         </button>

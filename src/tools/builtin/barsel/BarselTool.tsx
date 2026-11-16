@@ -90,7 +90,7 @@ export function BarselTool({ prefill }: { prefill?: ToolPrefill }) {
                 key={preset}
                 type="button"
                 onClick={() => setWeeks(String(preset))}
-                className={`rounded-[8px] border px-2.5 py-1 text-xs ${
+                className={`kit-touch-target rounded-[8px] border px-2.5 py-1.5 text-xs sm:min-h-0 ${
                   weekCount === preset
                     ? "border-accent bg-accent text-white"
                     : "border-border text-muted hover:text-foreground"
@@ -199,7 +199,7 @@ export function BarselTool({ prefill }: { prefill?: ToolPrefill }) {
                             return (
                               <div
                                 key={cell.date.toISOString()}
-                                className={`relative flex h-10 flex-col items-center justify-center text-sm ${shape} ${
+                                className={`relative flex h-11 flex-col items-center justify-center text-sm sm:h-10 ${shape} ${
                                   !cell.inMonth
                                     ? "text-muted/40"
                                     : isStart || isEnd

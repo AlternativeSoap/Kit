@@ -376,7 +376,7 @@ export function CountdownTool({ prefill }: { prefill?: ToolPrefill }) {
           <button
             type="button"
             onClick={pause}
-            className="rounded-[10px] bg-accent px-5 py-2.5 text-sm font-medium text-white hover:opacity-90"
+            className="kit-touch-target rounded-[10px] bg-accent px-5 py-2.5 text-sm font-medium text-white hover:opacity-90 sm:min-h-0"
           >
             {t.pause}
           </button>
@@ -385,7 +385,7 @@ export function CountdownTool({ prefill }: { prefill?: ToolPrefill }) {
             type="button"
             onClick={start}
             disabled={!canStart}
-            className="rounded-[10px] bg-accent px-5 py-2.5 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50"
+            className="kit-touch-target rounded-[10px] bg-accent px-5 py-2.5 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50 sm:min-h-0"
           >
             {isPaused ? t.resume : t.start}
           </button>
@@ -393,7 +393,7 @@ export function CountdownTool({ prefill }: { prefill?: ToolPrefill }) {
         <button
           type="button"
           onClick={reset}
-          className="rounded-[10px] border border-border bg-surface px-5 py-2.5 text-sm font-medium hover:bg-background"
+          className="kit-touch-target rounded-[10px] border border-border bg-surface px-5 py-2.5 text-sm font-medium hover:bg-background sm:min-h-0"
         >
           {t.reset}
         </button>
@@ -539,7 +539,7 @@ export function CountdownTool({ prefill }: { prefill?: ToolPrefill }) {
                 type="button"
                 onClick={useSuggestedTakt}
                 disabled={suggestedTakt === null || running}
-                className="mt-3 rounded-[10px] border border-border px-3 py-2 text-sm font-medium hover:bg-background disabled:opacity-50"
+                className="kit-touch-target mt-3 rounded-[10px] border border-border px-3 py-2 text-sm font-medium hover:bg-background disabled:opacity-50 sm:min-h-0"
               >
                 {t.useSuggested}
               </button>

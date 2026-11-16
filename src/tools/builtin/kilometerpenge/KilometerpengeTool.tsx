@@ -78,7 +78,7 @@ export function KilometerpengeTool({ prefill }: { prefill?: ToolPrefill }) {
           <button
             type="button"
             onClick={() => setMode("simple")}
-            className={`rounded-[8px] px-3 py-1.5 text-sm transition-colors ${
+            className={`kit-touch-target rounded-[8px] px-3 py-1.5 text-sm transition-colors sm:min-h-0 ${
               mode === "simple"
                 ? "bg-accent text-white"
                 : "text-muted hover:text-foreground"
@@ -89,7 +89,7 @@ export function KilometerpengeTool({ prefill }: { prefill?: ToolPrefill }) {
           <button
             type="button"
             onClick={() => setMode("threshold")}
-            className={`rounded-[8px] px-3 py-1.5 text-sm transition-colors ${
+            className={`kit-touch-target rounded-[8px] px-3 py-1.5 text-sm transition-colors sm:min-h-0 ${
               mode === "threshold"
                 ? "bg-accent text-white"
                 : "text-muted hover:text-foreground"

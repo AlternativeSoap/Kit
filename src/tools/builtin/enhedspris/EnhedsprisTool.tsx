@@ -174,7 +174,7 @@ export function EnhedsprisTool({ prefill }: { prefill?: ToolPrefill }) {
                 return (
                   <li
                     key={row.id}
-                    className={`flex items-center justify-between gap-3 rounded-[8px] px-2 py-1.5 ${
+                    className={`flex min-h-11 items-center justify-between gap-3 rounded-[8px] px-2 py-2 sm:min-h-0 sm:py-1.5 ${
                       isBest ? "bg-[var(--accent-soft)]" : ""
                     }`}
                   >

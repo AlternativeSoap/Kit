@@ -215,7 +215,7 @@ export function AdvancedLoadPlanner() {
             onChange={(event) =>
               applyTrailerPreset(event.target.value as TrailerPresetId)
             }
-            className="rounded-[8px] border border-border bg-surface px-2.5 py-1.5 text-sm outline-none focus:border-accent"
+            className="kit-touch-target rounded-[8px] border border-border bg-surface px-2.5 py-2 text-sm outline-none focus:border-accent sm:min-h-0 sm:py-1.5"
           >
             <option value="trailer136">{t.vehicleTrailer136}</option>
             <option value="link">{t.vehicleLink}</option>
@@ -233,7 +233,7 @@ export function AdvancedLoadPlanner() {
               key={label}
               className="flex items-center gap-1.5 text-sm text-muted"
             >
-              <span className="sr-only sm:not-sr-only sm:inline">{label}</span>
+              <span className="text-xs font-medium text-muted">{label}</span>
               <input
                 type="number"
                 inputMode="decimal"
@@ -273,7 +273,7 @@ export function AdvancedLoadPlanner() {
         <div className="overflow-x-auto">
           <svg
             viewBox={`0 0 ${svgW} ${svgH}`}
-            className="mx-auto block h-[7.5rem] w-full max-w-3xl sm:h-36"
+            className="mx-auto block h-44 w-full max-w-3xl touch-manipulation sm:h-52"
             role="img"
             aria-label={t.topViewLabel}
             preserveAspectRatio="xMidYMid meet"
@@ -387,7 +387,8 @@ export function AdvancedLoadPlanner() {
                   key={`${placement.lineId}-${placement.sequence}`}
                   onMouseEnter={() => setActiveLineId(placement.lineId)}
                   onMouseLeave={() => setActiveLineId(null)}
-                  className="cursor-default"
+                  onClick={() => setActiveLineId(placement.lineId)}
+                  className="cursor-pointer"
                 >
                   <rect
                     x={ox + placement.y}
@@ -541,6 +542,7 @@ export function AdvancedLoadPlanner() {
                 }
                 onMouseEnter={() => setActiveLineId(line.id)}
                 onMouseLeave={() => setActiveLineId(null)}
+                onClick={() => setActiveLineId(line.id)}
               >
                 <div className="mb-2 flex items-center justify-between gap-2">
                   <div className="flex min-w-0 items-center gap-2">
@@ -592,34 +594,46 @@ export function AdvancedLoadPlanner() {
                       </span>
                     ) : null}
                   </div>
-                  <div className="flex items-center gap-0.5">
+                  <div className="flex flex-wrap items-center gap-1">
                     <button
                       type="button"
                       aria-label={t.moveUp}
-                      onClick={() => moveLine(line.id, -1)}
-                      className="rounded-md px-1.5 py-1 text-xs text-muted hover:bg-background hover:text-foreground"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        moveLine(line.id, -1);
+                      }}
+                      className="kit-touch-target inline-flex items-center justify-center rounded-md px-2.5 py-1.5 text-xs text-muted hover:bg-background hover:text-foreground sm:min-h-0 sm:min-w-0"
                     >
                       ↑
                     </button>
                     <button
                       type="button"
                       aria-label={t.moveDown}
-                      onClick={() => moveLine(line.id, 1)}
-                      className="rounded-md px-1.5 py-1 text-xs text-muted hover:bg-background hover:text-foreground"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        moveLine(line.id, 1);
+                      }}
+                      className="kit-touch-target inline-flex items-center justify-center rounded-md px-2.5 py-1.5 text-xs text-muted hover:bg-background hover:text-foreground sm:min-h-0 sm:min-w-0"
                     >
                       ↓
                     </button>
                     <button
                       type="button"
-                      onClick={() => duplicateLine(line.id)}
-                      className="rounded-md px-1.5 py-1 text-xs text-muted hover:bg-background hover:text-foreground"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        duplicateLine(line.id);
+                      }}
+                      className="kit-touch-target inline-flex items-center justify-center rounded-md px-2.5 py-1.5 text-xs text-muted hover:bg-background hover:text-foreground sm:min-h-0 sm:min-w-0"
                     >
                       {t.duplicate}
                     </button>
                     <button
                       type="button"
-                      onClick={() => removeLine(line.id)}
-                      className="rounded-md px-1.5 py-1 text-xs text-muted hover:bg-background hover:text-foreground"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        removeLine(line.id);
+                      }}
+                      className="kit-touch-target inline-flex items-center justify-center rounded-md px-2.5 py-1.5 text-xs text-muted hover:bg-background hover:text-foreground sm:min-h-0 sm:min-w-0"
                     >
                       {t.remove}
                     </button>

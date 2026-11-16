@@ -133,7 +133,7 @@ export function SimpleTool({
             <button
               type="button"
               onClick={() => setNonce((n) => n + 1)}
-              className="rounded-[10px] bg-accent px-4 py-2.5 text-sm font-medium text-white"
+              className="kit-touch-target rounded-[10px] bg-accent px-4 py-2.5 text-sm font-medium text-white sm:min-h-0"
             >
               {actionLabel}
             </button>

@@ -129,7 +129,7 @@ export function SuggestPanel({
                           className={`group/row relative flex w-full items-start gap-3 px-4 py-3 transition-colors sm:py-2.5 ${
                             active ? "bg-accent-soft" : "hover:bg-background"
                           }`}
-                          onMouseEnter={() => onHover(index)}
+                          onPointerEnter={() => onHover(index)}
                         >
                           <button
                             type="button"

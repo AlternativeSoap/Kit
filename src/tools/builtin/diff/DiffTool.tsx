@@ -34,13 +34,13 @@ export function DiffTool({ prefill }: { prefill?: ToolPrefill }) {
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-2">
         <label className="block">
           <span className="mb-1.5 block text-sm font-medium">{t.textA}</span>
           <textarea
             value={textA}
             onChange={(event) => setTextA(event.target.value)}
-            rows={10}
+            rows={8}
             spellCheck={false}
             className="w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 font-mono text-base outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)] sm:text-[14px]"
           />
@@ -50,7 +50,7 @@ export function DiffTool({ prefill }: { prefill?: ToolPrefill }) {
           <textarea
             value={textB}
             onChange={(event) => setTextB(event.target.value)}
-            rows={10}
+            rows={8}
             spellCheck={false}
             className="w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 font-mono text-base outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)] sm:text-[14px]"
           />

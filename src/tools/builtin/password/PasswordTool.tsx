@@ -79,7 +79,7 @@ export function PasswordTool({ prefill }: { prefill?: ToolPrefill }) {
           max={PASSWORD_MAX_LENGTH}
           value={length}
           onChange={(event) => setLength(Number(event.target.value))}
-          className="w-full accent-[var(--accent)]"
+          className="kit-range w-full accent-[var(--accent)]"
         />
       </label>
 
@@ -92,7 +92,7 @@ export function PasswordTool({ prefill }: { prefill?: ToolPrefill }) {
             ["symbols", symbols, setSymbols, t.symbols],
           ] as const
         ).map(([key, value, setter, label]) => (
-          <label key={key} className="flex items-center gap-2 text-sm">
+          <label key={key} className="kit-touch-target flex cursor-pointer items-center gap-2 text-sm sm:min-h-0">
             <input
               type="checkbox"
               checked={value}
@@ -108,7 +108,7 @@ export function PasswordTool({ prefill }: { prefill?: ToolPrefill }) {
         type="button"
         onClick={regenerate}
         disabled={!canGenerate}
-        className="rounded-[10px] bg-accent px-4 py-2.5 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50"
+        className="kit-touch-target rounded-[10px] bg-accent px-4 py-2.5 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50 sm:min-h-0"
       >
         {t.generate}
       </button>

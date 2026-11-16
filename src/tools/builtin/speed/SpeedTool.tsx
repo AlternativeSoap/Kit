@@ -67,7 +67,7 @@ export function SpeedTool() {
             type="button"
             disabled={busy}
             onClick={() => setSize(item)}
-            className={`rounded-[10px] border px-3 py-2 text-sm ${
+            className={`kit-touch-target rounded-[10px] border px-3 py-2 text-sm sm:min-h-0 ${
               size.bytes === item.bytes
                 ? "border-accent bg-accent text-white"
                 : "border-border bg-surface text-muted hover:text-foreground"

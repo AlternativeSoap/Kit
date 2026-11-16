@@ -242,7 +242,7 @@ export function SimpleCalculator({ prefill }: { prefill?: ToolPrefill }) {
             key={key.label}
             type="button"
             onClick={key.action}
-            className={`rounded-[10px] border border-border px-3 py-4 text-lg font-medium transition-colors ${
+            className={`kit-touch-target rounded-[10px] border border-border px-3 py-4 text-lg font-medium transition-colors sm:min-h-0 ${
               key.tone === "accent"
                 ? "bg-accent text-white hover:opacity-90"
                 : key.tone === "muted"

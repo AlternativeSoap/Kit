@@ -49,9 +49,9 @@ function yieldFrame(): Promise<void> {
 const fieldClass =
   "w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 text-sm outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)]";
 const primaryBtn =
-  "rounded-[10px] bg-accent px-4 py-2.5 text-sm font-medium text-white disabled:opacity-40";
+  "kit-touch-target rounded-[10px] bg-accent px-4 py-2.5 text-sm font-medium text-white disabled:opacity-40 sm:min-h-0";
 const secondaryBtn =
-  "rounded-[10px] border border-border bg-surface px-4 py-2.5 text-sm font-medium text-foreground";
+  "kit-touch-target rounded-[10px] border border-border bg-surface px-4 py-2.5 text-sm font-medium text-foreground sm:min-h-0";
 const fileInputClass =
   "block w-full text-sm text-muted file:mr-3 file:rounded-[8px] file:border-0 file:bg-accent file:px-3 file:py-2 file:text-sm file:font-medium file:text-white";
 
@@ -416,7 +416,7 @@ export function ImageTool({ mode }: Props) {
                 <button
                   key={d}
                   type="button"
-                  className={`rounded-[10px] border px-3 py-2 text-sm ${
+                  className={`kit-touch-target rounded-[10px] border px-3 py-2 text-sm sm:min-h-0 ${
                     degrees === d
                       ? "border-accent bg-accent text-white"
                       : "border-border bg-surface text-muted hover:text-foreground"
@@ -496,7 +496,7 @@ export function ImageTool({ mode }: Props) {
         ) : null}
       </div>
 
-      <div className="space-y-4">
+      <div className="order-first space-y-4 lg:order-none">
         <div className="min-h-48 overflow-hidden rounded-[12px] border border-border bg-black/5 p-3">
           {mode === "crop" && showSource && img ? (
             <CropStage
@@ -615,7 +615,7 @@ function CropStage({
   return (
     <div
       ref={wrapRef}
-      className="relative mx-auto inline-block max-h-[28rem] max-w-full cursor-crosshair touch-none select-none overflow-hidden rounded-[8px]"
+      className="relative mx-auto inline-block max-h-[min(28rem,55dvh)] max-w-full cursor-crosshair touch-none select-none overflow-hidden rounded-[8px]"
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
@@ -626,7 +626,7 @@ function CropStage({
         src={src}
         alt=""
         draggable={false}
-        className="block max-h-[28rem] max-w-full object-contain"
+        className="block max-h-[min(28rem,55dvh)] max-w-full object-contain"
       />
       <div
         className="pointer-events-none absolute border-2 border-white shadow-[0_0_0_9999px_rgba(0,0,0,0.4)]"

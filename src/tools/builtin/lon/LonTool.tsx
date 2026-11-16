@@ -147,7 +147,7 @@ export function LonTool({ prefill }: { prefill?: ToolPrefill }) {
           <button
             type="button"
             onClick={() => setMode("monthly")}
-            className={`rounded-[8px] px-3 py-1.5 text-sm transition-colors ${
+            className={`kit-touch-target rounded-[8px] px-3 py-1.5 text-sm transition-colors sm:min-h-0 ${
               mode === "monthly"
                 ? "bg-accent text-white"
                 : "text-muted hover:text-foreground"
@@ -158,7 +158,7 @@ export function LonTool({ prefill }: { prefill?: ToolPrefill }) {
           <button
             type="button"
             onClick={() => setMode("hourly")}
-            className={`rounded-[8px] px-3 py-1.5 text-sm transition-colors ${
+            className={`kit-touch-target rounded-[8px] px-3 py-1.5 text-sm transition-colors sm:min-h-0 ${
               mode === "hourly"
                 ? "bg-accent text-white"
                 : "text-muted hover:text-foreground"

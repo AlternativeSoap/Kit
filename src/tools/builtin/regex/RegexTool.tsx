@@ -65,7 +65,7 @@ export function RegexTool({ prefill }: { prefill?: ToolPrefill }) {
                 onClick={() =>
                   setFlags((prev) => ({ ...prev, [key]: !prev[key] }))
                 }
-                className={`rounded-[8px] border px-2.5 py-2 font-mono text-sm ${
+                className={`kit-touch-target rounded-[8px] border px-2.5 py-2 font-mono text-sm sm:min-h-0 ${
                   flags[key]
                     ? "border-accent bg-accent text-white"
                     : "border-border bg-surface text-muted hover:text-foreground"

@@ -31,7 +31,7 @@ export function MarkdownTool({ prefill }: { prefill?: ToolPrefill }) {
   const html = useMemo(() => nodesToSafeHtml(parseMarkdown(input)), [input]);
 
   return (
-    <div className="grid gap-8 lg:grid-cols-2">
+    <div className="grid gap-8 md:grid-cols-2">
       <label className="block">
         <span className="mb-1.5 flex items-center justify-between text-sm font-medium">
           <span>{t.input}</span>
@@ -40,7 +40,7 @@ export function MarkdownTool({ prefill }: { prefill?: ToolPrefill }) {
         <textarea
           value={input}
           onChange={(event) => setInput(event.target.value)}
-          rows={18}
+          rows={12}
           spellCheck={false}
           className="w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 font-mono text-base outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)] sm:text-[14px]"
         />

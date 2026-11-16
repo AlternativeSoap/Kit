@@ -73,7 +73,7 @@ export function PaletteTool({ prefill }: { prefill?: ToolPrefill }) {
             key={item}
             type="button"
             onClick={() => setMode(item)}
-            className={`rounded-[10px] border px-3 py-2 text-sm ${
+            className={`kit-touch-target rounded-[10px] border px-3 py-2 text-sm sm:min-h-0 ${
               mode === item
                 ? "border-accent bg-accent text-white"
                 : "border-border bg-surface text-muted hover:text-foreground"
