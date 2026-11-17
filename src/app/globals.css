@@ -318,3 +318,46 @@ details:not([open]) > :not(summary) {
 .papers-textbox[data-selected="true"] {
   box-shadow: 0 0 0 2px var(--accent), 0 0 0 5px var(--accent-soft);
 }
+
+/* Skriv: format ribbon glued to the sheet */
+.papers-paper-stack {
+  display: flex;
+  flex-direction: column;
+}
+
+.papers-ribbon {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  border: 1px solid rgba(20, 20, 20, 0.1);
+  border-bottom: 0;
+  border-radius: 12px 12px 0 0;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.8) inset;
+}
+
+.papers-paper-stack .papers-sheet {
+  border-radius: 0;
+}
+
+.papers-sheet-footer {
+  border: 1px solid rgba(20, 20, 20, 0.1);
+  border-top: 0;
+  border-radius: 0 0 12px 12px;
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.papers-selection-bubble {
+  animation: papers-bubble-in 110ms ease-out;
+}
+
+@keyframes papers-bubble-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, calc(-100% + 4px));
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -100%);
+  }
+}

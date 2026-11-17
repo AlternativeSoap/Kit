@@ -1362,6 +1362,9 @@ export type Dictionary = {
     exportTxt: string;
     print: string;
     zoom: string;
+    pageTools: string;
+    findReplaceToggle: string;
+    insertTools: string;
     bold: string;
     italic: string;
     underline: string;

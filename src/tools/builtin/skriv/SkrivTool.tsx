@@ -13,6 +13,10 @@ import {
   type PapersFormatState,
 } from "@/components/tools/PapersFormatBar";
 import {
+  SkrivSelectionBubble,
+  type SelectionBubblePos,
+} from "@/components/tools/SkrivSelectionBubble";
+import {
   ErrorBanner,
   Field,
   FileInput,
@@ -61,6 +65,14 @@ function runCommand(command: string, value?: string) {
   document.execCommand(command, false, value);
 }
 
+function safeQueryState(command: string) {
+  try {
+    return document.queryCommandState(command);
+  } catch {
+    return false;
+  }
+}
+
 export function SkrivTool() {
   const { dictionary, locale } = useLanguage();
   const t = dictionary.skrivTool;
@@ -78,6 +90,11 @@ export function SkrivTool() {
   const [personalCount, setPersonalCount] = useState(0);
   const [selectedBoxId, setSelectedBoxId] = useState<string | null>(null);
   const [zoom, setZoom] = useState(100);
+  const [panel, setPanel] = useState<"none" | "page" | "find" | "insert">(
+    "none",
+  );
+  const [bubblePos, setBubblePos] = useState<SelectionBubblePos | null>(null);
+  const [liveFormat, setLiveFormat] = useState<PapersFormatState | null>(null);
   const editorRef = useRef<HTMLDivElement>(null);
   const pageRef = useRef<HTMLDivElement>(null);
   const applyingRef = useRef(false);
@@ -169,7 +186,85 @@ export function SkrivTool() {
     editorRef.current?.focus();
     runCommand(command, value);
     syncFromEditor();
+    refreshSelectionUi();
   }
+
+  function readLiveFormat(): PapersFormatState {
+    let align: PapersFormatState["align"] = "left";
+    try {
+      if (document.queryCommandState("justifyCenter")) align = "center";
+      else if (document.queryCommandState("justifyRight")) align = "right";
+    } catch {
+      /* ignore */
+    }
+    let fontSize = doc.fontSizePx;
+    const sel = window.getSelection();
+    const node = sel?.anchorNode;
+    const el =
+      node && node.nodeType === Node.TEXT_NODE
+        ? node.parentElement
+        : (node as HTMLElement | null);
+    if (el && editorRef.current?.contains(el)) {
+      const px = Number.parseFloat(window.getComputedStyle(el).fontSize);
+      if (Number.isFinite(px) && px > 0) {
+        fontSize = Math.round(px * 0.75);
+      }
+    }
+    return {
+      bold: safeQueryState("bold"),
+      italic: safeQueryState("italic"),
+      underline: safeQueryState("underline"),
+      align,
+      color: "#111111",
+      background: "#ffffff",
+      fontFamily: doc.fontFamily,
+      fontSize: Math.min(200, Math.max(6, fontSize)),
+    };
+  }
+
+  function refreshSelectionUi() {
+    const sel = window.getSelection();
+    const editor = editorRef.current;
+    if (
+      !sel ||
+      sel.rangeCount === 0 ||
+      sel.isCollapsed ||
+      !editor ||
+      !sel.anchorNode ||
+      !editor.contains(sel.anchorNode)
+    ) {
+      setBubblePos(null);
+      setLiveFormat(null);
+      return;
+    }
+    const range = sel.getRangeAt(0);
+    const rect = range.getBoundingClientRect();
+    if (rect.width < 1 && rect.height < 1) {
+      setBubblePos(null);
+      setLiveFormat(null);
+      return;
+    }
+    const left = Math.min(
+      Math.max(rect.left + rect.width / 2, 24),
+      window.innerWidth - 24,
+    );
+    const top = Math.max(rect.top - 12, 56);
+    setBubblePos({ top, left });
+    setLiveFormat(readLiveFormat());
+  }
+
+  useEffect(() => {
+    const onSel = () => refreshSelectionUi();
+    document.addEventListener("selectionchange", onSel);
+    window.addEventListener("scroll", onSel, true);
+    window.addEventListener("resize", onSel);
+    return () => {
+      document.removeEventListener("selectionchange", onSel);
+      window.removeEventListener("scroll", onSel, true);
+      window.removeEventListener("resize", onSel);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [doc.fontFamily, doc.fontSizePx]);
 
   const formatState: PapersFormatState = selectedBox
     ? {
@@ -182,7 +277,7 @@ export function SkrivTool() {
         fontFamily: selectedBox.fontFamily,
         fontSize: selectedBox.fontSizePx,
       }
-    : {
+    : liveFormat ?? {
         bold: false,
         italic: false,
         underline: false,
@@ -224,10 +319,27 @@ export function SkrivTool() {
     if (patch.color) format("foreColor", patch.color);
     if (patch.background) format("hiliteColor", patch.background);
     if (patch.fontFamily) {
+      const face = patch.fontFamily.split(",")[0]?.replace(/['"]/g, "").trim();
+      if (face) format("fontName", face);
       setDoc((prev) => ({ ...prev, fontFamily: patch.fontFamily! }));
     }
     if (patch.fontSize) {
-      setDoc((prev) => ({ ...prev, fontSizePx: patch.fontSize! }));
+      // execCommand fontSize only accepts 1–7; wrap selection with a span instead.
+      const size = patch.fontSize;
+      const sel = window.getSelection();
+      if (sel && !sel.isCollapsed && sel.rangeCount > 0) {
+        const range = sel.getRangeAt(0);
+        const span = document.createElement("span");
+        span.style.fontSize = `${size}pt`;
+        try {
+          range.surroundContents(span);
+        } catch {
+          format("fontSize", "3");
+        }
+        syncFromEditor();
+      }
+      setDoc((prev) => ({ ...prev, fontSizePx: size }));
+      refreshSelectionUi();
     }
   }
 
@@ -451,6 +563,7 @@ export function SkrivTool() {
   const pageH = pageHeightMm(doc.pageSize);
   const previewMax = pagePreviewMaxWidthPx(doc.pageSize);
   const marginPct = (doc.marginMm / pageW) * 100;
+  const compactBtn = `${secondaryBtnClass} !px-2.5 !py-1.5 text-xs`;
 
   const formatLabels = {
     bold: t.bold,
@@ -466,12 +579,11 @@ export function SkrivTool() {
   };
 
   return (
-    <div className="papers-surface mx-auto max-w-5xl space-y-4">
+    <div className="papers-surface mx-auto max-w-5xl space-y-3">
       <p className="text-sm text-muted">{t.intro}</p>
-      <p className="text-xs text-muted">{t.note}</p>
 
-      <div className="flex flex-wrap items-end gap-3">
-        <div className="min-w-[12rem] flex-1">
+      <div className="flex flex-wrap items-end gap-2">
+        <div className="min-w-[10rem] flex-1">
           <Field label={t.title}>
             <KitInput
               value={doc.title}
@@ -518,321 +630,384 @@ export function SkrivTool() {
         </button>
       </div>
 
-      <PapersFormatBar
-        value={formatState}
-        onChange={onFormatChange}
-        labels={formatLabels}
-        extras={
-          <>
-            <button type="button" className={secondaryBtnClass} onClick={addTextBox}>
-              {t.addTextBox}
-            </button>
-            <button
-              type="button"
-              className={secondaryBtnClass}
-              onClick={deleteSelectedBox}
-              disabled={!selectedBoxId}
-            >
-              {t.deleteTextBox}
-            </button>
-            <button type="button" className={secondaryBtnClass} onClick={insertTable}>
-              {t.insertTable}
-            </button>
-            <button
-              type="button"
-              className={secondaryBtnClass}
-              onClick={() => format("insertUnorderedList")}
-            >
-              {t.bulletList}
-            </button>
-            <button
-              type="button"
-              className={secondaryBtnClass}
-              onClick={() => format("insertOrderedList")}
-            >
-              {t.numberedList}
-            </button>
-            <label className={`${secondaryBtnClass} cursor-pointer`}>
-              {t.insertImage}
-              <input
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={(e) => {
-                  const f = e.target.files?.[0] ?? null;
-                  e.target.value = "";
-                  insertImage(f);
-                }}
-              />
-            </label>
-            <button type="button" className={secondaryBtnClass} onClick={() => format("undo")}>
-              {t.undo}
-            </button>
-            <button type="button" className={secondaryBtnClass} onClick={() => format("redo")}>
-              {t.redo}
-            </button>
-          </>
-        }
-      />
-
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-        <Field label={t.pageSize}>
-          <KitSelect
-            value={doc.pageSize}
-            onChange={(e) =>
-              setDoc((prev) => ({
-                ...prev,
-                pageSize: e.target.value as PageSize,
-              }))
-            }
-          >
-            {PAGE_SIZES.map((size) => (
-              <option key={size} value={size}>
-                {pageSizeLabel(size)}
-              </option>
-            ))}
-          </KitSelect>
-        </Field>
-        <Field label={t.marginMm}>
-          <KitInput
-            type="number"
-            min={10}
-            max={40}
-            value={doc.marginMm}
-            onChange={(e) =>
-              setDoc((prev) => ({
-                ...prev,
-                marginMm: Number(e.target.value) || 20,
-              }))
-            }
-          />
-        </Field>
-        <Field label={t.lineHeight}>
-          <KitInput
-            type="number"
-            min={1}
-            max={2.5}
-            step={0.05}
-            value={doc.lineHeight}
-            onChange={(e) =>
-              setDoc((prev) => ({
-                ...prev,
-                lineHeight: Number(e.target.value) || 1.15,
-              }))
-            }
-          />
-        </Field>
-        <Field label={t.dictionary} hint={t.dictionaryHint}>
-          <KitSelect
-            value={dictLang}
-            onChange={(e) => changeDictLang(e.target.value as DictLang)}
-          >
-            {DICT_LANGS.map((lang) => (
-              <option key={lang} value={lang}>
-                {(t[`dict_${lang}` as keyof typeof t] as string) ?? lang}
-              </option>
-            ))}
-          </KitSelect>
-        </Field>
-        <Field label={t.zoom}>
-          <KitSelect
-            value={String(zoom)}
-            onChange={(e) => setZoom(Number(e.target.value) || 100)}
-          >
-            {[75, 90, 100, 110, 125, 150].map((z) => (
-              <option key={z} value={z}>
-                {z}%
-              </option>
-            ))}
-          </KitSelect>
-        </Field>
-      </div>
-
-      <div className="flex flex-wrap items-center gap-3 text-sm">
-        <label className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            checked={spellOn}
-            onChange={(e) => setSpellOn(e.target.checked)}
-            className="h-4 w-4 accent-[var(--accent)]"
-          />
-          {t.spellcheck}
-        </label>
-        <span className="text-xs text-muted">
-          {t.personalWords.replace("{count}", String(personalCount))}
-        </span>
-        <span className="text-xs text-muted">{t.textBoxHint}</span>
-      </div>
-
-      {spellOn && (dictLang === "da" || dictLang === "en") && issues.length > 0 ? (
-        <div className="rounded-[12px] border border-border bg-surface p-3">
-          <p className="mb-2 text-sm font-medium">{t.unknownWords}</p>
-          <ul className="flex flex-wrap gap-2">
-            {issues.map((issue) => (
-              <li key={issue.word}>
-                <button
-                  type="button"
-                  className="rounded-[8px] border border-border px-2 py-1 text-xs"
-                  onClick={() => learnWord(issue.word)}
-                >
-                  {issue.word}
-                  {issue.count > 1 ? ` ×${issue.count}` : ""}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ) : null}
-
-      <div className="grid gap-3 sm:grid-cols-[1fr_1fr_auto_auto]">
-        <Field label={t.find}>
-          <KitInput value={find} onChange={(e) => setFind(e.target.value)} />
-        </Field>
-        <Field label={t.replace}>
-          <KitInput
-            value={replaceWith}
-            onChange={(e) => setReplaceWith(e.target.value)}
-          />
-        </Field>
-        <button
-          type="button"
-          className={`${secondaryBtnClass} self-end`}
-          onClick={() => doFindReplace(false)}
-        >
-          {t.replaceOne}
-        </button>
-        <button
-          type="button"
-          className={`${secondaryBtnClass} self-end`}
-          onClick={() => doFindReplace(true)}
-        >
-          {t.replaceAll}
-        </button>
-      </div>
-
       <ErrorBanner>{error}</ErrorBanner>
 
-      <div className="flex flex-wrap items-center justify-between gap-2 rounded-[12px] border border-border bg-surface px-3 py-2 text-xs text-muted">
-        <div className="flex flex-wrap gap-x-3 gap-y-1">
-          <span>{t.statWords.replace("{n}", String(stats.words))}</span>
-          <span>{t.statChars.replace("{n}", String(stats.chars))}</span>
-          <span>
-            {t.statCharsNoSpace.replace("{n}", String(stats.charsNoSpace))}
-          </span>
-          <span>{t.statSpaces.replace("{n}", String(stats.spaces))}</span>
-          <span>{t.statKeystrokes.replace("{n}", String(stats.keystrokes))}</span>
-          <span>
-            {t.statKeystrokesSpaces.replace(
-              "{n}",
-              String(stats.keystrokesWithSpaces),
-            )}
-          </span>
-        </div>
-        <span>
-          {savedAt
-            ? t.savedAt.replace(
-                "{time}",
-                new Date(savedAt).toLocaleTimeString(),
-              )
-            : t.unsaved}
-        </span>
-      </div>
-
-      <div className="papers-desk overflow-auto rounded-[12px] border border-border px-3 py-6 sm:px-10 sm:py-10">
-        <p className="mb-4 text-center text-[11px] font-medium uppercase tracking-wide text-[#555]">
-          {pageSizeLabel(doc.pageSize)} · {zoom}%
-        </p>
+      <div className="papers-desk overflow-auto rounded-[14px] border border-border px-2 pb-8 pt-3 sm:px-6 sm:pt-4">
         <div
-          className="mx-auto origin-top"
+          className="papers-paper-stack mx-auto origin-top"
           style={{
             width: `min(100%, ${previewMax}px)`,
             transform: zoom === 100 ? undefined : `scale(${zoom / 100})`,
-            marginBottom: zoom === 100 ? undefined : `${((zoom / 100) - 1) * 40}%`,
+            marginBottom:
+              zoom === 100 ? undefined : `${((zoom / 100) - 1) * 42}%`,
           }}
         >
-        <div
-          ref={pageRef}
-          className="papers-sheet relative mx-auto"
-          style={{
-            width: "100%",
-            maxWidth: `${pageW}mm`,
-            aspectRatio: `${pageW} / ${pageH}`,
-          }}
-          onPointerMove={onPagePointerMove}
-          onPointerUp={onPagePointerUp}
-          onClick={() => setSelectedBoxId(null)}
-        >
-          <div
-            ref={editorRef}
-            contentEditable
-            suppressContentEditableWarning
-            spellCheck={spellOn}
-            lang={browserLangTag(dictLang)}
-            role="textbox"
-            aria-label={t.editorLabel}
-            className="absolute inset-0 overflow-auto text-black outline-none [&_h1]:mb-3 [&_h1]:text-[1.7em] [&_h1]:font-bold [&_h2]:mb-2 [&_h2]:text-[1.35em] [&_h2]:font-bold [&_p]:mb-2"
-            style={{
-              padding: `${marginPct}%`,
-              fontFamily: doc.fontFamily,
-              fontSize: `${doc.fontSizePx}pt`,
-              lineHeight: String(doc.lineHeight),
-            }}
-            onInput={syncFromEditor}
-            onBlur={syncFromEditor}
-            onClick={(e) => e.stopPropagation()}
-            onFocus={() => setSelectedBoxId(null)}
-          />
+          <div className="papers-ribbon px-2 py-2">
+            <PapersFormatBar
+              variant="ribbon"
+              value={formatState}
+              onChange={onFormatChange}
+              labels={formatLabels}
+              extras={
+                <>
+                  <button
+                    type="button"
+                    className={compactBtn}
+                    onClick={() => format("undo")}
+                  >
+                    {t.undo}
+                  </button>
+                  <button
+                    type="button"
+                    className={compactBtn}
+                    onClick={() => format("redo")}
+                  >
+                    {t.redo}
+                  </button>
+                  <button
+                    type="button"
+                    className={compactBtn}
+                    onClick={() => format("insertUnorderedList")}
+                  >
+                    {t.bulletList}
+                  </button>
+                  <button
+                    type="button"
+                    className={compactBtn}
+                    onClick={() => format("insertOrderedList")}
+                  >
+                    {t.numberedList}
+                  </button>
+                  <button
+                    type="button"
+                    className={`${compactBtn} ${panel === "insert" ? "!bg-accent !text-white" : ""}`}
+                    onClick={() =>
+                      setPanel((p) => (p === "insert" ? "none" : "insert"))
+                    }
+                  >
+                    {t.insertTools}
+                  </button>
+                  <button
+                    type="button"
+                    className={`${compactBtn} ${panel === "page" ? "!bg-accent !text-white" : ""}`}
+                    onClick={() =>
+                      setPanel((p) => (p === "page" ? "none" : "page"))
+                    }
+                  >
+                    {t.pageTools}
+                  </button>
+                  <button
+                    type="button"
+                    className={`${compactBtn} ${panel === "find" ? "!bg-accent !text-white" : ""}`}
+                    onClick={() =>
+                      setPanel((p) => (p === "find" ? "none" : "find"))
+                    }
+                  >
+                    {t.findReplaceToggle}
+                  </button>
+                </>
+              }
+            />
 
-          {boxes.map((box) => (
+            {panel === "insert" ? (
+              <div className="mt-2 flex flex-wrap gap-1.5 rounded-[10px] border border-border/80 bg-background/70 p-2">
+                <button
+                  type="button"
+                  className={compactBtn}
+                  onClick={insertTable}
+                >
+                  {t.insertTable}
+                </button>
+                <label className={`${compactBtn} cursor-pointer`}>
+                  {t.insertImage}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const f = e.target.files?.[0] ?? null;
+                      e.target.value = "";
+                      insertImage(f);
+                    }}
+                  />
+                </label>
+                <button
+                  type="button"
+                  className={compactBtn}
+                  onClick={addTextBox}
+                >
+                  {t.addTextBox}
+                </button>
+                <button
+                  type="button"
+                  className={compactBtn}
+                  onClick={deleteSelectedBox}
+                  disabled={!selectedBoxId}
+                >
+                  {t.deleteTextBox}
+                </button>
+              </div>
+            ) : null}
+
+            {panel === "page" ? (
+              <div className="mt-2 grid gap-2 rounded-[10px] border border-border/80 bg-background/70 p-2 sm:grid-cols-2 lg:grid-cols-5">
+                <Field label={t.pageSize}>
+                  <KitSelect
+                    value={doc.pageSize}
+                    onChange={(e) =>
+                      setDoc((prev) => ({
+                        ...prev,
+                        pageSize: e.target.value as PageSize,
+                      }))
+                    }
+                  >
+                    {PAGE_SIZES.map((size) => (
+                      <option key={size} value={size}>
+                        {pageSizeLabel(size)}
+                      </option>
+                    ))}
+                  </KitSelect>
+                </Field>
+                <Field label={t.marginMm}>
+                  <KitInput
+                    type="number"
+                    min={10}
+                    max={40}
+                    value={doc.marginMm}
+                    onChange={(e) =>
+                      setDoc((prev) => ({
+                        ...prev,
+                        marginMm: Number(e.target.value) || 20,
+                      }))
+                    }
+                  />
+                </Field>
+                <Field label={t.lineHeight}>
+                  <KitInput
+                    type="number"
+                    min={1}
+                    max={2.5}
+                    step={0.05}
+                    value={doc.lineHeight}
+                    onChange={(e) =>
+                      setDoc((prev) => ({
+                        ...prev,
+                        lineHeight: Number(e.target.value) || 1.15,
+                      }))
+                    }
+                  />
+                </Field>
+                <Field label={t.dictionary}>
+                  <KitSelect
+                    value={dictLang}
+                    onChange={(e) =>
+                      changeDictLang(e.target.value as DictLang)
+                    }
+                  >
+                    {DICT_LANGS.map((lang) => (
+                      <option key={lang} value={lang}>
+                        {(t[`dict_${lang}` as keyof typeof t] as string) ??
+                          lang}
+                      </option>
+                    ))}
+                  </KitSelect>
+                </Field>
+                <Field label={t.zoom}>
+                  <KitSelect
+                    value={String(zoom)}
+                    onChange={(e) => setZoom(Number(e.target.value) || 100)}
+                  >
+                    {[75, 90, 100, 110, 125, 150].map((z) => (
+                      <option key={z} value={z}>
+                        {z}%
+                      </option>
+                    ))}
+                  </KitSelect>
+                </Field>
+                <label className="flex items-center gap-2 text-sm sm:col-span-2">
+                  <input
+                    type="checkbox"
+                    checked={spellOn}
+                    onChange={(e) => setSpellOn(e.target.checked)}
+                    className="h-4 w-4 accent-[var(--accent)]"
+                  />
+                  {t.spellcheck}
+                  <span className="text-xs text-muted">
+                    {t.personalWords.replace("{count}", String(personalCount))}
+                  </span>
+                </label>
+              </div>
+            ) : null}
+
+            {panel === "find" ? (
+              <div className="mt-2 grid gap-2 rounded-[10px] border border-border/80 bg-background/70 p-2 sm:grid-cols-[1fr_1fr_auto_auto]">
+                <Field label={t.find}>
+                  <KitInput
+                    value={find}
+                    onChange={(e) => setFind(e.target.value)}
+                  />
+                </Field>
+                <Field label={t.replace}>
+                  <KitInput
+                    value={replaceWith}
+                    onChange={(e) => setReplaceWith(e.target.value)}
+                  />
+                </Field>
+                <button
+                  type="button"
+                  className={`${compactBtn} self-end`}
+                  onClick={() => doFindReplace(false)}
+                >
+                  {t.replaceOne}
+                </button>
+                <button
+                  type="button"
+                  className={`${compactBtn} self-end`}
+                  onClick={() => doFindReplace(true)}
+                >
+                  {t.replaceAll}
+                </button>
+              </div>
+            ) : null}
+
+            {spellOn &&
+            (dictLang === "da" || dictLang === "en") &&
+            issues.length > 0 ? (
+              <div className="mt-2 rounded-[10px] border border-border/80 bg-background/70 px-2.5 py-2">
+                <p className="mb-1.5 text-xs font-medium text-muted">
+                  {t.unknownWords}
+                </p>
+                <ul className="flex flex-wrap gap-1.5">
+                  {issues.map((issue) => (
+                    <li key={issue.word}>
+                      <button
+                        type="button"
+                        className="rounded-[7px] border border-border px-2 py-0.5 text-xs"
+                        onClick={() => learnWord(issue.word)}
+                        title={t.addToDictionary}
+                      >
+                        {issue.word}
+                        {issue.count > 1 ? ` ×${issue.count}` : ""}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+          </div>
+
+          <div
+            ref={pageRef}
+            className="papers-sheet relative"
+            style={{
+              width: "100%",
+              aspectRatio: `${pageW} / ${pageH}`,
+            }}
+            onPointerMove={onPagePointerMove}
+            onPointerUp={onPagePointerUp}
+            onClick={() => setSelectedBoxId(null)}
+          >
             <div
-              key={box.id}
-              data-selected={selectedBoxId === box.id}
-              className="papers-textbox absolute cursor-move overflow-hidden rounded-[4px]"
+              ref={editorRef}
+              contentEditable
+              suppressContentEditableWarning
+              spellCheck={spellOn}
+              lang={browserLangTag(dictLang)}
+              role="textbox"
+              aria-label={t.editorLabel}
+              className="absolute inset-0 overflow-auto text-black outline-none [&_h1]:mb-3 [&_h1]:text-[1.7em] [&_h1]:font-bold [&_h2]:mb-2 [&_h2]:text-[1.35em] [&_h2]:font-bold [&_p]:mb-2 [&_ul]:mb-2 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:mb-2 [&_ol]:list-decimal [&_ol]:pl-6"
               style={{
-                left: `${box.x}%`,
-                top: `${box.y}%`,
-                width: `${box.w}%`,
-                height: `${box.h}%`,
-                zIndex: 10 + box.z,
-                color: box.color,
-                background: box.background,
-                fontFamily: box.fontFamily,
-                fontSize: `${box.fontSizePx}px`,
-                fontWeight: box.bold ? 700 : 400,
-                fontStyle: box.italic ? "italic" : "normal",
-                textDecoration: box.underline ? "underline" : "none",
-                textAlign: box.align,
+                padding: `${marginPct}%`,
+                fontFamily: doc.fontFamily,
+                fontSize: `${doc.fontSizePx}pt`,
+                lineHeight: String(doc.lineHeight),
               }}
-              onPointerDown={(e) => onBoxPointerDown(e, box, "move")}
-              onClick={(e) => {
-                e.stopPropagation();
-                setSelectedBoxId(box.id);
-              }}
-            >
-              <textarea
-                value={box.text}
-                onChange={(e) =>
-                  setDoc((prev) => ({
-                    ...prev,
-                    boxes: (prev.boxes ?? []).map((b) =>
-                      b.id === box.id ? { ...b, text: e.target.value } : b,
-                    ),
-                  }))
-                }
-                className="h-full w-full resize-none border-0 bg-transparent p-2 text-inherit outline-none"
-                onPointerDown={(e) => e.stopPropagation()}
-              />
-              {selectedBoxId === box.id ? (
-                <span
-                  className="absolute bottom-0 right-0 h-3 w-3 cursor-se-resize bg-accent"
-                  onPointerDown={(e) => onBoxPointerDown(e, box, "resize")}
+              onInput={syncFromEditor}
+              onBlur={syncFromEditor}
+              onClick={(e) => e.stopPropagation()}
+              onMouseUp={refreshSelectionUi}
+              onKeyUp={refreshSelectionUi}
+              onFocus={() => setSelectedBoxId(null)}
+            />
+
+            {boxes.map((box) => (
+              <div
+                key={box.id}
+                data-selected={selectedBoxId === box.id}
+                className="papers-textbox absolute cursor-move overflow-hidden rounded-[4px]"
+                style={{
+                  left: `${box.x}%`,
+                  top: `${box.y}%`,
+                  width: `${box.w}%`,
+                  height: `${box.h}%`,
+                  zIndex: 10 + box.z,
+                  color: box.color,
+                  background: box.background,
+                  fontFamily: box.fontFamily,
+                  fontSize: `${box.fontSizePx}px`,
+                  fontWeight: box.bold ? 700 : 400,
+                  fontStyle: box.italic ? "italic" : "normal",
+                  textDecoration: box.underline ? "underline" : "none",
+                  textAlign: box.align,
+                }}
+                onPointerDown={(e) => onBoxPointerDown(e, box, "move")}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedBoxId(box.id);
+                  setBubblePos(null);
+                }}
+              >
+                <textarea
+                  value={box.text}
+                  onChange={(e) =>
+                    setDoc((prev) => ({
+                      ...prev,
+                      boxes: (prev.boxes ?? []).map((b) =>
+                        b.id === box.id ? { ...b, text: e.target.value } : b,
+                      ),
+                    }))
+                  }
+                  className="h-full w-full resize-none border-0 bg-transparent p-2 text-inherit outline-none"
+                  onPointerDown={(e) => e.stopPropagation()}
                 />
-              ) : null}
+                {selectedBoxId === box.id ? (
+                  <span
+                    className="absolute bottom-0 right-0 h-3 w-3 cursor-se-resize bg-accent"
+                    onPointerDown={(e) => onBoxPointerDown(e, box, "resize")}
+                  />
+                ) : null}
+              </div>
+            ))}
+          </div>
+
+          <div className="papers-sheet-footer flex flex-wrap items-center justify-between gap-2 px-3 py-2 text-[11px] text-muted">
+            <div className="flex flex-wrap gap-x-3 gap-y-1">
+              <span>
+                {pageSizeLabel(doc.pageSize)} · {zoom}%
+              </span>
+              <span>{t.statWords.replace("{n}", String(stats.words))}</span>
+              <span>{t.statChars.replace("{n}", String(stats.chars))}</span>
             </div>
-          ))}
-        </div>
+            <span>
+              {savedAt
+                ? t.savedAt.replace(
+                    "{time}",
+                    new Date(savedAt).toLocaleTimeString(),
+                  )
+                : t.unsaved}
+            </span>
+          </div>
         </div>
       </div>
+
+      {bubblePos && !selectedBoxId ? (
+        <SkrivSelectionBubble
+          pos={bubblePos}
+          value={formatState}
+          onChange={onFormatChange}
+          labels={formatLabels}
+        />
+      ) : null}
     </div>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { FontSizeInput } from "@/components/tools/FontSizeInput";
 import { KitSelect, fieldClass, secondaryBtnClass } from "@/components/tools/ui";
 
 export type PapersAlign = "left" | "center" | "right";
@@ -38,8 +39,6 @@ const FONTS = [
   { id: "ui-monospace, monospace", label: "Mono" },
 ] as const;
 
-const SIZES = [10, 11, 12, 14, 16, 18, 20, 24, 28, 32, 36, 48];
-
 function ToolBtn({
   active,
   onClick,
@@ -72,14 +71,24 @@ export function PapersFormatBar({
   onChange,
   labels,
   extras,
+  variant = "bar",
 }: {
   value: PapersFormatState;
   onChange: (patch: Partial<PapersFormatState>) => void;
   labels: PapersFormatLabels;
   extras?: ReactNode;
+  /** ribbon = compact strip for paper chrome; bar = standalone card */
+  variant?: "bar" | "ribbon";
 }) {
+  const ribbon = variant === "ribbon";
   return (
-    <div className="papers-format-bar flex flex-wrap items-center gap-1.5 rounded-[12px] border border-border bg-surface p-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)]">
+    <div
+      className={
+        ribbon
+          ? "papers-format-bar flex flex-wrap items-center gap-1"
+          : "papers-format-bar flex flex-wrap items-center gap-1.5 rounded-[12px] border border-border bg-surface p-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)]"
+      }
+    >
       <ToolBtn
         active={value.bold}
         onClick={() => onChange({ bold: !value.bold })}
@@ -109,79 +118,75 @@ export function PapersFormatBar({
         onClick={() => onChange({ align: "left" })}
         title={labels.alignLeft}
       >
-        {labels.alignLeft}
+        {ribbon ? "L" : labels.alignLeft}
       </ToolBtn>
       <ToolBtn
         active={value.align === "center"}
         onClick={() => onChange({ align: "center" })}
         title={labels.alignCenter}
       >
-        {labels.alignCenter}
+        {ribbon ? "C" : labels.alignCenter}
       </ToolBtn>
       <ToolBtn
         active={value.align === "right"}
         onClick={() => onChange({ align: "right" })}
         title={labels.alignRight}
       >
-        {labels.alignRight}
+        {ribbon ? "R" : labels.alignRight}
       </ToolBtn>
 
       <span className="mx-1 hidden h-5 w-px bg-border sm:block" aria-hidden />
 
-      <label className="flex items-center gap-1 rounded-[8px] border border-border bg-background px-2 py-1 text-[11px] text-muted">
-        {labels.fontFamily}
-        <KitSelect
-          value={value.fontFamily}
-          onChange={(e) => onChange({ fontFamily: e.target.value })}
-          className={`${fieldClass} w-[7.5rem] py-1 text-xs`}
-        >
-          {FONTS.map((f) => (
-            <option key={f.id} value={f.id}>
-              {f.label}
-            </option>
-          ))}
-        </KitSelect>
-      </label>
+      <KitSelect
+        value={value.fontFamily}
+        onChange={(e) => onChange({ fontFamily: e.target.value })}
+        className={`${fieldClass} ${ribbon ? "h-8 w-[7rem] py-1 text-xs" : "w-[7.5rem] py-1 text-xs"}`}
+        title={labels.fontFamily}
+      >
+        {FONTS.map((f) => (
+          <option key={f.id} value={f.id}>
+            {f.label}
+          </option>
+        ))}
+      </KitSelect>
 
-      <label className="flex items-center gap-1 rounded-[8px] border border-border bg-background px-2 py-1 text-[11px] text-muted">
-        {labels.fontSize}
-        <KitSelect
-          value={String(value.fontSize)}
-          onChange={(e) => onChange({ fontSize: Number(e.target.value) || 12 })}
-          className={`${fieldClass} w-[4.2rem] py-1 text-xs`}
-        >
-          {SIZES.map((n) => (
-            <option key={n} value={n}>
-              {n}
-            </option>
-          ))}
-        </KitSelect>
-      </label>
+      <FontSizeInput
+        value={value.fontSize}
+        onChange={(fontSize) => onChange({ fontSize })}
+        title={labels.fontSize}
+        compact={ribbon}
+      />
 
-      <label className="flex items-center gap-1 rounded-[8px] border border-border bg-background px-2 py-1 text-[11px] text-muted">
-        {labels.textColor}
+      <label
+        className="flex items-center gap-1 rounded-[8px] border border-border bg-background px-1.5 py-1 text-[11px] text-muted"
+        title={labels.textColor}
+      >
+        <span className="font-semibold text-foreground">A</span>
         <input
           type="color"
           value={value.color || "#111111"}
           onChange={(e) => onChange({ color: e.target.value })}
-          className="h-7 w-8 cursor-pointer rounded border border-border bg-transparent"
+          className="h-6 w-7 cursor-pointer rounded border border-border bg-transparent"
         />
       </label>
 
-      <label className="flex items-center gap-1 rounded-[8px] border border-border bg-background px-2 py-1 text-[11px] text-muted">
-        {labels.fillColor}
+      <label
+        className="flex items-center gap-1 rounded-[8px] border border-border bg-background px-1.5 py-1 text-[11px] text-muted"
+        title={labels.fillColor}
+      >
+        <span className="inline-block h-3 w-3 rounded-sm border border-border bg-current" />
         <input
           type="color"
           value={value.background || "#ffffff"}
           onChange={(e) => onChange({ background: e.target.value })}
-          className="h-7 w-8 cursor-pointer rounded border border-border bg-transparent"
+          className="h-6 w-7 cursor-pointer rounded border border-border bg-transparent"
         />
       </label>
 
       {extras ? (
         <>
           <span className="mx-1 hidden h-5 w-px bg-border sm:block" aria-hidden />
-          <div className="flex flex-wrap items-center gap-1.5">{extras}</div>
+          <div className="flex flex-wrap items-center gap-1">{extras}</div>
         </>
       ) : null}
     </div>
