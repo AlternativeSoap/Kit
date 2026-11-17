@@ -1,9 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect } from "react";
 import { KitMark } from "@/components/KitMark";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
-import { PersonalSettings } from "@/components/PersonalSettings";
 import { SearchShell } from "@/components/search/SearchShell";
 import { useDictionary } from "@/i18n/LanguageProvider";
 
@@ -22,7 +22,12 @@ export function HomePage() {
           {dictionary.brand}
         </p>
         <div className="flex items-center gap-1 sm:gap-2">
-          <PersonalSettings />
+          <Link
+            href="/settings"
+            className="kit-touch-target inline-flex items-center justify-center rounded-[8px] px-3 py-2 text-xs font-medium text-muted transition-colors hover:bg-accent-soft hover:text-foreground sm:min-h-0 sm:min-w-0 sm:px-2 sm:py-1"
+          >
+            {dictionary.personal.open}
+          </Link>
           <LanguageSwitcher />
         </div>
       </header>

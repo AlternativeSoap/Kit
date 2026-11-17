@@ -55,8 +55,10 @@ export const da: Dictionary = {
     findTopic: "Find et {topic}-værktøj.",
   },
   personal: {
-    open: "Personligt",
-    title: "Personlig Kit",
+    open: "Indstillinger",
+    title: "Indstillinger",
+    description:
+      "Fastgør værktøjer, skjul dem fra søgning, lav genveje, og ryd lokale Kit-data på denne enhed.",
     close: "Luk",
     pinsTitle: "Fastgjorte værktøjer",
     pinsHelp: "Fastgjorte værktøjer vises øverst i den tomme søgeliste.",

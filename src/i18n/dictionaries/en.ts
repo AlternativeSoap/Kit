@@ -55,8 +55,10 @@ export const en: Dictionary = {
     findTopic: "Find a {topic} tool.",
   },
   personal: {
-    open: "Personal",
-    title: "Personal Kit",
+    open: "Settings",
+    title: "Settings",
+    description:
+      "Pin tools, hide them from search, add shortcuts, and clear local Kit data on this device.",
     close: "Close",
     pinsTitle: "Pinned tools",
     pinsHelp: "Pinned tools appear at the top of the empty search list.",

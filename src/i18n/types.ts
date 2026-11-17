@@ -134,6 +134,7 @@ export type Dictionary = {
   personal: {
     open: string;
     title: string;
+    description: string;
     close: string;
     pinsTitle: string;
     pinsHelp: string;
