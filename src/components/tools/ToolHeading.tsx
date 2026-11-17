@@ -38,11 +38,13 @@ export function ToolHeading({ toolId, name, description }: ToolHeadingProps) {
   const body = gate.live ? live.description : description;
 
   return (
-    <div className="mb-8">
-      <h1 className="font-serif text-[1.75rem] leading-tight tracking-tight text-foreground sm:text-4xl">
+    <div className="mb-5 sm:mb-8">
+      <h1 className="font-serif text-[1.55rem] leading-tight tracking-tight text-foreground sm:text-4xl">
         {title}
       </h1>
-      <p className="mt-2 max-w-2xl text-sm text-muted sm:text-base">{body}</p>
+      <p className="mt-1.5 line-clamp-3 max-w-2xl text-sm text-muted sm:mt-2 sm:line-clamp-none sm:text-base">
+        {body}
+      </p>
     </div>
   );
 }

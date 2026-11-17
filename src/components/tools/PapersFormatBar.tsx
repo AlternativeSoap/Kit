@@ -85,7 +85,7 @@ export function PapersFormatBar({
     <div
       className={
         ribbon
-          ? "papers-format-bar flex flex-wrap items-center gap-1"
+          ? "papers-format-bar flex items-center gap-1 sm:flex-wrap"
           : "papers-format-bar flex flex-wrap items-center gap-1.5 rounded-[12px] border border-border bg-surface p-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)]"
       }
     >
@@ -185,8 +185,8 @@ export function PapersFormatBar({
 
       {extras ? (
         <>
-          <span className="mx-1 hidden h-5 w-px bg-border sm:block" aria-hidden />
-          <div className="flex flex-wrap items-center gap-1">{extras}</div>
+          <span className="mx-1 hidden h-5 w-px shrink-0 bg-border sm:block" aria-hidden />
+          <div className="flex items-center gap-1 sm:flex-wrap">{extras}</div>
         </>
       ) : null}
     </div>

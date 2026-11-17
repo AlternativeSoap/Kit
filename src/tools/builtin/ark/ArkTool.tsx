@@ -667,71 +667,72 @@ export function ArkTool() {
   };
 
   return (
-    <div className="papers-surface mx-auto max-w-6xl space-y-4">
-      <p className="text-sm text-muted">{t.intro}</p>
-      <p className="text-xs text-muted">{t.note}</p>
+    <div className="papers-surface mx-auto max-w-6xl space-y-3 sm:space-y-4">
+      <p className="hidden text-sm text-muted sm:block">{t.intro}</p>
+      <p className="hidden text-xs text-muted sm:block">{t.note}</p>
 
-      <div className="flex flex-wrap items-end gap-3">
-        <div className="min-w-[12rem] flex-1">
-          <Field label={t.title}>
-            <KitInput
-              value={doc.title}
-              onChange={(e) =>
-                setDoc((prev) => ({ ...prev, title: e.target.value }))
-              }
-            />
-          </Field>
+      <div className="space-y-2">
+        <Field label={t.title}>
+          <KitInput
+            value={doc.title}
+            onChange={(e) =>
+              setDoc((prev) => ({ ...prev, title: e.target.value }))
+            }
+          />
+        </Field>
+        <div className="kit-h-scroll sm:flex-wrap">
+          <FileInput
+            inline
+            label={t.openFile}
+            accept=".kitsheet,.json,.csv,.txt"
+            onFile={(f) => void onOpenFile(f)}
+          />
+          <button type="button" className={secondaryBtnClass} onClick={newSheet}>
+            {t.newSheet}
+          </button>
+          <button
+            type="button"
+            className={secondaryBtnClass}
+            onClick={() =>
+              downloadJsonFile(
+                `${(doc.title || "sheet").replace(/[^\w\-]+/g, "_")}.kitsheet`,
+                doc,
+              )
+            }
+          >
+            {t.saveKitsheet}
+          </button>
+          <button
+            type="button"
+            className={secondaryBtnClass}
+            onClick={() =>
+              downloadTextFile(
+                `${(doc.title || "sheet").replace(/[^\w\-]+/g, "_")}.csv`,
+                "\uFEFF" + sheetToCsv(doc, ";"),
+                "text/csv;charset=utf-8",
+              )
+            }
+          >
+            {t.exportCsv}
+          </button>
+          <button
+            type="button"
+            className={primaryBtnClass}
+            onClick={() =>
+              downloadBlob(
+                new Blob([sheetToExcelXml(doc)], {
+                  type: "application/vnd.ms-excel",
+                }),
+                `${(doc.title || "sheet").replace(/[^\w\-]+/g, "_")}.xls`,
+              )
+            }
+          >
+            {t.exportExcel}
+          </button>
         </div>
-        <FileInput
-          label={t.openFile}
-          accept=".kitsheet,.json,.csv,.txt"
-          onFile={(f) => void onOpenFile(f)}
-        />
-        <button type="button" className={secondaryBtnClass} onClick={newSheet}>
-          {t.newSheet}
-        </button>
       </div>
 
-      <div className="flex flex-wrap gap-2">
-        <button
-          type="button"
-          className={secondaryBtnClass}
-          onClick={() =>
-            downloadJsonFile(
-              `${(doc.title || "sheet").replace(/[^\w\-]+/g, "_")}.kitsheet`,
-              doc,
-            )
-          }
-        >
-          {t.saveKitsheet}
-        </button>
-        <button
-          type="button"
-          className={secondaryBtnClass}
-          onClick={() =>
-            downloadTextFile(
-              `${(doc.title || "sheet").replace(/[^\w\-]+/g, "_")}.csv`,
-              "\uFEFF" + sheetToCsv(doc, ";"),
-              "text/csv;charset=utf-8",
-            )
-          }
-        >
-          {t.exportCsv}
-        </button>
-        <button
-          type="button"
-          className={primaryBtnClass}
-          onClick={() =>
-            downloadBlob(
-              new Blob([sheetToExcelXml(doc)], {
-                type: "application/vnd.ms-excel",
-              }),
-              `${(doc.title || "sheet").replace(/[^\w\-]+/g, "_")}.xls`,
-            )
-          }
-        >
-          {t.exportExcel}
-        </button>
+      <div className="kit-h-scroll sm:flex-wrap">
         <button type="button" className={secondaryBtnClass} onClick={() => addRows()}>
           {t.addRows}
         </button>
@@ -916,7 +917,7 @@ export function ArkTool() {
 
       <div
         ref={scrollRef}
-        className={`max-h-[min(70vh,40rem)] overflow-auto rounded-[12px] border border-border ${
+        className={`max-h-[min(62vh,40rem)] overflow-auto rounded-[12px] border border-border sm:max-h-[min(70vh,40rem)] ${
           panning ? "cursor-grab active:cursor-grabbing select-none" : ""
         }`}
         onPointerDown={onScrollPointerDown}

@@ -41,6 +41,12 @@ html {
   }
 }
 
+/* Avoid accidental sideways page scroll on phones. */
+html,
+body {
+  overflow-x: clip;
+}
+
 html::-webkit-scrollbar {
   width: 10px;
   height: 10px;
@@ -105,6 +111,39 @@ select {
   [role="button"]:active,
   .kit-touch-target:active {
     opacity: 0.82;
+  }
+
+  .papers-format-bar button,
+  .papers-selection-bubble button {
+    min-height: 2.5rem;
+    min-width: 2.5rem;
+  }
+}
+
+/* Horizontal action rails: swipe on phones instead of wrapping into tall stacks. */
+.kit-h-scroll {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.kit-h-scroll > * {
+  flex: 0 0 auto;
+}
+
+@media (max-width: 639px) {
+  .kit-h-scroll {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 0.15rem;
+  }
+
+  .kit-h-scroll::-webkit-scrollbar {
+    display: none;
   }
 }
 
@@ -359,5 +398,76 @@ details:not([open]) > :not(summary) {
   to {
     opacity: 1;
     transform: translate(-50%, -100%);
+  }
+}
+
+/* Phone layouts: dock format bubble, denser paper chrome, safer overflow. */
+@media (max-width: 639px) {
+  .papers-surface {
+    max-width: 100%;
+  }
+
+  .papers-desk {
+    border-radius: 12px;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    padding-top: 0.5rem;
+    padding-bottom: 1.25rem;
+  }
+
+  .papers-ribbon {
+    border-radius: 10px 10px 0 0;
+    position: sticky;
+    top: calc(3.3rem + env(safe-area-inset-top));
+  }
+
+  .papers-format-bar {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 0.15rem;
+  }
+
+  .papers-format-bar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .papers-selection-bubble {
+    top: auto !important;
+    left: 0.5rem !important;
+    right: 0.5rem !important;
+    bottom: max(0.65rem, env(safe-area-inset-bottom));
+    width: auto;
+    max-width: none;
+    transform: none !important;
+    justify-content: flex-start;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    box-shadow: 0 -6px 28px rgba(20, 20, 20, 0.14);
+    animation: papers-bubble-dock 120ms ease-out;
+  }
+
+  .papers-selection-bubble::-webkit-scrollbar {
+    display: none;
+  }
+
+  @keyframes papers-bubble-dock {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  .papers-sheet-footer {
+    font-size: 10px;
   }
 }

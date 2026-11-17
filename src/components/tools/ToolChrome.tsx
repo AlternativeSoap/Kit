@@ -44,7 +44,7 @@ export function ToolChrome() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/90 pt-[env(safe-area-inset-top)] backdrop-blur-sm">
-      <div className="mx-auto flex w-full max-w-5xl items-center gap-2 px-3 py-2.5 sm:gap-4 sm:px-6 sm:py-3">
+      <div className="mx-auto flex w-full max-w-5xl items-center gap-2 px-2.5 py-2 sm:gap-4 sm:px-6 sm:py-3">
         <Link
           href="/"
           className="kit-touch-target group flex shrink-0 items-center justify-center gap-2 rounded-[8px] text-sm font-medium text-foreground/80 hover:text-foreground"

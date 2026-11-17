@@ -491,67 +491,68 @@ export function DiasTool() {
   }, [undo, redo]);
 
   return (
-    <div className="papers-surface mx-auto max-w-6xl space-y-4">
-      <p className="text-sm text-muted">{t.intro}</p>
-      <p className="text-xs text-muted">{t.note}</p>
+    <div className="papers-surface mx-auto max-w-6xl space-y-3 sm:space-y-4">
+      <p className="hidden text-sm text-muted sm:block">{t.intro}</p>
+      <p className="hidden text-xs text-muted sm:block">{t.note}</p>
 
-      <div className="flex flex-wrap items-end gap-3">
-        <div className="min-w-[12rem] flex-1">
-          <Field label={t.title}>
-            <KitInput
-              value={doc.title}
-              onChange={(e) =>
-                setDoc((prev) => ({ ...prev, title: e.target.value }))
-              }
-            />
-          </Field>
+      <div className="space-y-2">
+        <Field label={t.title}>
+          <KitInput
+            value={doc.title}
+            onChange={(e) =>
+              setDoc((prev) => ({ ...prev, title: e.target.value }))
+            }
+          />
+        </Field>
+        <div className="kit-h-scroll sm:flex-wrap">
+          <FileInput
+            inline
+            label={t.openFile}
+            accept=".kitslides,.json"
+            onFile={(f) => void onOpenFile(f)}
+          />
+          <button type="button" className={secondaryBtnClass} onClick={newDeck}>
+            {t.newDeck}
+          </button>
+          <button
+            type="button"
+            className={secondaryBtnClass}
+            onClick={() =>
+              downloadJsonFile(
+                `${(doc.title || "slides").replace(/[^\w\-]+/g, "_")}.kitslides`,
+                doc,
+              )
+            }
+          >
+            {t.saveFile}
+          </button>
+          <button
+            type="button"
+            className={primaryBtnClass}
+            onClick={() => setPresenting(true)}
+          >
+            {t.present}
+          </button>
+          <button
+            type="button"
+            className={secondaryBtnClass}
+            onClick={() => void exportPng()}
+            disabled={exporting}
+          >
+            {t.exportPng}
+          </button>
+          <button
+            type="button"
+            className={secondaryBtnClass}
+            onClick={() => void exportPdf()}
+            disabled={exporting}
+          >
+            {t.exportPdf}
+          </button>
         </div>
-        <FileInput
-          label={t.openFile}
-          accept=".kitslides,.json"
-          onFile={(f) => void onOpenFile(f)}
-        />
-        <button type="button" className={secondaryBtnClass} onClick={newDeck}>
-          {t.newDeck}
-        </button>
-        <button
-          type="button"
-          className={secondaryBtnClass}
-          onClick={() =>
-            downloadJsonFile(
-              `${(doc.title || "slides").replace(/[^\w\-]+/g, "_")}.kitslides`,
-              doc,
-            )
-          }
-        >
-          {t.saveFile}
-        </button>
-        <button
-          type="button"
-          className={primaryBtnClass}
-          onClick={() => setPresenting(true)}
-        >
-          {t.present}
-        </button>
-        <button
-          type="button"
-          className={secondaryBtnClass}
-          onClick={() => void exportPng()}
-          disabled={exporting}
-        >
-          {t.exportPng}
-        </button>
-        <button
-          type="button"
-          className={secondaryBtnClass}
-          onClick={() => void exportPdf()}
-          disabled={exporting}
-        >
-          {t.exportPdf}
-        </button>
       </div>
 
-      <div className="flex flex-wrap gap-2">
+      <div className="kit-h-scroll sm:flex-wrap">
         <button type="button" className={secondaryBtnClass} onClick={addSlide}>
           {t.addSlide}
         </button>
@@ -720,10 +721,10 @@ export function DiasTool() {
           fontSize: t.fontSize,
         }}
       />
-      <p className="text-xs text-muted">{t.moveHint}</p>
+      <p className="hidden text-xs text-muted sm:block">{t.moveHint}</p>
 
-      <div className="papers-surface grid gap-4 lg:grid-cols-[7rem_minmax(0,1fr)_16rem]">
-        <div className="flex max-h-[28rem] flex-col gap-2 overflow-auto">
+      <div className="papers-surface grid gap-3 sm:gap-4 lg:grid-cols-[7rem_minmax(0,1fr)_16rem]">
+        <div className="order-2 flex max-h-none gap-2 overflow-x-auto pb-1 lg:order-1 lg:max-h-[28rem] lg:flex-col lg:overflow-auto lg:pb-0">
           {doc.slides.map((s, i) => (
             <button
               key={s.id}
@@ -732,7 +733,7 @@ export function DiasTool() {
                 setSlideIndex(i);
                 setSelectedId(s.blocks[0]?.id ?? null);
               }}
-              className={`rounded-[8px] border p-1 text-left ${
+              className={`w-[4.75rem] shrink-0 rounded-[8px] border p-1 text-left lg:w-full ${
                 i === slideIndex ? "border-accent" : "border-border"
               }`}
             >
@@ -747,7 +748,7 @@ export function DiasTool() {
 
         <div
           ref={stageRef}
-          className="relative aspect-video w-full overflow-hidden rounded-[12px] border border-border shadow-sm"
+          className="relative order-1 aspect-video w-full overflow-hidden rounded-[12px] border border-border shadow-sm lg:order-2"
           style={{ background: slide.background }}
           onPointerMove={onPointerMove}
           onPointerUp={onPointerUp}
@@ -805,7 +806,7 @@ export function DiasTool() {
           ))}
         </div>
 
-        <div className="space-y-3 rounded-[12px] border border-border bg-surface p-3">
+        <div className="order-3 space-y-3 rounded-[12px] border border-border bg-surface p-3">
           <h2 className="text-sm font-medium">{t.inspector}</h2>
           {!selected ? (
             <p className="text-xs text-muted">{t.noSelection}</p>

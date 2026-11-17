@@ -32,7 +32,7 @@ async function LibraryPageBody() {
     <LocaleGate serverLocale={serverLocale}>
       <div className="flex min-h-full min-h-dvh flex-1 flex-col overflow-x-clip">
         <ToolChrome />
-        <main className="kit-tool-enter mx-auto w-full max-w-5xl flex-1 px-4 py-6 pb-[max(2rem,env(safe-area-inset-bottom))] sm:px-6 sm:py-10 sm:pb-10">
+        <main className="kit-tool-enter mx-auto w-full max-w-5xl flex-1 px-3 py-4 pb-[max(2.5rem,env(safe-area-inset-bottom))] sm:px-6 sm:py-10 sm:pb-10">
           <LibraryCatalog />
         </main>
       </div>

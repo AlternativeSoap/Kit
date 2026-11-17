@@ -266,6 +266,12 @@ export function SkrivTool() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [doc.fontFamily, doc.fontSizePx]);
 
+  useEffect(() => {
+    if (window.matchMedia("(max-width: 639px)").matches) {
+      setZoom((z) => (z === 100 ? 90 : z));
+    }
+  }, []);
+
   const formatState: PapersFormatState = selectedBox
     ? {
         bold: !!selectedBox.bold,
@@ -580,59 +586,60 @@ export function SkrivTool() {
 
   return (
     <div className="papers-surface mx-auto max-w-5xl space-y-3">
-      <p className="text-sm text-muted">{t.intro}</p>
+      <p className="hidden text-sm text-muted sm:block">{t.intro}</p>
 
-      <div className="flex flex-wrap items-end gap-2">
-        <div className="min-w-[10rem] flex-1">
-          <Field label={t.title}>
-            <KitInput
-              value={doc.title}
-              onChange={(e) =>
-                setDoc((prev) => ({ ...prev, title: e.target.value }))
-              }
-            />
-          </Field>
+      <div className="space-y-2">
+        <Field label={t.title}>
+          <KitInput
+            value={doc.title}
+            onChange={(e) =>
+              setDoc((prev) => ({ ...prev, title: e.target.value }))
+            }
+          />
+        </Field>
+        <div className="kit-h-scroll sm:flex-wrap">
+          <FileInput
+            inline
+            label={t.openFile}
+            accept=".kitdoc,.json,.txt"
+            onFile={(f) => void onOpenFile(f)}
+          />
+          <button type="button" className={secondaryBtnClass} onClick={newDoc}>
+            {t.newDoc}
+          </button>
+          <button
+            type="button"
+            className={secondaryBtnClass}
+            onClick={() =>
+              downloadJsonFile(
+                `${(doc.title || "document").replace(/[^\w\-]+/g, "_")}.kitdoc`,
+                doc,
+              )
+            }
+          >
+            {t.saveKitdoc}
+          </button>
+          <button
+            type="button"
+            className={primaryBtnClass}
+            onClick={() =>
+              downloadTextFile(
+                `${(doc.title || "document").replace(/[^\w\-]+/g, "_")}.txt`,
+                htmlToPlainText(doc.html),
+              )
+            }
+          >
+            {t.exportTxt}
+          </button>
+          <button type="button" className={secondaryBtnClass} onClick={printDoc}>
+            {t.print}
+          </button>
         </div>
-        <FileInput
-          label={t.openFile}
-          accept=".kitdoc,.json,.txt"
-          onFile={(f) => void onOpenFile(f)}
-        />
-        <button type="button" className={secondaryBtnClass} onClick={newDoc}>
-          {t.newDoc}
-        </button>
-        <button
-          type="button"
-          className={secondaryBtnClass}
-          onClick={() =>
-            downloadJsonFile(
-              `${(doc.title || "document").replace(/[^\w\-]+/g, "_")}.kitdoc`,
-              doc,
-            )
-          }
-        >
-          {t.saveKitdoc}
-        </button>
-        <button
-          type="button"
-          className={primaryBtnClass}
-          onClick={() =>
-            downloadTextFile(
-              `${(doc.title || "document").replace(/[^\w\-]+/g, "_")}.txt`,
-              htmlToPlainText(doc.html),
-            )
-          }
-        >
-          {t.exportTxt}
-        </button>
-        <button type="button" className={secondaryBtnClass} onClick={printDoc}>
-          {t.print}
-        </button>
       </div>
 
       <ErrorBanner>{error}</ErrorBanner>
 
-      <div className="papers-desk overflow-auto rounded-[14px] border border-border px-2 pb-8 pt-3 sm:px-6 sm:pt-4">
+      <div className="papers-desk overflow-x-auto overflow-y-visible rounded-[14px] border border-border px-1.5 pb-6 pt-2 sm:overflow-auto sm:px-6 sm:pb-8 sm:pt-4">
         <div
           className="papers-paper-stack mx-auto origin-top"
           style={{
