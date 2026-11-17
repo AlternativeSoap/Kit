@@ -2,8 +2,11 @@
 
 import type { ReactNode } from "react";
 import { FontSizeInput } from "@/components/tools/FontSizeInput";
-import { KitSelect, fieldClass } from "@/components/tools/ui";
-import type { PapersFormatLabels, PapersFormatState } from "./PapersFormatBar";
+import type {
+  PapersBlockStyle,
+  PapersFormatLabels,
+  PapersFormatState,
+} from "./PapersFormatBar";
 
 const FONTS = [
   { id: "Calibri, 'Segoe UI', system-ui, sans-serif", label: "Calibri" },
@@ -13,6 +16,12 @@ const FONTS = [
   { id: "system-ui, sans-serif", label: "Sans" },
   { id: "ui-monospace, monospace", label: "Mono" },
 ] as const;
+
+const selectClass =
+  "h-9 min-w-[6.5rem] max-w-[8rem] rounded-[7px] border border-border bg-white px-2 text-sm font-medium text-[#141414] outline-none";
+
+const sizeClass =
+  "h-9 w-[3.5rem] rounded-[7px] border border-border bg-white px-1.5 text-sm font-medium text-[#141414] outline-none";
 
 function BubbleBtn({
   active,
@@ -31,7 +40,7 @@ function BubbleBtn({
       title={title}
       onMouseDown={(e) => e.preventDefault()}
       onClick={onClick}
-      className={`kit-touch-target inline-flex h-9 min-w-9 items-center justify-center rounded-[8px] px-2 text-xs font-semibold transition-colors sm:h-8 sm:min-h-0 sm:min-w-8 ${
+      className={`kit-touch-target inline-flex h-9 min-w-9 items-center justify-center rounded-[8px] px-2 text-sm font-semibold transition-colors sm:min-h-0 ${
         active
           ? "bg-accent text-white"
           : "text-foreground hover:bg-black/5"
@@ -40,6 +49,14 @@ function BubbleBtn({
       {children}
     </button>
   );
+}
+
+function resolveFontValue(fontFamily: string) {
+  const exact = FONTS.find((f) => f.id === fontFamily);
+  if (exact) return exact.id;
+  const lower = fontFamily.toLowerCase();
+  const fuzzy = FONTS.find((f) => lower.includes(f.label.toLowerCase()));
+  return fuzzy?.id ?? FONTS[0]!.id;
 }
 
 export type SelectionBubblePos = { top: number; left: number };
@@ -56,9 +73,11 @@ export function SkrivSelectionBubble({
   onChange: (patch: Partial<PapersFormatState>) => void;
   labels: PapersFormatLabels;
 }) {
+  const fontValue = resolveFontValue(value.fontFamily);
+
   return (
     <div
-      className="papers-selection-bubble fixed z-[80] flex max-w-[min(96vw,28rem)] flex-wrap items-center gap-0.5 rounded-[12px] border border-border bg-surface px-1.5 py-1.5 shadow-[0_8px_28px_rgba(20,20,20,0.16)]"
+      className="papers-selection-bubble fixed z-[80] flex max-w-[min(96vw,30rem)] flex-wrap items-center gap-1 rounded-[12px] border border-border bg-surface px-2 py-1.5 shadow-[0_8px_28px_rgba(20,20,20,0.16)]"
       style={{
         top: pos.top,
         left: pos.left,
@@ -116,11 +135,32 @@ export function SkrivSelectionBubble({
 
       <span className="mx-0.5 h-5 w-px bg-border" aria-hidden />
 
-      <KitSelect
-        value={value.fontFamily}
+      {labels.textStyle &&
+      labels.paragraph &&
+      labels.styleTitle &&
+      labels.styleHeading ? (
+        <select
+          value={value.block ?? "p"}
+          onChange={(e) =>
+            onChange({ block: e.target.value as PapersBlockStyle })
+          }
+          className={selectClass}
+          title={labels.textStyle}
+          aria-label={labels.textStyle}
+          onMouseDown={(e) => e.stopPropagation()}
+        >
+          <option value="p">{labels.paragraph}</option>
+          <option value="h1">{labels.styleTitle}</option>
+          <option value="h2">{labels.styleHeading}</option>
+        </select>
+      ) : null}
+
+      <select
+        value={fontValue}
         onChange={(e) => onChange({ fontFamily: e.target.value })}
-        className={`${fieldClass} h-8 w-[6.2rem] border-0 bg-transparent py-0 text-xs shadow-none`}
+        className={selectClass}
         title={labels.fontFamily}
+        aria-label={labels.fontFamily}
         onMouseDown={(e) => e.stopPropagation()}
       >
         {FONTS.map((f) => (
@@ -128,37 +168,24 @@ export function SkrivSelectionBubble({
             {f.label}
           </option>
         ))}
-      </KitSelect>
+      </select>
 
       <FontSizeInput
         value={value.fontSize}
         onChange={(fontSize) => onChange({ fontSize })}
         title={labels.fontSize}
-        compact
-        className={`${fieldClass} h-8 w-[3.2rem] border-0 bg-transparent py-0 text-xs shadow-none`}
+        className={sizeClass}
       />
 
       <label
-        className="inline-flex h-8 items-center gap-1 rounded-[7px] px-1.5 text-[11px] text-muted hover:bg-black/5"
+        className="inline-flex h-9 items-center gap-1 rounded-[7px] px-1.5 text-sm text-foreground hover:bg-black/5"
         title={labels.textColor}
       >
-        <span className="font-semibold text-foreground">A</span>
+        <span className="font-bold">A</span>
         <input
           type="color"
           value={value.color || "#111111"}
           onChange={(e) => onChange({ color: e.target.value })}
-          className="h-5 w-5 cursor-pointer rounded border-0 bg-transparent p-0"
-        />
-      </label>
-      <label
-        className="inline-flex h-8 items-center gap-1 rounded-[7px] px-1.5 text-[11px] text-muted hover:bg-black/5"
-        title={labels.fillColor}
-      >
-        <span className="inline-block h-3 w-3 rounded-sm border border-border bg-slate-400" />
-        <input
-          type="color"
-          value={value.background || "#ffffff"}
-          onChange={(e) => onChange({ background: e.target.value })}
           className="h-5 w-5 cursor-pointer rounded border-0 bg-transparent p-0"
         />
       </label>

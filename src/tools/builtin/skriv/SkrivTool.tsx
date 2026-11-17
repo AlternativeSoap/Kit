@@ -10,6 +10,7 @@ import {
 } from "react";
 import {
   PapersFormatBar,
+  type PapersBlockStyle,
   type PapersFormatState,
 } from "@/components/tools/PapersFormatBar";
 import {
@@ -53,7 +54,6 @@ import {
   emptyDoc,
   htmlToPlainText,
   pageHeightMm,
-  pagePreviewMaxWidthPx,
   pageSizeLabel,
   pageWidthMm,
   type PageSize,
@@ -71,6 +71,21 @@ function safeQueryState(command: string) {
   } catch {
     return false;
   }
+}
+
+function blockStyleFromSelection(editor: HTMLElement | null): PapersBlockStyle {
+  const sel = window.getSelection();
+  let node: Node | null = sel?.anchorNode ?? null;
+  while (node && node !== editor) {
+    if (node.nodeType === Node.ELEMENT_NODE) {
+      const tag = (node as HTMLElement).tagName.toLowerCase();
+      if (tag === "h1") return "h1";
+      if (tag === "h2" || tag === "h3") return "h2";
+      if (tag === "p" || tag === "div" || tag === "li") return "p";
+    }
+    node = node.parentNode;
+  }
+  return "p";
 }
 
 export function SkrivTool() {
@@ -219,6 +234,7 @@ export function SkrivTool() {
       background: "#ffffff",
       fontFamily: doc.fontFamily,
       fontSize: Math.min(200, Math.max(6, fontSize)),
+      block: blockStyleFromSelection(editorRef.current),
     };
   }
 
@@ -266,12 +282,6 @@ export function SkrivTool() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [doc.fontFamily, doc.fontSizePx]);
 
-  useEffect(() => {
-    if (window.matchMedia("(max-width: 639px)").matches) {
-      setZoom((z) => (z === 100 ? 90 : z));
-    }
-  }, []);
-
   const formatState: PapersFormatState = selectedBox
     ? {
         bold: !!selectedBox.bold,
@@ -282,6 +292,7 @@ export function SkrivTool() {
         background: selectedBox.background,
         fontFamily: selectedBox.fontFamily,
         fontSize: selectedBox.fontSizePx,
+        block: "p",
       }
     : liveFormat ?? {
         bold: false,
@@ -292,6 +303,7 @@ export function SkrivTool() {
         background: "#ffffff",
         fontFamily: doc.fontFamily,
         fontSize: doc.fontSizePx,
+        block: "p",
       };
 
   function onFormatChange(patch: Partial<PapersFormatState>) {
@@ -314,6 +326,16 @@ export function SkrivTool() {
             : b,
         ),
       }));
+      return;
+    }
+    if (patch.block) {
+      // Some engines want a tag name, others want <tag>.
+      const tag = patch.block;
+      editorRef.current?.focus();
+      const ok = document.execCommand("formatBlock", false, tag);
+      if (!ok) document.execCommand("formatBlock", false, `<${tag}>`);
+      syncFromEditor();
+      refreshSelectionUi();
       return;
     }
     if (patch.bold !== undefined) format("bold");
@@ -567,9 +589,9 @@ export function SkrivTool() {
 
   const pageW = pageWidthMm(doc.pageSize);
   const pageH = pageHeightMm(doc.pageSize);
-  const previewMax = pagePreviewMaxWidthPx(doc.pageSize);
   const marginPct = (doc.marginMm / pageW) * 100;
-  const compactBtn = `${secondaryBtnClass} !px-2.5 !py-1.5 text-xs`;
+  const zoomScale = zoom / 100;
+  const compactBtn = `${secondaryBtnClass} !h-10 !min-h-10 !px-3 !py-2 text-sm sm:!h-9 sm:!min-h-0 sm:!px-2.5 sm:!py-1.5 sm:text-xs`;
 
   const formatLabels = {
     bold: t.bold,
@@ -582,6 +604,10 @@ export function SkrivTool() {
     fillColor: t.highlight,
     fontFamily: t.fontFamily,
     fontSize: t.fontSize,
+    textStyle: t.textStyle,
+    styleTitle: t.styleTitle,
+    styleHeading: t.styleHeading,
+    paragraph: t.paragraph,
   };
 
   return (
@@ -639,281 +665,283 @@ export function SkrivTool() {
 
       <ErrorBanner>{error}</ErrorBanner>
 
-      <div className="papers-desk overflow-x-auto overflow-y-visible rounded-[14px] border border-border px-1.5 pb-6 pt-2 sm:overflow-auto sm:px-6 sm:pb-8 sm:pt-4">
-        <div
-          className="papers-paper-stack mx-auto origin-top"
-          style={{
-            width: `min(100%, ${previewMax}px)`,
-            transform: zoom === 100 ? undefined : `scale(${zoom / 100})`,
-            marginBottom:
-              zoom === 100 ? undefined : `${((zoom / 100) - 1) * 42}%`,
-          }}
-        >
-          <div className="papers-ribbon px-2 py-2">
-            <PapersFormatBar
-              variant="ribbon"
-              value={formatState}
-              onChange={onFormatChange}
-              labels={formatLabels}
-              extras={
-                <>
-                  <button
-                    type="button"
-                    className={compactBtn}
-                    onClick={() => format("undo")}
-                  >
-                    {t.undo}
-                  </button>
-                  <button
-                    type="button"
-                    className={compactBtn}
-                    onClick={() => format("redo")}
-                  >
-                    {t.redo}
-                  </button>
-                  <button
-                    type="button"
-                    className={compactBtn}
-                    onClick={() => format("insertUnorderedList")}
-                  >
-                    {t.bulletList}
-                  </button>
-                  <button
-                    type="button"
-                    className={compactBtn}
-                    onClick={() => format("insertOrderedList")}
-                  >
-                    {t.numberedList}
-                  </button>
-                  <button
-                    type="button"
-                    className={`${compactBtn} ${panel === "insert" ? "!bg-accent !text-white" : ""}`}
-                    onClick={() =>
-                      setPanel((p) => (p === "insert" ? "none" : "insert"))
-                    }
-                  >
-                    {t.insertTools}
-                  </button>
-                  <button
-                    type="button"
-                    className={`${compactBtn} ${panel === "page" ? "!bg-accent !text-white" : ""}`}
-                    onClick={() =>
-                      setPanel((p) => (p === "page" ? "none" : "page"))
-                    }
-                  >
-                    {t.pageTools}
-                  </button>
-                  <button
-                    type="button"
-                    className={`${compactBtn} ${panel === "find" ? "!bg-accent !text-white" : ""}`}
-                    onClick={() =>
-                      setPanel((p) => (p === "find" ? "none" : "find"))
-                    }
-                  >
-                    {t.findReplaceToggle}
-                  </button>
-                </>
-              }
-            />
-
-            {panel === "insert" ? (
-              <div className="mt-2 flex flex-wrap gap-1.5 rounded-[10px] border border-border/80 bg-background/70 p-2">
+      <div className="papers-desk overflow-x-clip overflow-y-visible rounded-[14px] border border-border">
+        <div className="papers-ribbon w-full px-2 py-2">
+          <PapersFormatBar
+            variant="ribbon"
+            value={formatState}
+            onChange={onFormatChange}
+            labels={formatLabels}
+            extras={
+              <>
                 <button
                   type="button"
                   className={compactBtn}
-                  onClick={insertTable}
+                  onClick={() => format("undo")}
                 >
-                  {t.insertTable}
-                </button>
-                <label className={`${compactBtn} cursor-pointer`}>
-                  {t.insertImage}
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={(e) => {
-                      const f = e.target.files?.[0] ?? null;
-                      e.target.value = "";
-                      insertImage(f);
-                    }}
-                  />
-                </label>
-                <button
-                  type="button"
-                  className={compactBtn}
-                  onClick={addTextBox}
-                >
-                  {t.addTextBox}
+                  {t.undo}
                 </button>
                 <button
                   type="button"
                   className={compactBtn}
-                  onClick={deleteSelectedBox}
-                  disabled={!selectedBoxId}
+                  onClick={() => format("redo")}
                 >
-                  {t.deleteTextBox}
-                </button>
-              </div>
-            ) : null}
-
-            {panel === "page" ? (
-              <div className="mt-2 grid gap-2 rounded-[10px] border border-border/80 bg-background/70 p-2 sm:grid-cols-2 lg:grid-cols-5">
-                <Field label={t.pageSize}>
-                  <KitSelect
-                    value={doc.pageSize}
-                    onChange={(e) =>
-                      setDoc((prev) => ({
-                        ...prev,
-                        pageSize: e.target.value as PageSize,
-                      }))
-                    }
-                  >
-                    {PAGE_SIZES.map((size) => (
-                      <option key={size} value={size}>
-                        {pageSizeLabel(size)}
-                      </option>
-                    ))}
-                  </KitSelect>
-                </Field>
-                <Field label={t.marginMm}>
-                  <KitInput
-                    type="number"
-                    min={10}
-                    max={40}
-                    value={doc.marginMm}
-                    onChange={(e) =>
-                      setDoc((prev) => ({
-                        ...prev,
-                        marginMm: Number(e.target.value) || 20,
-                      }))
-                    }
-                  />
-                </Field>
-                <Field label={t.lineHeight}>
-                  <KitInput
-                    type="number"
-                    min={1}
-                    max={2.5}
-                    step={0.05}
-                    value={doc.lineHeight}
-                    onChange={(e) =>
-                      setDoc((prev) => ({
-                        ...prev,
-                        lineHeight: Number(e.target.value) || 1.15,
-                      }))
-                    }
-                  />
-                </Field>
-                <Field label={t.dictionary}>
-                  <KitSelect
-                    value={dictLang}
-                    onChange={(e) =>
-                      changeDictLang(e.target.value as DictLang)
-                    }
-                  >
-                    {DICT_LANGS.map((lang) => (
-                      <option key={lang} value={lang}>
-                        {(t[`dict_${lang}` as keyof typeof t] as string) ??
-                          lang}
-                      </option>
-                    ))}
-                  </KitSelect>
-                </Field>
-                <Field label={t.zoom}>
-                  <KitSelect
-                    value={String(zoom)}
-                    onChange={(e) => setZoom(Number(e.target.value) || 100)}
-                  >
-                    {[75, 90, 100, 110, 125, 150].map((z) => (
-                      <option key={z} value={z}>
-                        {z}%
-                      </option>
-                    ))}
-                  </KitSelect>
-                </Field>
-                <label className="flex items-center gap-2 text-sm sm:col-span-2">
-                  <input
-                    type="checkbox"
-                    checked={spellOn}
-                    onChange={(e) => setSpellOn(e.target.checked)}
-                    className="h-4 w-4 accent-[var(--accent)]"
-                  />
-                  {t.spellcheck}
-                  <span className="text-xs text-muted">
-                    {t.personalWords.replace("{count}", String(personalCount))}
-                  </span>
-                </label>
-              </div>
-            ) : null}
-
-            {panel === "find" ? (
-              <div className="mt-2 grid gap-2 rounded-[10px] border border-border/80 bg-background/70 p-2 sm:grid-cols-[1fr_1fr_auto_auto]">
-                <Field label={t.find}>
-                  <KitInput
-                    value={find}
-                    onChange={(e) => setFind(e.target.value)}
-                  />
-                </Field>
-                <Field label={t.replace}>
-                  <KitInput
-                    value={replaceWith}
-                    onChange={(e) => setReplaceWith(e.target.value)}
-                  />
-                </Field>
-                <button
-                  type="button"
-                  className={`${compactBtn} self-end`}
-                  onClick={() => doFindReplace(false)}
-                >
-                  {t.replaceOne}
+                  {t.redo}
                 </button>
                 <button
                   type="button"
-                  className={`${compactBtn} self-end`}
-                  onClick={() => doFindReplace(true)}
+                  className={compactBtn}
+                  onClick={() => format("insertUnorderedList")}
                 >
-                  {t.replaceAll}
+                  {t.bulletList}
                 </button>
-              </div>
-            ) : null}
+                <button
+                  type="button"
+                  className={compactBtn}
+                  onClick={() => format("insertOrderedList")}
+                >
+                  {t.numberedList}
+                </button>
+                <button
+                  type="button"
+                  className={`${compactBtn} ${panel === "insert" ? "!bg-accent !text-white" : ""}`}
+                  onClick={() =>
+                    setPanel((p) => (p === "insert" ? "none" : "insert"))
+                  }
+                >
+                  {t.insertTools}
+                </button>
+                <button
+                  type="button"
+                  className={`${compactBtn} ${panel === "page" ? "!bg-accent !text-white" : ""}`}
+                  onClick={() =>
+                    setPanel((p) => (p === "page" ? "none" : "page"))
+                  }
+                >
+                  {t.pageTools}
+                </button>
+                <button
+                  type="button"
+                  className={`${compactBtn} ${panel === "find" ? "!bg-accent !text-white" : ""}`}
+                  onClick={() =>
+                    setPanel((p) => (p === "find" ? "none" : "find"))
+                  }
+                >
+                  {t.findReplaceToggle}
+                </button>
+              </>
+            }
+          />
 
-            {spellOn &&
-            (dictLang === "da" || dictLang === "en") &&
-            issues.length > 0 ? (
-              <div className="mt-2 rounded-[10px] border border-border/80 bg-background/70 px-2.5 py-2">
-                <p className="mb-1.5 text-xs font-medium text-muted">
-                  {t.unknownWords}
-                </p>
-                <ul className="flex flex-wrap gap-1.5">
-                  {issues.map((issue) => (
-                    <li key={issue.word}>
-                      <button
-                        type="button"
-                        className="rounded-[7px] border border-border px-2 py-0.5 text-xs"
-                        onClick={() => learnWord(issue.word)}
-                        title={t.addToDictionary}
-                      >
-                        {issue.word}
-                        {issue.count > 1 ? ` ×${issue.count}` : ""}
-                      </button>
-                    </li>
+          {panel === "insert" ? (
+            <div className="mt-2 flex flex-wrap gap-1.5 rounded-[10px] border border-border/80 bg-background/70 p-2">
+              <button
+                type="button"
+                className={compactBtn}
+                onClick={insertTable}
+              >
+                {t.insertTable}
+              </button>
+              <label className={`${compactBtn} cursor-pointer`}>
+                {t.insertImage}
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0] ?? null;
+                    e.target.value = "";
+                    insertImage(f);
+                  }}
+                />
+              </label>
+              <button
+                type="button"
+                className={compactBtn}
+                onClick={addTextBox}
+              >
+                {t.addTextBox}
+              </button>
+              <button
+                type="button"
+                className={compactBtn}
+                onClick={deleteSelectedBox}
+                disabled={!selectedBoxId}
+              >
+                {t.deleteTextBox}
+              </button>
+            </div>
+          ) : null}
+
+          {panel === "page" ? (
+            <div className="mt-2 grid gap-2 rounded-[10px] border border-border/80 bg-background/70 p-2 sm:grid-cols-2 lg:grid-cols-5">
+              <Field label={t.pageSize}>
+                <KitSelect
+                  value={doc.pageSize}
+                  onChange={(e) =>
+                    setDoc((prev) => ({
+                      ...prev,
+                      pageSize: e.target.value as PageSize,
+                    }))
+                  }
+                >
+                  {PAGE_SIZES.map((size) => (
+                    <option key={size} value={size}>
+                      {pageSizeLabel(size)}
+                    </option>
                   ))}
-                </ul>
-              </div>
-            ) : null}
-          </div>
+                </KitSelect>
+              </Field>
+              <Field label={t.marginMm}>
+                <KitInput
+                  type="number"
+                  min={10}
+                  max={40}
+                  value={doc.marginMm}
+                  onChange={(e) =>
+                    setDoc((prev) => ({
+                      ...prev,
+                      marginMm: Number(e.target.value) || 20,
+                    }))
+                  }
+                />
+              </Field>
+              <Field label={t.lineHeight}>
+                <KitInput
+                  type="number"
+                  min={1}
+                  max={2.5}
+                  step={0.05}
+                  value={doc.lineHeight}
+                  onChange={(e) =>
+                    setDoc((prev) => ({
+                      ...prev,
+                      lineHeight: Number(e.target.value) || 1.15,
+                    }))
+                  }
+                />
+              </Field>
+              <Field label={t.dictionary}>
+                <KitSelect
+                  value={dictLang}
+                  onChange={(e) =>
+                    changeDictLang(e.target.value as DictLang)
+                  }
+                >
+                  {DICT_LANGS.map((lang) => (
+                    <option key={lang} value={lang}>
+                      {(t[`dict_${lang}` as keyof typeof t] as string) ??
+                        lang}
+                    </option>
+                  ))}
+                </KitSelect>
+              </Field>
+              <Field label={t.zoom}>
+                <KitSelect
+                  value={String(zoom)}
+                  onChange={(e) => setZoom(Number(e.target.value) || 100)}
+                >
+                  {[75, 90, 100, 110, 125, 150].map((z) => (
+                    <option key={z} value={z}>
+                      {z}%
+                    </option>
+                  ))}
+                </KitSelect>
+              </Field>
+              <label className="flex items-center gap-2 text-sm sm:col-span-2">
+                <input
+                  type="checkbox"
+                  checked={spellOn}
+                  onChange={(e) => setSpellOn(e.target.checked)}
+                  className="h-4 w-4 accent-[var(--accent)]"
+                />
+                {t.spellcheck}
+                <span className="text-xs text-muted">
+                  {t.personalWords.replace("{count}", String(personalCount))}
+                </span>
+              </label>
+            </div>
+          ) : null}
 
+          {panel === "find" ? (
+            <div className="mt-2 grid gap-2 rounded-[10px] border border-border/80 bg-background/70 p-2 sm:grid-cols-[1fr_1fr_auto_auto]">
+              <Field label={t.find}>
+                <KitInput
+                  value={find}
+                  onChange={(e) => setFind(e.target.value)}
+                />
+              </Field>
+              <Field label={t.replace}>
+                <KitInput
+                  value={replaceWith}
+                  onChange={(e) => setReplaceWith(e.target.value)}
+                />
+              </Field>
+              <button
+                type="button"
+                className={`${compactBtn} self-end`}
+                onClick={() => doFindReplace(false)}
+              >
+                {t.replaceOne}
+              </button>
+              <button
+                type="button"
+                className={`${compactBtn} self-end`}
+                onClick={() => doFindReplace(true)}
+              >
+                {t.replaceAll}
+              </button>
+            </div>
+          ) : null}
+
+          {spellOn &&
+          (dictLang === "da" || dictLang === "en") &&
+          issues.length > 0 ? (
+            <div className="mt-2 rounded-[10px] border border-border/80 bg-background/70 px-2.5 py-2">
+              <p className="mb-1.5 text-xs font-medium text-muted">
+                {t.unknownWords}
+              </p>
+              <ul className="flex flex-wrap gap-1.5">
+                {issues.map((issue) => (
+                  <li key={issue.word}>
+                    <button
+                      type="button"
+                      className="rounded-[7px] border border-border px-2 py-0.5 text-xs"
+                      onClick={() => learnWord(issue.word)}
+                      title={t.addToDictionary}
+                    >
+                      {issue.word}
+                      {issue.count > 1 ? ` ×${issue.count}` : ""}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+        </div>
+
+        <div className="papers-paper-stack w-full">
           <div
             ref={pageRef}
-            className="papers-sheet relative"
+            className="papers-sheet relative w-full"
             style={{
-              width: "100%",
               aspectRatio: `${pageW} / ${pageH}`,
+              minHeight: "22rem",
             }}
             onPointerMove={onPagePointerMove}
             onPointerUp={onPagePointerUp}
             onClick={() => setSelectedBoxId(null)}
           >
+            <div
+              className="papers-margin-guide"
+              style={{
+                top: `${marginPct}%`,
+                right: `${marginPct}%`,
+                bottom: `${marginPct}%`,
+                left: `${marginPct}%`,
+              }}
+              aria-hidden
+            />
             <div
               ref={editorRef}
               contentEditable
@@ -926,7 +954,7 @@ export function SkrivTool() {
               style={{
                 padding: `${marginPct}%`,
                 fontFamily: doc.fontFamily,
-                fontSize: `${doc.fontSizePx}pt`,
+                fontSize: `${doc.fontSizePx * zoomScale}pt`,
                 lineHeight: String(doc.lineHeight),
               }}
               onInput={syncFromEditor}

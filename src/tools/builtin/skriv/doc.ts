@@ -78,9 +78,7 @@ export function emptyDoc(
     version: 2,
     kind: "skriv",
     title,
-    html: da
-      ? "<h1>Titel</h1><p>Begynd at skrive her.</p>"
-      : "<h1>Title</h1><p>Start writing here.</p>",
+    html: da ? "<p>Begynd at skrive her.</p>" : "<p>Start writing here.</p>",
     pageSize: da ? "a4" : "letter",
     marginMm: 20,
     fontFamily: da

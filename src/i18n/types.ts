@@ -1371,6 +1371,9 @@ export type Dictionary = {
     bulletList: string;
     numberedList: string;
     paragraph: string;
+    styleTitle: string;
+    styleHeading: string;
+    textStyle: string;
     alignLeft: string;
     alignCenter: string;
     alignRight: string;

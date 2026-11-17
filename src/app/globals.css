@@ -324,17 +324,12 @@ details:not([open]) > :not(summary) {
 }
 
 .papers-desk {
-  background:
-    radial-gradient(circle at 20% 10%, rgba(255, 255, 255, 0.55), transparent 40%),
-    linear-gradient(180deg, #d9d9d4 0%, #cfcfc8 100%);
+  background: #fff;
 }
 
 .papers-sheet {
   background: #fff;
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.8) inset,
-    0 12px 36px rgba(20, 20, 20, 0.18),
-    0 0 0 1px rgba(20, 20, 20, 0.08);
+  box-shadow: none;
 }
 
 .papers-cell-selected {
@@ -368,9 +363,8 @@ details:not([open]) > :not(summary) {
   position: sticky;
   top: 0;
   z-index: 20;
-  border: 1px solid rgba(20, 20, 20, 0.1);
-  border-bottom: 0;
-  border-radius: 12px 12px 0 0;
+  width: 100%;
+  border-bottom: 1px solid rgba(20, 20, 20, 0.08);
   background: rgba(255, 255, 255, 0.96);
   box-shadow: 0 1px 0 rgba(255, 255, 255, 0.8) inset;
 }
@@ -380,10 +374,17 @@ details:not([open]) > :not(summary) {
 }
 
 .papers-sheet-footer {
-  border: 1px solid rgba(20, 20, 20, 0.1);
-  border-top: 0;
-  border-radius: 0 0 12px 12px;
-  background: rgba(255, 255, 255, 0.92);
+  border-top: 1px solid rgba(20, 20, 20, 0.08);
+  background: #fff;
+}
+
+/* Soft guide so page margins stay visible on a full-width sheet. */
+.papers-margin-guide {
+  pointer-events: none;
+  position: absolute;
+  z-index: 1;
+  border: 1px dashed color-mix(in srgb, var(--accent) 22%, transparent);
+  border-radius: 2px;
 }
 
 .papers-selection-bubble {
@@ -409,29 +410,27 @@ details:not([open]) > :not(summary) {
 
   .papers-desk {
     border-radius: 12px;
-    padding-left: 0.5rem;
-    padding-right: 0.5rem;
-    padding-top: 0.5rem;
-    padding-bottom: 1.25rem;
+    padding: 0;
   }
 
   .papers-ribbon {
-    border-radius: 10px 10px 0 0;
+    width: 100%;
+    max-width: none;
+    border-radius: 12px 12px 0 0;
     position: sticky;
     top: calc(3.3rem + env(safe-area-inset-top));
   }
 
   .papers-format-bar {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    overscroll-behavior-x: contain;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    padding-bottom: 0.15rem;
+    width: 100%;
   }
 
-  .papers-format-bar::-webkit-scrollbar {
-    display: none;
+  .papers-format-bar select,
+  .papers-format-bar input[type="number"] {
+    color: #141414 !important;
+    background-color: #fff !important;
+    -webkit-text-fill-color: #141414;
+    opacity: 1;
   }
 
   .papers-selection-bubble {
