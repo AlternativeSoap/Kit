@@ -1,68 +1,260 @@
+"use client";
+
+import dynamic from "next/dynamic";
+import type { ComponentType } from "react";
 import type { ToolPrefill } from "@/tools/prefill";
 import type { BuiltinToolId } from "@/tools/types";
-import { BarselTool } from "./barsel/BarselTool";
-import { CountdownTool } from "./countdown/CountdownTool";
-import { DatoTool } from "./dato/DatoTool";
-import { EnhederTool } from "./enheder/EnhederTool";
-import { LadmeterTool } from "./ladmeter/LadmeterTool";
-import { LommeregnerTool } from "./lommeregner/LommeregnerTool";
-import { LonTool } from "./lon/LonTool";
-import { MomsTool } from "./moms/MomsTool";
-import { PasswordTool } from "./password/PasswordTool";
-import { ProcentTool } from "./procent/ProcentTool";
-import { ColorTool } from "./color/ColorTool";
-import { JsonTool } from "./json/JsonTool";
-import { QrTool } from "./qr/QrTool";
-import { TextTool } from "./text/TextTool";
-import { TimestampTool } from "./timestamp/TimestampTool";
-import { UuidTool } from "./uuid/UuidTool";
-import { KilometerpengeTool } from "./kilometerpenge/KilometerpengeTool";
-import { BraendstofTool } from "./braendstof/BraendstofTool";
-import { FeriepengeTool } from "./feriepenge/FeriepengeTool";
-import { StopurTool } from "./stopur/StopurTool";
-import { EncodeTool } from "./encode/EncodeTool";
-import { LanTool } from "./lan/LanTool";
-import { ArbejdstidTool } from "./arbejdstid/ArbejdstidTool";
-import { HashTool } from "./hash/HashTool";
-import { DiffTool } from "./diff/DiffTool";
-import { TerminTool } from "./termin/TerminTool";
-import { AvanceTool } from "./avance/AvanceTool";
-import { JwtTool } from "./jwt/JwtTool";
-import { CronTool } from "./cron/CronTool";
-import { CidrTool } from "./cidr/CidrTool";
-import { AlderTool } from "./alder/AlderTool";
-import { BmiTool } from "./bmi/BmiTool";
-import { TipTool } from "./tip/TipTool";
-import { OpsparingTool } from "./opsparing/OpsparingTool";
-import { InflationTool } from "./inflation/InflationTool";
-import { EnhedsprisTool } from "./enhedspris/EnhedsprisTool";
-import { UgenummerTool } from "./ugenummer/UgenummerTool";
-import { AspectTool } from "./aspect/AspectTool";
-import { SlugTool } from "./slug/SlugTool";
-import { BreakevenTool } from "./breakeven/BreakevenTool";
-import { CagrTool } from "./cagr/CagrTool";
-import { ContrastTool } from "./contrast/ContrastTool";
-import { ImageTool } from "./media/ImageTool";
-import { VideoCompressTool } from "./media/VideoCompressTool";
-import { RegexTool } from "./regex/RegexTool";
-import { MyIpTool } from "./myip/MyIpTool";
-import { MarkdownTool } from "./markdown/MarkdownTool";
-import { WorldClockTool } from "./worldclock/WorldClockTool";
-import { PdfTool } from "./pdf/PdfTool";
-import { SpeedTool } from "./speed/SpeedTool";
-import { PaletteTool } from "./palette/PaletteTool";
-import { ImgBase64Tool } from "./imgbase64/ImgBase64Tool";
-import { CodeShotTool } from "./codeshot/CodeShotTool";
-import { UaTool } from "./ua/UaTool";
-import { MimeTool } from "./mime/MimeTool";
-import { SpinWheelTool } from "./spinwheel/SpinWheelTool";
-import { WordCountTool } from "./wordcount/WordCountTool";
-import { DocToPdfTool } from "./doctopdf/DocToPdfTool";
-import { BgRemoveTool } from "./bgremove/BgRemoveTool";
-import { CsvExcelTool } from "./csvexcel/CsvExcelTool";
-import { PdfCleanTool } from "./pdfclean/PdfCleanTool";
-import { SimpleTool } from "./simple/SimpleTool";
 import { SIMPLE_TOOL_IDS } from "./simple/defs";
+import type { ImageToolMode } from "./media/ImageTool";
+
+type PrefillProps = { prefill?: ToolPrefill };
+type EnhederProps = {
+  prefill?: ToolPrefill;
+  forcedCategory?: import("./enheder/calc").UnitCategory;
+};
+type ImageProps = { mode: ImageToolMode; allowModeSwitch?: boolean };
+type IdProps = { id: string; prefill?: ToolPrefill };
+
+const fallback = {
+  loading: () => (
+    <div className="mx-auto max-w-xl py-10 text-sm text-muted" aria-live="polite">
+      …
+    </div>
+  ),
+};
+
+function lazyPrefill(
+  loader: () => Promise<{ default: ComponentType<PrefillProps> }>,
+) {
+  return dynamic(loader, fallback);
+}
+
+function lazyPlain(loader: () => Promise<{ default: ComponentType }>) {
+  return dynamic(loader, fallback);
+}
+
+const LonTool = lazyPrefill(() =>
+  import("./lon/LonTool").then((m) => ({ default: m.LonTool })),
+);
+const LadmeterTool = lazyPrefill(() =>
+  import("./ladmeter/LadmeterTool").then((m) => ({ default: m.LadmeterTool })),
+);
+const LommeregnerTool = lazyPrefill(() =>
+  import("./lommeregner/LommeregnerTool").then((m) => ({
+    default: m.LommeregnerTool,
+  })),
+);
+const CountdownTool = lazyPrefill(() =>
+  import("./countdown/CountdownTool").then((m) => ({ default: m.CountdownTool })),
+);
+const MomsTool = lazyPrefill(() =>
+  import("./moms/MomsTool").then((m) => ({ default: m.MomsTool })),
+);
+const ProcentTool = lazyPrefill(() =>
+  import("./procent/ProcentTool").then((m) => ({ default: m.ProcentTool })),
+);
+const PasswordTool = lazyPrefill(() =>
+  import("./password/PasswordTool").then((m) => ({ default: m.PasswordTool })),
+);
+const EnhederTool = dynamic(
+  () => import("./enheder/EnhederTool").then((m) => ({ default: m.EnhederTool })),
+  fallback,
+) as ComponentType<EnhederProps>;
+const DatoTool = lazyPrefill(() =>
+  import("./dato/DatoTool").then((m) => ({ default: m.DatoTool })),
+);
+const BarselTool = lazyPrefill(() =>
+  import("./barsel/BarselTool").then((m) => ({ default: m.BarselTool })),
+);
+const QrTool = lazyPrefill(() =>
+  import("./qr/QrTool").then((m) => ({ default: m.QrTool })),
+);
+const JsonTool = lazyPrefill(() =>
+  import("./json/JsonTool").then((m) => ({ default: m.JsonTool })),
+);
+const TextTool = lazyPrefill(() =>
+  import("./text/TextTool").then((m) => ({ default: m.TextTool })),
+);
+const ColorTool = lazyPrefill(() =>
+  import("./color/ColorTool").then((m) => ({ default: m.ColorTool })),
+);
+const UuidTool = lazyPrefill(() =>
+  import("./uuid/UuidTool").then((m) => ({ default: m.UuidTool })),
+);
+const TimestampTool = lazyPrefill(() =>
+  import("./timestamp/TimestampTool").then((m) => ({ default: m.TimestampTool })),
+);
+const KilometerpengeTool = lazyPrefill(() =>
+  import("./kilometerpenge/KilometerpengeTool").then((m) => ({
+    default: m.KilometerpengeTool,
+  })),
+);
+const BraendstofTool = lazyPrefill(() =>
+  import("./braendstof/BraendstofTool").then((m) => ({
+    default: m.BraendstofTool,
+  })),
+);
+const FeriepengeTool = lazyPrefill(() =>
+  import("./feriepenge/FeriepengeTool").then((m) => ({
+    default: m.FeriepengeTool,
+  })),
+);
+const StopurTool = lazyPlain(() =>
+  import("./stopur/StopurTool").then((m) => ({ default: m.StopurTool })),
+);
+const EncodeTool = lazyPrefill(() =>
+  import("./encode/EncodeTool").then((m) => ({ default: m.EncodeTool })),
+);
+const LanTool = lazyPrefill(() =>
+  import("./lan/LanTool").then((m) => ({ default: m.LanTool })),
+);
+const ArbejdstidTool = lazyPrefill(() =>
+  import("./arbejdstid/ArbejdstidTool").then((m) => ({
+    default: m.ArbejdstidTool,
+  })),
+);
+const HashTool = lazyPrefill(() =>
+  import("./hash/HashTool").then((m) => ({ default: m.HashTool })),
+);
+const DiffTool = lazyPrefill(() =>
+  import("./diff/DiffTool").then((m) => ({ default: m.DiffTool })),
+);
+const TerminTool = lazyPrefill(() =>
+  import("./termin/TerminTool").then((m) => ({ default: m.TerminTool })),
+);
+const AvanceTool = lazyPrefill(() =>
+  import("./avance/AvanceTool").then((m) => ({ default: m.AvanceTool })),
+);
+const JwtTool = lazyPrefill(() =>
+  import("./jwt/JwtTool").then((m) => ({ default: m.JwtTool })),
+);
+const CronTool = lazyPrefill(() =>
+  import("./cron/CronTool").then((m) => ({ default: m.CronTool })),
+);
+const CidrTool = lazyPrefill(() =>
+  import("./cidr/CidrTool").then((m) => ({ default: m.CidrTool })),
+);
+const AlderTool = lazyPrefill(() =>
+  import("./alder/AlderTool").then((m) => ({ default: m.AlderTool })),
+);
+const BmiTool = lazyPrefill(() =>
+  import("./bmi/BmiTool").then((m) => ({ default: m.BmiTool })),
+);
+const TipTool = lazyPrefill(() =>
+  import("./tip/TipTool").then((m) => ({ default: m.TipTool })),
+);
+const OpsparingTool = lazyPrefill(() =>
+  import("./opsparing/OpsparingTool").then((m) => ({
+    default: m.OpsparingTool,
+  })),
+);
+const InflationTool = lazyPrefill(() =>
+  import("./inflation/InflationTool").then((m) => ({
+    default: m.InflationTool,
+  })),
+);
+const EnhedsprisTool = lazyPrefill(() =>
+  import("./enhedspris/EnhedsprisTool").then((m) => ({
+    default: m.EnhedsprisTool,
+  })),
+);
+const UgenummerTool = lazyPrefill(() =>
+  import("./ugenummer/UgenummerTool").then((m) => ({
+    default: m.UgenummerTool,
+  })),
+);
+const AspectTool = lazyPrefill(() =>
+  import("./aspect/AspectTool").then((m) => ({ default: m.AspectTool })),
+);
+const SlugTool = lazyPrefill(() =>
+  import("./slug/SlugTool").then((m) => ({ default: m.SlugTool })),
+);
+const BreakevenTool = lazyPrefill(() =>
+  import("./breakeven/BreakevenTool").then((m) => ({
+    default: m.BreakevenTool,
+  })),
+);
+const CagrTool = lazyPrefill(() =>
+  import("./cagr/CagrTool").then((m) => ({ default: m.CagrTool })),
+);
+const ContrastTool = lazyPrefill(() =>
+  import("./contrast/ContrastTool").then((m) => ({ default: m.ContrastTool })),
+);
+const ImageTool = dynamic(
+  () => import("./media/ImageTool").then((m) => ({ default: m.ImageTool })),
+  fallback,
+) as ComponentType<ImageProps>;
+const VideoCompressTool = lazyPlain(() =>
+  import("./media/VideoCompressTool").then((m) => ({
+    default: m.VideoCompressTool,
+  })),
+);
+const RegexTool = lazyPrefill(() =>
+  import("./regex/RegexTool").then((m) => ({ default: m.RegexTool })),
+);
+const MyIpTool = lazyPlain(() =>
+  import("./myip/MyIpTool").then((m) => ({ default: m.MyIpTool })),
+);
+const MarkdownTool = lazyPrefill(() =>
+  import("./markdown/MarkdownTool").then((m) => ({ default: m.MarkdownTool })),
+);
+const WorldClockTool = lazyPlain(() =>
+  import("./worldclock/WorldClockTool").then((m) => ({
+    default: m.WorldClockTool,
+  })),
+);
+const PdfTool = lazyPlain(() =>
+  import("./pdf/PdfTool").then((m) => ({ default: m.PdfTool })),
+);
+const SpeedTool = lazyPlain(() =>
+  import("./speed/SpeedTool").then((m) => ({ default: m.SpeedTool })),
+);
+const PaletteTool = lazyPrefill(() =>
+  import("./palette/PaletteTool").then((m) => ({ default: m.PaletteTool })),
+);
+const ImgBase64Tool = lazyPlain(() =>
+  import("./imgbase64/ImgBase64Tool").then((m) => ({
+    default: m.ImgBase64Tool,
+  })),
+);
+const CodeShotTool = lazyPrefill(() =>
+  import("./codeshot/CodeShotTool").then((m) => ({ default: m.CodeShotTool })),
+);
+const UaTool = lazyPlain(() =>
+  import("./ua/UaTool").then((m) => ({ default: m.UaTool })),
+);
+const MimeTool = lazyPlain(() =>
+  import("./mime/MimeTool").then((m) => ({ default: m.MimeTool })),
+);
+const SpinWheelTool = lazyPlain(() =>
+  import("./spinwheel/SpinWheelTool").then((m) => ({
+    default: m.SpinWheelTool,
+  })),
+);
+const WordCountTool = lazyPrefill(() =>
+  import("./wordcount/WordCountTool").then((m) => ({
+    default: m.WordCountTool,
+  })),
+);
+const DocToPdfTool = lazyPlain(() =>
+  import("./doctopdf/DocToPdfTool").then((m) => ({ default: m.DocToPdfTool })),
+);
+const BgRemoveTool = lazyPlain(() =>
+  import("./bgremove/BgRemoveTool").then((m) => ({ default: m.BgRemoveTool })),
+);
+const GifMakerTool = lazyPlain(() =>
+  import("./gifmaker/GifMakerTool").then((m) => ({ default: m.GifMakerTool })),
+);
+const CsvExcelTool = lazyPrefill(() =>
+  import("./csvexcel/CsvExcelTool").then((m) => ({ default: m.CsvExcelTool })),
+);
+const PdfCleanTool = lazyPrefill(() =>
+  import("./pdfclean/PdfCleanTool").then((m) => ({ default: m.PdfCleanTool })),
+);
+const SimpleTool = dynamic(
+  () => import("./simple/SimpleTool").then((m) => ({ default: m.SimpleTool })),
+  fallback,
+) as ComponentType<IdProps>;
 
 export function BuiltinToolView({
   id,
@@ -157,15 +349,15 @@ export function BuiltinToolView({
     case "contrast":
       return <ContrastTool prefill={prefill} />;
     case "crop":
-      return <ImageTool mode="crop" />;
+      return <ImageTool mode="crop" allowModeSwitch />;
     case "resize":
-      return <ImageTool mode="resize" />;
+      return <ImageTool mode="resize" allowModeSwitch />;
     case "imgcompress":
-      return <ImageTool mode="compress" />;
+      return <ImageTool mode="compress" allowModeSwitch />;
     case "imgconvert":
-      return <ImageTool mode="convert" />;
+      return <ImageTool mode="convert" allowModeSwitch />;
     case "imagerotate":
-      return <ImageTool mode="rotate" />;
+      return <ImageTool mode="rotate" allowModeSwitch />;
     case "vidcompress":
       return <VideoCompressTool />;
     case "regex":
@@ -198,10 +390,30 @@ export function BuiltinToolView({
       return <DocToPdfTool />;
     case "bgremove":
       return <BgRemoveTool />;
+    case "gifmaker":
+      return <GifMakerTool />;
     case "csvexcel":
       return <CsvExcelTool prefill={prefill} />;
     case "pdfclean":
       return <PdfCleanTool prefill={prefill} />;
+    // Overlaps: route weaker duplicates into stronger tools.
+    case "csvjson":
+      return <CsvExcelTool prefill={prefill} />;
+    case "datasize":
+      return <EnhederTool forcedCategory="data" prefill={prefill} />;
+    case "tippercent":
+    case "invoicesplit":
+      return <TipTool prefill={prefill} />;
+    case "mortgage":
+      return <LanTool prefill={prefill} />;
+    case "cases":
+    case "wordfreq":
+    case "readingtime":
+    case "findreplace":
+    case "sortlines":
+    case "dedupe":
+    case "textreverse":
+      return <TextTool prefill={prefill} />;
     default:
       if ((SIMPLE_TOOL_IDS as readonly string[]).includes(id)) {
         return <SimpleTool id={id} prefill={prefill} />;

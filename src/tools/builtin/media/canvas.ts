@@ -1,5 +1,7 @@
 /** Local-only image helpers (Canvas). Never uploads. */
 
+import { importFromUrl } from "@/lib/cdnImport";
+
 export type ImageFormat =
   | "image/png"
   | "image/jpeg"
@@ -22,13 +24,6 @@ export const ALL_EXPORT_FORMATS: ImageFormat[] = [
 const HEIC2ANY_URL = "https://cdn.jsdelivr.net/npm/heic2any@0.0.4/+esm";
 
 const encodeSupportCache = new Map<string, boolean>();
-
-/** Dynamic import that Turbopack cannot statically resolve. */
-function importFromUrl<T>(url: string): Promise<T> {
-  // eslint-disable-next-line @typescript-eslint/no-implied-eval, no-new-func
-  const dyn = new Function("u", "return import(u)") as (u: string) => Promise<T>;
-  return dyn(url);
-}
 
 function isHeicFile(file: File): boolean {
   const type = (file.type || "").toLowerCase();
@@ -286,8 +281,21 @@ function encodeBmp(canvas: HTMLCanvasElement): Blob {
   return new Blob([buffer], { type: "image/bmp" });
 }
 
+const GIF_MAX_PIXELS = 2_000_000;
+const GIF_MAX_EDGE = 1600;
+
+/** Large canvases make the GIF encoder slow and heavy, so scale them down first. */
+function limitGifSize(canvas: HTMLCanvasElement): HTMLCanvasElement {
+  const { width, height } = canvas;
+  if (width * height <= GIF_MAX_PIXELS) return canvas;
+  const scale = GIF_MAX_EDGE / Math.max(width, height);
+  if (scale >= 1) return canvas;
+  return drawToCanvas(canvas, width * scale, height * scale);
+}
+
 /** Single-frame GIF89a with a 256-color palette (no animation). */
-function encodeGif(canvas: HTMLCanvasElement): Blob {
+function encodeGif(source: HTMLCanvasElement): Blob {
+  const canvas = limitGifSize(source);
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new Error("Canvas not available");
   const { width, height } = canvas;
@@ -417,17 +425,43 @@ function nearestPaletteIndex(
   return best;
 }
 
-async function encodeIco(canvas: HTMLCanvasElement): Promise<Blob> {
+const ICO_MAX_SIZE = 256;
+
+/** Fits the image inside a transparent 256x256 square when either side is larger. */
+function containInIcoSquare(canvas: HTMLCanvasElement): HTMLCanvasElement {
+  const { width, height } = canvas;
+  if (width <= ICO_MAX_SIZE && height <= ICO_MAX_SIZE) return canvas;
+  const scale = Math.min(ICO_MAX_SIZE / width, ICO_MAX_SIZE / height);
+  const w = Math.max(1, Math.round(width * scale));
+  const h = Math.max(1, Math.round(height * scale));
+  const square = document.createElement("canvas");
+  square.width = ICO_MAX_SIZE;
+  square.height = ICO_MAX_SIZE;
+  const ctx = square.getContext("2d");
+  if (!ctx) throw new Error("Canvas not available");
+  ctx.imageSmoothingQuality = "high";
+  ctx.drawImage(
+    canvas,
+    Math.floor((ICO_MAX_SIZE - w) / 2),
+    Math.floor((ICO_MAX_SIZE - h) / 2),
+    w,
+    h,
+  );
+  return square;
+}
+
+async function encodeIco(source: HTMLCanvasElement): Promise<Blob> {
+  const canvas = containInIcoSquare(source);
   const pngBlob = await canvasToNativeBlob(canvas, "image/png");
   const png = new Uint8Array(await pngBlob.arrayBuffer());
-  const size = Math.min(256, Math.max(canvas.width, canvas.height));
   const header = new ArrayBuffer(22);
   const view = new DataView(header);
   view.setUint16(0, 0, true); // reserved
   view.setUint16(2, 1, true); // icon
   view.setUint16(4, 1, true); // count
-  view.setUint8(6, size >= 256 ? 0 : canvas.width);
-  view.setUint8(7, size >= 256 ? 0 : canvas.height);
+  // A value of 0 means 256 pixels in the ICO directory.
+  view.setUint8(6, canvas.width >= 256 ? 0 : canvas.width);
+  view.setUint8(7, canvas.height >= 256 ? 0 : canvas.height);
   view.setUint8(8, 0);
   view.setUint8(9, 0);
   view.setUint16(10, 1, true);
@@ -457,17 +491,34 @@ function canvasToNativeBlob(
   });
 }
 
+/** Opaque formats treat missing alpha as black; paint white first. */
+function withWhiteBackground(canvas: HTMLCanvasElement): HTMLCanvasElement {
+  const filled = document.createElement("canvas");
+  filled.width = canvas.width;
+  filled.height = canvas.height;
+  const ctx = filled.getContext("2d");
+  if (!ctx) throw new Error("Canvas not available");
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, filled.width, filled.height);
+  ctx.drawImage(canvas, 0, 0);
+  return filled;
+}
+
 export async function canvasToBlob(
   canvas: HTMLCanvasElement,
   type: ImageFormat,
   quality = 0.92,
 ): Promise<Blob> {
-  if (type === "image/bmp") return encodeBmp(canvas);
-  if (type === "image/gif") return encodeGif(canvas);
-  if (type === "image/x-icon") return encodeIco(canvas);
+  const source =
+    type === "image/jpeg" || type === "image/bmp"
+      ? withWhiteBackground(canvas)
+      : canvas;
+  if (type === "image/bmp") return encodeBmp(source);
+  if (type === "image/gif") return encodeGif(source);
+  if (type === "image/x-icon") return encodeIco(source);
 
   const blob = await canvasToNativeBlob(
-    canvas,
+    source,
     type,
     type === "image/png" ? undefined : quality,
   );
@@ -482,8 +533,12 @@ export function downloadBlob(blob: Blob, filename: string) {
   const a = document.createElement("a");
   a.href = url;
   a.download = filename;
+  a.rel = "noopener";
+  document.body.appendChild(a);
   a.click();
-  URL.revokeObjectURL(url);
+  a.remove();
+  // Delay revoke so mobile Safari can start the download.
+  window.setTimeout(() => URL.revokeObjectURL(url), 2500);
 }
 
 export function formatBytes(n: number): string {
@@ -492,36 +547,95 @@ export function formatBytes(n: number): string {
   return `${(n / (1024 * 1024)).toFixed(2)} MB`;
 }
 
+const COMPRESS_MIN_QUALITY = 0.1;
+const COMPRESS_SCALES = [0.85, 0.7, 0.55];
+
+export type CompressResult = {
+  blob: Blob;
+  /** Quality used for the returned blob, from 0 to 1. */
+  quality: number;
+  /** False when the output is still larger than the requested limit. */
+  metTarget?: boolean;
+  /** True when the image was downscaled to get closer to the limit. */
+  scaled?: boolean;
+};
+
 export async function compressToTarget(
   img: HTMLImageElement,
   type: ImageFormat,
   maxBytes: number,
   onProgress?: (ratio: number) => void,
-): Promise<{ blob: Blob; quality: number }> {
+  /** Highest quality to try, from 0 to 1. */
+  maxQuality = 0.95,
+): Promise<CompressResult> {
   const lossy: ImageFormat = LOSSY_FORMATS.includes(type) ? type : "image/jpeg";
-  let low = 0.1;
-  let high = 0.95;
-  let best: Blob | null = null;
-  let bestQ = 0.8;
   const steps = 8;
-  const canvas = drawToCanvas(img, img.naturalWidth, img.naturalHeight);
-  onProgress?.(0.05);
-  for (let i = 0; i < steps; i++) {
-    const q = (low + high) / 2;
-    const blob = await canvasToBlob(canvas, lossy, q);
-    if (blob.size <= maxBytes) {
-      best = blob;
-      bestQ = q;
-      low = q;
-    } else {
-      high = q;
+  const totalAttempts = 1 + COMPRESS_SCALES.length;
+  const ceiling = Math.min(1, Math.max(COMPRESS_MIN_QUALITY, maxQuality));
+
+  /** Binary search for the highest quality that fits, or the smallest output when none fits. */
+  async function search(
+    canvas: HTMLCanvasElement,
+    attempt: number,
+  ): Promise<{ blob: Blob; quality: number; fits: boolean }> {
+    let low = COMPRESS_MIN_QUALITY;
+    let high = ceiling;
+    let best: Blob | null = null;
+    let bestQ = COMPRESS_MIN_QUALITY;
+    for (let i = 0; i < steps; i++) {
+      const q = (low + high) / 2;
+      const blob = await canvasToBlob(canvas, lossy, q);
+      if (blob.size <= maxBytes) {
+        best = blob;
+        bestQ = q;
+        low = q;
+      } else {
+        high = q;
+      }
+      onProgress?.(Math.min(0.98, (attempt + (i + 1) / (steps + 1)) / totalAttempts));
     }
-    onProgress?.((i + 1) / (steps + 1));
+    if (best) return { blob: best, quality: bestQ, fits: true };
+    const floor = await canvasToBlob(canvas, lossy, COMPRESS_MIN_QUALITY);
+    return {
+      blob: floor,
+      quality: COMPRESS_MIN_QUALITY,
+      fits: floor.size <= maxBytes,
+    };
   }
-  if (!best) {
-    best = await canvasToBlob(canvas, lossy, 0.1);
-    bestQ = 0.1;
+
+  onProgress?.(0.02);
+  const fullCanvas = drawToCanvas(img, img.naturalWidth, img.naturalHeight);
+  let result = await search(fullCanvas, 0);
+  if (result.fits) {
+    onProgress?.(1);
+    return { blob: result.blob, quality: result.quality, metTarget: true, scaled: false };
   }
+
+  let smallest = result;
+  let scaled = false;
+  for (let s = 0; s < COMPRESS_SCALES.length; s++) {
+    const scale = COMPRESS_SCALES[s]!;
+    const canvas = drawToCanvas(
+      img,
+      Math.max(1, img.naturalWidth * scale),
+      Math.max(1, img.naturalHeight * scale),
+    );
+    result = await search(canvas, s + 1);
+    if (result.fits) {
+      onProgress?.(1);
+      return { blob: result.blob, quality: result.quality, metTarget: true, scaled: true };
+    }
+    if (result.blob.size < smallest.blob.size) {
+      smallest = result;
+      scaled = true;
+    }
+  }
+
   onProgress?.(1);
-  return { blob: best, quality: bestQ };
+  return {
+    blob: smallest.blob,
+    quality: smallest.quality,
+    metTarget: false,
+    scaled,
+  };
 }

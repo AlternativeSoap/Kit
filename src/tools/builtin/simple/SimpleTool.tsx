@@ -1,8 +1,15 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { CopyButton } from "@/components/tools/CopyButton";
+import {
+  ErrorBanner,
+  Field,
+  fieldClass,
+  primaryBtnClass,
+} from "@/components/tools/ui";
 import { useDictionary, useLanguage } from "@/i18n/LanguageProvider";
+import { formatNumber } from "@/lib/format";
 import { prefillChoice, type ToolPrefill } from "@/tools/prefill";
 import { getSimpleDef, type SimpleResultRow, type SimpleToolDef } from "./defs";
 
@@ -32,6 +39,51 @@ function seedValues(
   return init;
 }
 
+/**
+ * Localizes plain numbers. Values with a decimal point are always formatted.
+ * Whole numbers are formatted only when the row asks for it, so identifiers,
+ * bit strings and random digits are never regrouped.
+ */
+function formatDisplay(
+  value: string,
+  locale: "da" | "en",
+  numeric?: boolean,
+): string {
+  const trimmed = value.trim();
+  if (/^-?\d+\.\d+$/.test(trimmed) || (numeric && /^-?\d+$/.test(trimmed))) {
+    const n = Number(trimmed);
+    if (Number.isFinite(n)) {
+      const digits = trimmed.includes(".")
+        ? (trimmed.split(".")[1]?.length ?? 0)
+        : 0;
+      return formatNumber(n, locale, Math.min(digits, 10));
+    }
+  }
+  return value;
+}
+
+function runCompute(
+  def: SimpleToolDef,
+  values: Record<string, string>,
+): { rows: SimpleResultRow[] | null; errored: boolean } {
+  const filled = def.fields.some((f) => (values[f.key] ?? "").trim().length > 0);
+  try {
+    const rows = def.compute(values);
+    return { rows, errored: filled && rows === null };
+  } catch {
+    return { rows: null, errored: filled };
+  }
+}
+
+function sameValues(
+  a: Record<string, string>,
+  b: Record<string, string>,
+): boolean {
+  const keys = new Set([...Object.keys(a), ...Object.keys(b)]);
+  for (const key of keys) if (a[key] !== b[key]) return false;
+  return true;
+}
+
 export function SimpleTool({
   id,
   prefill,
@@ -49,24 +101,47 @@ export function SimpleTool({
   const [values, setValues] = useState<Record<string, string>>(() =>
     def ? seedValues(def, prefill) : {},
   );
-  const [nonce, setNonce] = useState(0);
+  const volatile = Boolean(def?.volatile);
 
-  const computed = useMemo(() => {
-    if (!def) return { rows: null as SimpleResultRow[] | null, errored: false };
-    void nonce;
-    const filled = def.fields.some((f) => (values[f.key] ?? "").trim().length > 0);
-    try {
-      const rows = def.compute(values);
-      return { rows, errored: filled && rows === null };
-    } catch {
-      return { rows: null, errored: filled };
+  // Random tools produce a new result only when the button is pressed, never
+  // while a field is being edited.
+  const [rolled, setRolled] = useState<{
+    result: { rows: SimpleResultRow[] | null; errored: boolean };
+    values: Record<string, string>;
+  } | null>(null);
+
+  const roll = () => {
+    if (!def) return;
+    setRolled({ result: runCompute(def, values), values: { ...values } });
+  };
+
+  // The first result is drawn after mount so the server and client markup match.
+  useEffect(() => {
+    if (!def?.volatile) return;
+    const frame = requestAnimationFrame(() => {
+      setRolled({
+        result: runCompute(def, values),
+        values: { ...values },
+      });
+    });
+    return () => cancelAnimationFrame(frame);
+    // Only on first mount.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const liveComputed = useMemo(() => {
+    if (!def || def.volatile) {
+      return { rows: null as SimpleResultRow[] | null, errored: false };
     }
-  }, [def, values, nonce]);
+    return runCompute(def, values);
+  }, [def, values]);
+
+  const computed = volatile
+    ? (rolled?.result ?? { rows: null, errored: false })
+    : liveComputed;
+  const stale = volatile && rolled !== null && !sameValues(rolled.values, values);
 
   if (!def) return null;
-
-  const inputClass =
-    "w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 text-sm outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)]";
 
   const actionLabel = da
     ? (def.actionDa ?? "Prøv igen")
@@ -80,17 +155,17 @@ export function SimpleTool({
             const label = da ? field.labelDa : field.labelEn;
             const hint = da ? field.hintDa : field.hintEn;
             return (
-              <label key={field.key} className="block">
-                <span className="mb-1.5 block text-sm font-medium text-foreground">
-                  {label}
-                </span>
+              <Field key={field.key} label={label} hint={hint}>
                 {field.kind === "select" && field.options ? (
                   <select
                     value={values[field.key] ?? ""}
                     onChange={(e) =>
-                      setValues((prev) => ({ ...prev, [field.key]: e.target.value }))
+                      setValues((prev) => ({
+                        ...prev,
+                        [field.key]: e.target.value,
+                      }))
                     }
-                    className={inputClass}
+                    className={fieldClass}
                   >
                     {field.options.map((opt) => (
                       <option key={opt.value} value={opt.value}>
@@ -102,10 +177,13 @@ export function SimpleTool({
                   <textarea
                     value={values[field.key] ?? ""}
                     onChange={(e) =>
-                      setValues((prev) => ({ ...prev, [field.key]: e.target.value }))
+                      setValues((prev) => ({
+                        ...prev,
+                        [field.key]: e.target.value,
+                      }))
                     }
                     rows={8}
-                    className={`${inputClass} font-mono`}
+                    className={`${fieldClass} font-mono`}
                   />
                 ) : (
                   <input
@@ -113,72 +191,95 @@ export function SimpleTool({
                     inputMode={field.kind === "number" ? "decimal" : undefined}
                     value={values[field.key] ?? ""}
                     onChange={(e) =>
-                      setValues((prev) => ({ ...prev, [field.key]: e.target.value }))
+                      setValues((prev) => ({
+                        ...prev,
+                        [field.key]: e.target.value,
+                      }))
                     }
-                    className={inputClass}
+                    className={fieldClass}
                   />
                 )}
-                {hint ? (
-                  <span className="mt-1 block text-xs text-muted">{hint}</span>
-                ) : null}
-              </label>
+              </Field>
             );
           })}
           {def.fields.length === 0 ? (
             <p className="text-sm text-muted">
-              {da ? "Resultatet opdateres automatisk." : "Results update automatically."}
+              {da
+                ? "Resultatet opdateres automatisk."
+                : "Results update automatically."}
             </p>
           ) : null}
           {def.volatile ? (
             <button
               type="button"
-              onClick={() => setNonce((n) => n + 1)}
-              className="kit-touch-target rounded-[10px] bg-accent px-4 py-2.5 text-sm font-medium text-white sm:min-h-0"
+              onClick={roll}
+              className={primaryBtnClass}
             >
               {actionLabel}
             </button>
           ) : null}
-          {computed.errored ? (
+          {stale ? (
             <p className="text-sm text-muted">
+              {da
+                ? `Felterne er ændret. Tryk på "${actionLabel}" for at opdatere resultatet.`
+                : `The fields have changed. Press "${actionLabel}" to update the result.`}
+            </p>
+          ) : null}
+          {computed.errored ? (
+            <ErrorBanner>
               {da
                 ? "Tjek felterne. Nogle værdier kan ikke beregnes endnu."
                 : "Check the fields. Some values cannot be calculated yet."}
-            </p>
+            </ErrorBanner>
           ) : null}
         </div>
 
-        <div className="space-y-3">
+        <div className="rounded-[12px] border border-border bg-surface p-4">
           {computed.rows?.length ? (
-            computed.rows.map((row) => {
-              const display =
-                da && row.valueDa !== undefined ? row.valueDa : row.value;
-              return (
-                <div
-                  key={row.labelEn}
-                  className="rounded-[12px] border border-border bg-surface px-4 py-3"
-                >
-                  <div className="mb-1 flex items-center justify-between gap-2">
-                    <span className="text-xs font-medium uppercase tracking-wide text-muted">
-                      {da ? row.labelDa : row.labelEn}
-                    </span>
+            <dl className="divide-y divide-border">
+              {computed.rows.map((row, index) => {
+                const raw =
+                  da && row.valueDa !== undefined ? row.valueDa : row.value;
+                const display = formatDisplay(
+                  raw,
+                  locale,
+                  row.numeric ?? def.tags.includes("finance"),
+                );
+                const primary = index === 0;
+                return (
+                  <div
+                    key={`${row.labelEn}-${index}`}
+                    className="flex items-start justify-between gap-3 py-3 first:pt-0 last:pb-0"
+                  >
+                    <div className="min-w-0">
+                      <dt className="text-xs font-medium uppercase tracking-wide text-muted">
+                        {da ? row.labelDa : row.labelEn}
+                      </dt>
+                      <dd
+                        className={`mt-1 break-words ${
+                          primary
+                            ? "text-lg font-semibold text-foreground"
+                            : "font-mono text-sm text-foreground"
+                        }`}
+                      >
+                        {display}
+                      </dd>
+                    </div>
                     <CopyButton
                       value={display}
                       label={copyLabel}
                       copiedLabel={copiedLabel}
                     />
                   </div>
-                  <pre className="whitespace-pre-wrap break-words font-mono text-sm text-foreground">
-                    {display}
-                  </pre>
-                </div>
-              );
-            })
+                );
+              })}
+            </dl>
           ) : (
-            <div className="rounded-[12px] border border-border bg-surface px-4 py-6 text-sm text-muted">
+            <p className="py-4 text-sm text-muted">
               {da
                 ? "Udfyld felterne for at se resultatet."
                 : "Fill in the fields to see results."}
-            </div>
+            </p>
           )}
         </div>
       </div>

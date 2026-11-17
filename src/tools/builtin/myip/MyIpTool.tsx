@@ -61,7 +61,7 @@ export function MyIpTool() {
         {loading ? (
           <p className="text-sm text-muted">{t.loading}</p>
         ) : error ? (
-          <p className="text-sm text-muted">{error}</p>
+          <p className="text-sm text-foreground">{error}</p>
         ) : info ? (
           <>
             <p className="text-xs font-medium uppercase tracking-wide text-muted">

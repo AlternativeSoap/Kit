@@ -20,6 +20,8 @@ export function ToolChrome() {
         return;
       }
 
+      if (event.defaultPrevented) return;
+
       if (event.key === "/" && !event.metaKey && !event.ctrlKey && !event.altKey) {
         const target = event.target as HTMLElement | null;
         if (

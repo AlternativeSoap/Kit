@@ -18,6 +18,11 @@ export type SimpleResultRow = {
   value: string;
   /** Optional localized display for non-numeric human text. */
   valueDa?: string;
+  /**
+   * Format whole numbers with locale separators too. Rows of finance tools do
+   * this by default; decimals are always formatted.
+   */
+  numeric?: boolean;
 };
 
 export type SimpleToolDef = {
@@ -47,6 +52,21 @@ function num(v: string | undefined): number | undefined {
 function round(n: number, d = 4): string {
   const f = 10 ** d;
   return String(Math.round(n * f) / f);
+}
+
+/** Inclusive integer in [min, max] without modulo bias. */
+function randomInt(min: number, max: number): number {
+  const span = max - min + 1;
+  if (span <= 0) return min;
+  if (span > 0x100000000) throw new RangeError("Range too large");
+  const maxUnbiased = Math.floor(0x100000000 / span) * span;
+  const buf = new Uint32Array(1);
+  let x = 0;
+  do {
+    crypto.getRandomValues(buf);
+    x = buf[0]!;
+  } while (x >= maxUnbiased);
+  return min + (x % span);
 }
 
 export const SIMPLE_TOOL_DEFS: SimpleToolDef[] = [
@@ -246,16 +266,25 @@ export const SIMPLE_TOOL_DEFS: SimpleToolDef[] = [
     ],
     compute: (v) => {
       const m = /^(\d{1,2}):(\d{2})$/.exec(v.wake?.trim() ?? "");
-      const cycles = num(v.cycles);
-      if (!m || cycles === undefined || cycles < 1) return null;
+      if (!m) return null;
+      const preferred = Math.min(6, Math.max(4, Math.floor(num(v.cycles) ?? 5)));
       const wakeMin = Number(m[1]) * 60 + Number(m[2]);
       const fallAsleep = 15;
-      const bed = (wakeMin - fallAsleep - cycles * 90 + 24 * 60) % (24 * 60);
-      const hh = String(Math.floor(bed / 60)).padStart(2, "0");
-      const mm = String(bed % 60).padStart(2, "0");
+      const bedtime = (cycles: number) => {
+        const bed = (wakeMin - fallAsleep - cycles * 90 + 24 * 60) % (24 * 60);
+        const hh = String(Math.floor(bed / 60)).padStart(2, "0");
+        const mm = String(bed % 60).padStart(2, "0");
+        return `${hh}:${mm}`;
+      };
       return [
-        { labelEn: "Suggested bedtime", labelDa: "Foreslået sengetid", value: `${hh}:${mm}` },
-        { labelEn: "Sleep length", labelDa: "Søvnlængde", value: `${cycles * 1.5} h` },
+        {
+          labelEn: `Preferred (${preferred} cycles)`,
+          labelDa: `Foretrukket (${preferred} cyklusser)`,
+          value: bedtime(preferred),
+        },
+        { labelEn: "4 cycles (~6 h)", labelDa: "4 cyklusser (~6 t)", value: bedtime(4) },
+        { labelEn: "5 cycles (~7.5 h)", labelDa: "5 cyklusser (~7,5 t)", value: bedtime(5) },
+        { labelEn: "6 cycles (~9 h)", labelDa: "6 cyklusser (~9 t)", value: bedtime(6) },
       ];
     },
   },
@@ -468,10 +497,8 @@ export const SIMPLE_TOOL_DEFS: SimpleToolDef[] = [
         alpha: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",
       };
       const alphabet = alphabets[v.alphabet ?? "alnum"] ?? alphabets.alnum!;
-      const bytes = new Uint8Array(len);
-      crypto.getRandomValues(bytes);
       let out = "";
-      for (let i = 0; i < len; i++) out += alphabet[bytes[i]! % alphabet.length];
+      for (let i = 0; i < len; i++) out += alphabet[randomInt(0, alphabet.length - 1)];
       return [{ labelEn: "String", labelDa: "Streng", value: out }];
     },
   },
@@ -1175,19 +1202,60 @@ export const SIMPLE_TOOL_DEFS: SimpleToolDef[] = [
     ],
     compute: (v) => {
       const total = num(v.total);
-      const people = num(v.people);
-      if (total === undefined || !people || people < 1) return null;
+      const people = Math.floor(num(v.people) ?? NaN);
+      if (
+        total === undefined ||
+        total < 0 ||
+        !Number.isFinite(people) ||
+        people < 1 ||
+        people > 100_000
+      ) {
+        return null;
+      }
+      // Work in whole cents so the shares always add up to the total.
+      const cents = Math.round(total * 100);
+      const base = Math.floor(cents / people);
+      const remainder = cents - base * people;
+      const money = (c: number) => (c / 100).toFixed(2);
+      const sumRow: SimpleResultRow = {
+        labelEn: "Sum of all shares",
+        labelDa: "Sum af alle andele",
+        value: money(base * people + remainder),
+        numeric: true,
+      };
+      if (remainder === 0) {
+        return [
+          {
+            labelEn: "Per person",
+            labelDa: "Pr. person",
+            value: money(base),
+            numeric: true,
+          },
+          sumRow,
+        ];
+      }
+      const higher = remainder === 1 ? "Payer 1" : `Payers 1–${remainder}`;
+      const higherDa = remainder === 1 ? "Betaler 1" : `Betaler 1–${remainder}`;
+      const rest = people - remainder;
+      const lower =
+        rest === 1 ? `Payer ${people}` : `Payers ${remainder + 1}–${people}`;
+      const lowerDa =
+        rest === 1 ? `Betaler ${people}` : `Betaler ${remainder + 1}–${people}`;
       return [
-        { labelEn: "Per person", labelDa: "Pr. person", value: round(total / people, 2) },
+        { labelEn: higher, labelDa: higherDa, value: money(base + 1), numeric: true },
+        ...(rest > 0
+          ? [{ labelEn: lower, labelDa: lowerDa, value: money(base), numeric: true }]
+          : []),
+        sumRow,
       ];
     },
   },
   {
     id: "pomodoro",
-    nameEn: "Pomodoro timer",
-    nameDa: "Pomodoro-timer",
-    descriptionEn: "Classic 25/5 focus intervals (timer runs in the tool page).",
-    descriptionDa: "Klassiske 25/5 fokusintervaller (timeren kører på værktøjssiden).",
+    nameEn: "Pomodoro planner",
+    nameDa: "Pomodoro-plan",
+    descriptionEn: "Plan classic focus and break intervals. Use Stopwatch or Countdown to run them.",
+    descriptionDa: "Planlæg klassiske fokus- og pauseintervaller. Brug Stopur eller Nedtælling til at køre dem.",
     aliases: ["pomodoro", "focus timer", "pomodor"],
     intents: ["timer", "focus", "pomodoro"],
     tags: ["time", "productivity"],
@@ -1204,8 +1272,9 @@ export const SIMPLE_TOOL_DEFS: SimpleToolDef[] = [
         { labelEn: "Break", labelDa: "Pause", value: `${br} min` },
         {
           labelEn: "Note",
-          labelDa: "Note",
-          value: "Use the stopwatch tool for a live countdown, or start focus on your phone.",
+          labelDa: "Bemærkning",
+          value: "Use Stopwatch or Countdown to run the intervals live.",
+          valueDa: "Brug Stopur eller Nedtælling til at køre intervallerne live.",
         },
       ];
     },
@@ -1416,10 +1485,14 @@ export const SIMPLE_TOOL_DEFS: SimpleToolDef[] = [
       const min = Math.ceil(num(v.min) ?? NaN);
       const max = Math.floor(num(v.max) ?? NaN);
       if (!Number.isFinite(min) || !Number.isFinite(max) || max < min) return null;
-      const buf = new Uint32Array(1);
-      crypto.getRandomValues(buf);
-      const n = min + (buf[0]! % (max - min + 1));
-      return [{ labelEn: "Result", labelDa: "Resultat", value: String(n) }];
+      if (max - min + 1 > 0x100000000) return null;
+      return [
+        {
+          labelEn: "Result",
+          labelDa: "Resultat",
+          value: String(randomInt(min, max)),
+        },
+      ];
     },
   },
   {
@@ -1858,7 +1931,7 @@ export const SIMPLE_TOOL_DEFS: SimpleToolDef[] = [
       const sides = Math.min(1000, Math.max(2, Math.floor(num(v.sides) ?? 6)));
       const rolls: number[] = [];
       for (let i = 0; i < count; i++) {
-        rolls.push(1 + Math.floor(Math.random() * sides));
+        rolls.push(randomInt(1, sides));
       }
       const total = rolls.reduce((a, b) => a + b, 0);
       return [
@@ -1980,35 +2053,36 @@ export const SIMPLE_TOOL_DEFS: SimpleToolDef[] = [
     ],
     compute: (v) => {
       const size = num(v.size);
-      if (size === undefined) return null;
-      // Approximate mondopoint (mm) bridges.
-      let mm = size;
+      if (size === undefined || size <= 0) return null;
+      // Approximate adult/kids bridges via EU hub (brands still vary).
+      // Adults: EU ≈ UK+34 ≈ US men+33 ≈ US women+31.5
+      // Kids US: EU ≈ US kids + 19
+      let eu: number;
       switch (v.system) {
         case "eu":
-          mm = size * 6.67;
+          eu = size;
           break;
         case "uk":
-          mm = (size + 23) * 6.67;
+          eu = size + 34;
           break;
         case "usm":
-          mm = (size + 22) * 6.67;
+          eu = size + 33;
           break;
         case "usw":
-          mm = (size + 21) * 6.67;
+          eu = size + 31.5;
           break;
         case "usk":
-          mm = (size + 12) * 6.67;
+          eu = size + 19;
           break;
         default:
           return null;
       }
-      const eu = mm / 6.67;
       return [
         { labelEn: "EU", labelDa: "EU", value: round(eu, 1) },
-        { labelEn: "UK", labelDa: "UK", value: round(eu - 33, 1) },
-        { labelEn: "US men", labelDa: "US herrer", value: round(eu - 33 + 1, 1) },
-        { labelEn: "US women", labelDa: "US damer", value: round(eu - 33 + 2, 1) },
-        { labelEn: "US kids", labelDa: "US børn", value: round(eu - 33 - 11, 1) },
+        { labelEn: "UK", labelDa: "UK", value: round(eu - 34, 1) },
+        { labelEn: "US men", labelDa: "US herrer", value: round(eu - 33, 1) },
+        { labelEn: "US women", labelDa: "US damer", value: round(eu - 31.5, 1) },
+        { labelEn: "US kids", labelDa: "US børn", value: round(eu - 19, 1) },
         {
           labelEn: "Note",
           labelDa: "Bemærkning",
@@ -2089,50 +2163,6 @@ export const SIMPLE_TOOL_DEFS: SimpleToolDef[] = [
           valueDa: "Cirka-tabel for overdele. Mærker varierer.",
         },
       ];
-    },
-  },
-  {
-    id: "pdfclean",
-    nameEn: "PDF text cleaner",
-    nameDa: "PDF-tekstoprydning",
-    descriptionEn:
-      "Clean up text copied from PDFs: joins hyphenated line breaks, removes stray newlines, and collapses whitespace.",
-    descriptionDa:
-      "Ryd op i tekst kopieret fra PDF: sammensætter orddelings-linjeskift, fjerner løse linjeskift og sammensætter whitespace.",
-    aliases: [
-      "pdf clean",
-      "pdf text",
-      "clean text",
-      "fix pdf",
-      "pdf copy",
-      "pdf-tekstoprydning",
-      "pdfclean",
-    ],
-    intents: ["pdf", "text", "clean", "format"],
-    tags: ["text", "pdf"],
-    popularity: 75,
-    fields: [
-      {
-        key: "text",
-        labelEn: "PDF text",
-        labelDa: "PDF-tekst",
-        multiline: true,
-        defaultValue:
-          "This is an ex-\nample of bro-\nken text from a PDF.\nIt continues here.\n\nA new paragraph starts here.",
-      },
-    ],
-    compute: (v) => {
-      const text = v.text ?? "";
-      if (!text.trim()) return null;
-      // 1. Join hyphenated line breaks: "word-\nrest" → "wordrest"
-      let cleaned = text.replace(/-\r?\n(\S)/g, "$1");
-      // 2. Join lines that look like mid-sentence breaks (line ends without terminal punctuation, next line starts lowercase)
-      cleaned = cleaned.replace(/([^\n.!?:;–—])\r?\n(?=[a-zæøå])/g, "$1 ");
-      // 3. Collapse 3+ newlines to two (preserve paragraph breaks)
-      cleaned = cleaned.replace(/\n{3,}/g, "\n\n");
-      // 4. Collapse excess spaces within lines
-      cleaned = cleaned.replace(/[ \t]{2,}/g, " ");
-      return [{ labelEn: "Cleaned text", labelDa: "Renset tekst", value: cleaned.trim() }];
     },
   },
 ];

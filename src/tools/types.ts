@@ -117,6 +117,7 @@ export type BuiltinToolId =
   | "wordcount"
   | "doctopdf"
   | "bgremove"
+  | "gifmaker"
   | "csvexcel";
 
 /** kit = first-party tools and closely related utilities; web = popular destinations */

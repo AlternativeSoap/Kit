@@ -2,15 +2,12 @@
 
 import { useMemo, useState } from "react";
 import { CopyButton } from "@/components/tools/CopyButton";
+import { ErrorBanner, FileInput, fieldClass } from "@/components/tools/ui";
+import { useDeferredText } from "@/hooks/useDeferredText";
+import { importFromUrl } from "@/lib/cdnImport";
 import { useDictionary } from "@/i18n/LanguageProvider";
 import type { ToolPrefill } from "@/tools/prefill";
 import { textStats } from "../text/calc";
-
-function importFromUrl<T>(url: string): Promise<T> {
-  // eslint-disable-next-line @typescript-eslint/no-implied-eval, no-new-func
-  const dyn = new Function("u", "return import(u)") as (u: string) => Promise<T>;
-  return dyn(url);
-}
 
 async function extractPdfText(file: File): Promise<string> {
   const pdfjs = await importFromUrl<{
@@ -18,7 +15,9 @@ async function extractPdfText(file: File): Promise<string> {
       promise: Promise<{
         numPages: number;
         getPage: (n: number) => Promise<{
-          getTextContent: () => Promise<{ items: { str?: string }[] }>;
+          getTextContent: () => Promise<{
+            items: { str?: string; hasEOL?: boolean }[];
+          }>;
         }>;
       }>;
     };
@@ -32,7 +31,13 @@ async function extractPdfText(file: File): Promise<string> {
   for (let i = 1; i <= doc.numPages; i++) {
     const page = await doc.getPage(i);
     const content = await page.getTextContent();
-    parts.push(content.items.map((item) => item.str ?? "").join(" "));
+    const pageText = content.items
+      .map((item) => `${item.str ?? ""}${item.hasEOL ? "\n" : " "}`)
+      .join("")
+      .replace(/[ \t]+\n/g, "\n")
+      .replace(/[ \t]{2,}/g, " ")
+      .trim();
+    if (pageText) parts.push(pageText);
   }
   return parts.join("\n\n");
 }
@@ -50,20 +55,24 @@ async function extractDocxText(file: File): Promise<string> {
 export function WordCountTool({ prefill }: { prefill?: ToolPrefill }) {
   const dictionary = useDictionary();
   const t = dictionary.wordcountTool;
-  const [text, setText] = useState(() => prefill?.value ?? "");
+  const { text, setText, deferred } = useDeferredText(prefill?.value ?? "");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
 
-  const stats = useMemo(() => textStats(text), [text]);
+  const stats = useMemo(() => textStats(deferred), [deferred]);
   const charsNoSpaces = useMemo(
-    () => text.replace(/\s/g, "").length,
-    [text],
+    () => deferred.replace(/\s/g, "").length,
+    [deferred],
   );
+
+  const summary = t.statsSummary
+    .replace("{chars}", String(stats.chars))
+    .replace("{words}", String(stats.words))
+    .replace("{lines}", String(stats.lines));
 
   async function onFile(file: File | null) {
     setError(null);
-    setFileName(null);
     if (!file) return;
     setBusy(true);
     try {
@@ -87,6 +96,11 @@ export function WordCountTool({ prefill }: { prefill?: ToolPrefill }) {
         setError(t.unsupported);
         return;
       }
+      if (!next.trim()) {
+        setError(t.emptyFile);
+        return;
+      }
+      if (text.trim() && !window.confirm(t.confirmReplace)) return;
       setText(next);
       setFileName(file.name);
     } catch {
@@ -96,22 +110,34 @@ export function WordCountTool({ prefill }: { prefill?: ToolPrefill }) {
     }
   }
 
+  const statItems: { label: string; value: string }[] = [
+    { label: t.chars, value: String(stats.chars) },
+    { label: t.charsNoSpaces, value: String(charsNoSpaces) },
+    { label: t.words, value: String(stats.words) },
+    { label: t.lines, value: String(stats.lines) },
+    { label: t.sentences, value: String(stats.sentences) },
+    { label: t.paragraphs, value: String(stats.paragraphs) },
+    {
+      label: t.readingTime,
+      value: stats.words === 0 ? "—" : `${stats.readingMinutes} ${t.minutes}`,
+    },
+  ];
+
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <p className="text-sm text-muted">{t.intro}</p>
 
-      <label className="block">
-        <span className="mb-1.5 block text-sm font-medium">{t.pickFile}</span>
-        <input
-          type="file"
+      <div>
+        <FileInput
+          label={t.pickFile}
           accept=".pdf,.docx,.txt,.md,application/pdf,text/plain"
-          className="block w-full text-sm text-muted file:mr-3 file:rounded-[8px] file:border-0 file:bg-accent file:px-3 file:py-2 file:text-sm file:font-medium file:text-white"
-          onChange={(e) => void onFile(e.target.files?.[0] ?? null)}
+          disabled={busy}
+          onFile={(file) => void onFile(file)}
         />
         {fileName ? (
           <span className="mt-1 block text-xs text-muted">{fileName}</span>
         ) : null}
-      </label>
+      </div>
 
       <label className="block">
         <span className="mb-1.5 flex items-center justify-between text-sm font-medium">
@@ -123,33 +149,32 @@ export function WordCountTool({ prefill }: { prefill?: ToolPrefill }) {
         <textarea
           value={text}
           onChange={(e) => setText(e.target.value)}
+          disabled={busy}
           rows={12}
-          className="w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 text-base outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)] sm:text-[15px]"
+          className={`${fieldClass} text-base disabled:opacity-60 sm:text-[15px]`}
         />
       </label>
 
       {busy ? <p className="text-sm text-muted">{t.working}</p> : null}
-      {error ? <p className="text-sm text-muted">{error}</p> : null}
+      <ErrorBanner>{error}</ErrorBanner>
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <Stat label={t.chars} value={stats.chars} />
-        <Stat label={t.charsNoSpaces} value={charsNoSpaces} />
-        <Stat label={t.words} value={stats.words} />
-        <Stat label={t.lines} value={stats.lines} />
+      <div className="space-y-2">
+        <dl className="flex flex-wrap gap-x-5 gap-y-2 rounded-[10px] border border-border bg-surface px-3 py-2.5 text-sm">
+          {statItems.map((item) => (
+            <div key={item.label} className="flex items-baseline gap-1.5">
+              <dt className="text-xs text-muted">{item.label}</dt>
+              <dd className="font-semibold tabular-nums">{item.value}</dd>
+            </div>
+          ))}
+        </dl>
+        <div className="flex justify-end">
+          <CopyButton
+            value={summary}
+            label={t.copyStats}
+            copiedLabel={t.statsCopied}
+          />
+        </div>
       </div>
-      <p className="text-sm text-muted">
-        {t.readingTime}:{" "}
-        {stats.words === 0 ? "—" : `${stats.readingMinutes} ${t.minutes}`}
-      </p>
-    </div>
-  );
-}
-
-function Stat({ label, value }: { label: string; value: number }) {
-  return (
-    <div className="rounded-[10px] border border-border bg-surface px-3 py-2.5 text-sm">
-      <p className="text-xs text-muted">{label}</p>
-      <p className="text-lg font-semibold tabular-nums">{value}</p>
     </div>
   );
 }

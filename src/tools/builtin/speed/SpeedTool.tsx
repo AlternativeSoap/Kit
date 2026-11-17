@@ -88,7 +88,11 @@ export function SpeedTool() {
       </button>
 
       {busy ? <ProgressBar value={progress} label={t.working} /> : null}
-      {error ? <p className="text-sm text-muted">{error}</p> : null}
+      {error ? (
+        <p className="rounded-[10px] border border-border bg-surface px-3 py-2 text-sm text-foreground">
+          {error}
+        </p>
+      ) : null}
 
       {mbps ? (
         <div className="rounded-[12px] border border-border bg-surface px-5 py-6">

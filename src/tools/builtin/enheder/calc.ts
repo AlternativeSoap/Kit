@@ -68,7 +68,8 @@ const COOKING: UnitDef[] = [
   { id: "l", toBase: 1000 },
   { id: "tsp", toBase: 5 },
   { id: "tbsp", toBase: 15 },
-  { id: "cup", toBase: 240 },
+  // US customary cup and US fluid ounce.
+  { id: "cup", toBase: 236.588 },
   { id: "floz", toBase: 29.5735 },
 ];
 
@@ -121,4 +122,19 @@ export function convertUnits(
   if (!from || !to) return null;
   const base = value * from.toBase;
   return base / to.toBase;
+}
+
+/** The value converted into every other unit of the category. */
+export function convertToAll(
+  category: UnitCategory,
+  value: number,
+  fromId: string,
+): { id: string; value: number }[] {
+  const out: { id: string; value: number }[] = [];
+  for (const unit of UNITS[category]) {
+    if (unit.id === fromId) continue;
+    const converted = convertUnits(category, value, fromId, unit.id);
+    if (converted !== null) out.push({ id: unit.id, value: converted });
+  }
+  return out;
 }

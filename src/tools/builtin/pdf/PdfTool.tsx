@@ -1,12 +1,24 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { PDFDocument, degrees } from "pdf-lib";
+import {
+  ErrorBanner,
+  Field,
+  KitInput,
+  Segmented,
+  fileInputClass,
+  primaryBtnClass,
+  secondaryBtnClass,
+} from "@/components/tools/ui";
 import { ProgressBar } from "@/tools/builtin/media/ProgressBar";
+import { downloadBlob } from "@/tools/builtin/media/canvas";
 import { useDictionary } from "@/i18n/LanguageProvider";
 
 type Mode = "merge" | "split" | "rotate";
-type RotateDeg = 90 | 180 | 270;
+type RotateDeg = "90" | "180" | "270";
+
+type ReadyPdf = { blob: Blob; filename: string };
 
 function parsePageRange(input: string, pageCount: number): number[] | null {
   const pages = new Set<number>();
@@ -32,19 +44,33 @@ function parsePageRange(input: string, pageCount: number): number[] | null {
   return [...pages].sort((a, b) => a - b);
 }
 
+function isPdfFile(file: File): boolean {
+  return file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
+}
+
 export function PdfTool() {
   const dictionary = useDictionary();
   const t = dictionary.pdfTool;
   const [mode, setMode] = useState<Mode>("merge");
   const [files, setFiles] = useState<File[]>([]);
   const [range, setRange] = useState("1-1");
-  const [rotateBy, setRotateBy] = useState<RotateDeg>(90);
+  const [rotateBy, setRotateBy] = useState<RotateDeg>("90");
   const [busy, setBusy] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [readyUrl, setReadyUrl] = useState<string | null>(null);
-  const [readyName, setReadyName] = useState("result.pdf");
+  const [ready, setReady] = useState<ReadyPdf | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pageCount, setPageCount] = useState<number | null>(null);
+  /** Guards page-count loads so a slow read cannot overwrite a newer file. */
+  const loadIdRef = useRef(0);
+  const mountedRef = useRef(true);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      loadIdRef.current += 1;
+    };
+  }, []);
 
   const canRun = useMemo(() => {
     if (busy) return false;
@@ -52,42 +78,85 @@ export function PdfTool() {
     return files.length === 1;
   }, [busy, files.length, mode]);
 
-  async function onPick(list: FileList | null) {
-    setError(null);
-    setReadyUrl((prev) => {
-      if (prev) URL.revokeObjectURL(prev);
-      return null;
-    });
-    if (!list?.length) {
-      setFiles([]);
+  function clearReady() {
+    setReady(null);
+  }
+
+  async function loadPageCount(file: File) {
+    const loadId = ++loadIdRef.current;
+    try {
+      const doc = await PDFDocument.load(await file.arrayBuffer());
+      if (loadIdRef.current !== loadId) return;
+      const count = doc.getPageCount();
+      setPageCount(count);
+      setRange(count > 1 ? `1-${count}` : "1");
+    } catch {
+      if (loadIdRef.current !== loadId) return;
       setPageCount(null);
-      return;
+      setError(t.processError);
     }
-    const picked = [...list].filter(
-      (f) => f.type === "application/pdf" || f.name.toLowerCase().endsWith(".pdf"),
-    );
+  }
+
+  async function onPick(list: File[]) {
+    setError(null);
+    clearReady();
+    if (!list.length) return;
+    const picked = list.filter(isPdfFile);
     if (!picked.length) {
-      setFiles([]);
       setError(t.invalid);
       return;
     }
     if (mode === "split" || mode === "rotate") {
       const first = picked[0]!;
       setFiles([first]);
-      try {
-        const bytes = await first.arrayBuffer();
-        const doc = await PDFDocument.load(bytes);
-        const count = doc.getPageCount();
-        setPageCount(count);
-        setRange(count > 1 ? `1-${count}` : "1");
-      } catch {
-        setPageCount(null);
-        setError(t.processError);
-      }
+      setPageCount(null);
+      await loadPageCount(first);
     } else {
-      setFiles(picked);
+      setFiles((prev) => [...prev, ...picked]);
       setPageCount(null);
     }
+  }
+
+  function changeMode(next: Mode) {
+    if (busy || next === mode) return;
+    setMode(next);
+    clearReady();
+    setError(null);
+    if (next === "merge") {
+      loadIdRef.current += 1;
+      setPageCount(null);
+      return;
+    }
+    // Keep a single PDF when moving between extract and rotate.
+    const first = files[0];
+    if (!first) {
+      loadIdRef.current += 1;
+      setPageCount(null);
+      return;
+    }
+    if (files.length > 1) setFiles([first]);
+    if (pageCount === null || files.length > 1) {
+      setPageCount(null);
+      void loadPageCount(first);
+    }
+  }
+
+  function removeFile(index: number) {
+    setFiles((prev) => prev.filter((_, i) => i !== index));
+    clearReady();
+    setError(null);
+  }
+
+  function moveFile(index: number, delta: -1 | 1) {
+    setFiles((prev) => {
+      const target = index + delta;
+      if (target < 0 || target >= prev.length) return prev;
+      const next = [...prev];
+      const [item] = next.splice(index, 1);
+      next.splice(target, 0, item!);
+      return next;
+    });
+    clearReady();
   }
 
   async function run() {
@@ -95,10 +164,7 @@ export function PdfTool() {
     setBusy(true);
     setProgress(8);
     setError(null);
-    setReadyUrl((prev) => {
-      if (prev) URL.revokeObjectURL(prev);
-      return null;
-    });
+    clearReady();
     try {
       if (mode === "merge") {
         const out = await PDFDocument.create();
@@ -111,10 +177,10 @@ export function PdfTool() {
         }
         const saved = await out.save();
         setProgress(100);
-        const copy = Uint8Array.from(saved);
-        const blob = new Blob([copy], { type: "application/pdf" });
-        setReadyUrl(URL.createObjectURL(blob));
-        setReadyName("merged.pdf");
+        setReady({
+          blob: new Blob([Uint8Array.from(saved)], { type: "application/pdf" }),
+          filename: "merged.pdf",
+        });
       } else if (mode === "split") {
         const file = files[0]!;
         const bytes = await file.arrayBuffer();
@@ -124,6 +190,7 @@ export function PdfTool() {
         const indices = parsePageRange(range, count);
         if (!indices?.length) {
           setError(t.invalidRange.replace("{count}", String(count)));
+          setProgress(0);
           return;
         }
         setProgress(55);
@@ -132,31 +199,42 @@ export function PdfTool() {
         for (const page of pages) out.addPage(page);
         const saved = await out.save();
         setProgress(100);
-        const copy = Uint8Array.from(saved);
-        setReadyUrl(URL.createObjectURL(new Blob([copy], { type: "application/pdf" })));
-        setReadyName("extract.pdf");
+        setReady({
+          blob: new Blob([Uint8Array.from(saved)], { type: "application/pdf" }),
+          filename: "extract.pdf",
+        });
       } else {
         const file = files[0]!;
         const bytes = await file.arrayBuffer();
         setProgress(30);
         const doc = await PDFDocument.load(bytes);
         const count = doc.getPageCount();
-        const indices = parsePageRange(range, count) ?? doc.getPageIndices();
+        const indices = parsePageRange(range, count);
+        if (!indices?.length) {
+          setError(t.invalidRotateRange.replace("{count}", String(count)));
+          setProgress(0);
+          return;
+        }
         setProgress(60);
+        const angle = Number(rotateBy);
         for (const index of indices) {
           const page = doc.getPage(index);
-          page.setRotation(degrees((page.getRotation().angle + rotateBy) % 360));
+          page.setRotation(degrees((page.getRotation().angle + angle) % 360));
         }
         const saved = await doc.save();
         setProgress(100);
-        const copy = Uint8Array.from(saved);
-        setReadyUrl(URL.createObjectURL(new Blob([copy], { type: "application/pdf" })));
-        setReadyName("rotated.pdf");
+        setReady({
+          blob: new Blob([Uint8Array.from(saved)], { type: "application/pdf" }),
+          filename: "rotated.pdf",
+        });
       }
     } catch {
-      setError(t.processError);
+      if (mountedRef.current) {
+        setError(t.processError);
+        setProgress(0);
+      }
     } finally {
-      setBusy(false);
+      if (mountedRef.current) setBusy(false);
     }
   }
 
@@ -166,118 +244,125 @@ export function PdfTool() {
     { id: "rotate", label: t.rotate },
   ];
 
+  const rotateOptions: { id: RotateDeg; label: string }[] = [
+    { id: "90", label: "90°" },
+    { id: "180", label: "180°" },
+    { id: "270", label: "270°" },
+  ];
+
   return (
     <div className="mx-auto max-w-xl space-y-6">
       <p className="text-sm text-muted">{t.privacy}</p>
 
-      <div className="flex flex-wrap gap-2">
-        {modes.map((item) => (
-          <button
-            key={item.id}
-            type="button"
-            onClick={() => {
-              const next = item.id;
-              setMode(next);
-              setReadyUrl((prev) => {
-                if (prev) URL.revokeObjectURL(prev);
-                return null;
-              });
-              setError(null);
-              // Keep a single PDF when moving between extract and rotate.
-              if (next === "merge") {
-                // Keep all files for merge; page count only matters for one-file modes.
-                setPageCount(null);
-                return;
-              }
-              setFiles((prev) => {
-                const first = prev[0];
-                if (!first) {
-                  setPageCount(null);
-                  return [];
-                }
-                void first.arrayBuffer().then(async (bytes) => {
-                  try {
-                    const doc = await PDFDocument.load(bytes);
-                    const count = doc.getPageCount();
-                    setPageCount(count);
-                    setRange(count > 1 ? `1-${count}` : "1");
-                  } catch {
-                    setPageCount(null);
-                  }
-                });
-                return [first];
-              });
-            }}
-            className={`kit-touch-target rounded-[10px] border px-3 py-2 text-sm sm:min-h-0 ${
-              mode === item.id
-                ? "border-accent bg-accent text-white"
-                : "border-border bg-surface text-muted hover:text-foreground"
-            }`}
-          >
-            {item.label}
-          </button>
-        ))}
-      </div>
+      <Segmented
+        ariaLabel={t.modeLabel}
+        value={mode}
+        options={modes}
+        onChange={changeMode}
+      />
 
-      <label className="block">
-        <span className="mb-1.5 block text-sm font-medium">
-          {mode === "merge" ? t.pickMany : t.pickOne}
-        </span>
+      <Field label={mode === "merge" ? t.pickMany : t.pickOne}>
         <input
           type="file"
           accept="application/pdf,.pdf"
           multiple={mode === "merge"}
-          onChange={(event) => void onPick(event.target.files)}
-          className="block w-full text-sm text-muted file:mr-3 file:rounded-[8px] file:border-0 file:bg-accent file:px-3 file:py-2 file:text-sm file:font-medium file:text-white"
+          disabled={busy}
+          onChange={(event) => {
+            const list = event.target.files;
+            const picked = list ? [...list] : [];
+            event.target.value = "";
+            void onPick(picked);
+          }}
+          className={fileInputClass}
         />
-      </label>
+      </Field>
 
       {files.length > 0 ? (
-        <ul className="space-y-1 text-sm text-muted">
-          {files.map((file) => (
-            <li key={`${file.name}-${file.size}`} className="truncate">
-              {file.name} ({Math.round(file.size / 1024)} KB)
-              {pageCount !== null ? ` · ${pageCount} ${t.pageWord}` : ""}
+        <ul className="space-y-2 text-sm text-muted">
+          {files.map((file, index) => (
+            <li
+              key={`${file.name}-${file.size}-${index}`}
+              className="flex flex-wrap items-center justify-between gap-2"
+            >
+              <span className="min-w-0 flex-1 truncate">
+                {file.name} ({Math.round(file.size / 1024)} KB)
+                {pageCount !== null && mode !== "merge"
+                  ? ` · ${pageCount} ${t.pageWord}`
+                  : ""}
+              </span>
+              {mode === "merge" ? (
+                <span className="flex gap-1">
+                  <button
+                    type="button"
+                    disabled={busy || index === 0}
+                    onClick={() => moveFile(index, -1)}
+                    aria-label={`${t.moveUp}: ${file.name}`}
+                    className={`${secondaryBtnClass} !px-2.5 !py-1.5`}
+                  >
+                    {t.moveUp}
+                  </button>
+                  <button
+                    type="button"
+                    disabled={busy || index === files.length - 1}
+                    onClick={() => moveFile(index, 1)}
+                    aria-label={`${t.moveDown}: ${file.name}`}
+                    className={`${secondaryBtnClass} !px-2.5 !py-1.5`}
+                  >
+                    {t.moveDown}
+                  </button>
+                  <button
+                    type="button"
+                    disabled={busy}
+                    onClick={() => removeFile(index)}
+                    aria-label={`${t.removeFile}: ${file.name}`}
+                    className={`${secondaryBtnClass} !px-2.5 !py-1.5`}
+                  >
+                    {t.removeFile}
+                  </button>
+                </span>
+              ) : null}
             </li>
           ))}
         </ul>
       ) : null}
 
       {(mode === "split" || mode === "rotate") && pageCount !== null ? (
-        <label className="block">
-          <span className="mb-1.5 block text-sm font-medium">
-            {t.pages.replace("{count}", String(pageCount))}
-          </span>
-          <input
+        <Field
+          label={t.pages.replace("{count}", String(pageCount))}
+          hint={t.pagesHint}
+        >
+          <KitInput
             value={range}
-            onChange={(event) => setRange(event.target.value)}
+            disabled={busy}
+            onChange={(event) => {
+              setRange(event.target.value);
+              setError(null);
+              clearReady();
+            }}
             placeholder={t.pagesHint}
-            className="w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 text-sm outline-none focus:border-accent"
           />
-          <span className="mt-1 block text-xs text-muted">{t.pagesHint}</span>
-        </label>
+        </Field>
       ) : null}
 
       {mode === "rotate" ? (
-        <div className="flex flex-wrap gap-2">
-          {([90, 180, 270] as const).map((deg) => (
-            <button
-              key={deg}
-              type="button"
-              onClick={() => setRotateBy(deg)}
-              className={`kit-touch-target rounded-[10px] border px-3 py-2 text-sm sm:min-h-0 ${
-                rotateBy === deg
-                  ? "border-accent bg-accent text-white"
-                  : "border-border bg-surface text-muted hover:text-foreground"
-              }`}
-            >
-              {deg}°
-            </button>
-          ))}
+        <div className="space-y-1.5">
+          <span className="block text-sm font-medium text-foreground">
+            {t.rotateAngle}
+          </span>
+          <Segmented
+            ariaLabel={t.rotateAngle}
+            value={rotateBy}
+            options={rotateOptions}
+            onChange={(next) => {
+              if (busy) return;
+              setRotateBy(next);
+              clearReady();
+            }}
+          />
         </div>
       ) : null}
 
-      {error ? <p className="text-sm text-muted">{error}</p> : null}
+      {error ? <ErrorBanner>{error}</ErrorBanner> : null}
       {busy ? <ProgressBar value={progress} label={t.working} /> : null}
 
       <div className="flex flex-wrap gap-2">
@@ -285,7 +370,7 @@ export function PdfTool() {
           type="button"
           disabled={!canRun}
           onClick={() => void run()}
-          className="kit-touch-target rounded-[10px] bg-accent px-4 py-2.5 text-sm font-medium text-white disabled:opacity-40 sm:min-h-0"
+          className={primaryBtnClass}
         >
           {busy
             ? t.working
@@ -295,14 +380,14 @@ export function PdfTool() {
                 ? t.runSplit
                 : t.runRotate}
         </button>
-        {readyUrl ? (
-          <a
-            href={readyUrl}
-            download={readyName}
-            className="kit-touch-target rounded-[10px] border border-border bg-surface px-4 py-2.5 text-sm font-medium text-foreground sm:min-h-0"
+        {ready ? (
+          <button
+            type="button"
+            onClick={() => downloadBlob(ready.blob, ready.filename)}
+            className={secondaryBtnClass}
           >
             {t.download}
-          </a>
+          </button>
         ) : null}
       </div>
     </div>

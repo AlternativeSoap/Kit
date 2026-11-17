@@ -70,6 +70,19 @@ select {
   font-size: 16px;
 }
 
+.kit-field {
+  font-size: 16px;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
 /* Comfortable tap targets on touch devices. */
 @media (pointer: coarse) {
   .kit-touch-target {

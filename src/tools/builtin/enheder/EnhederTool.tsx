@@ -2,18 +2,25 @@
 
 import { useMemo, useState } from "react";
 import { CopyButton } from "@/components/tools/CopyButton";
+import {
+  Field,
+  KitSelect,
+  Segmented,
+  fieldClass,
+  secondaryBtnClass,
+} from "@/components/tools/ui";
 import { useDictionary, useLanguage } from "@/i18n/LanguageProvider";
-import { formatNumber } from "@/lib/format";
+import { formatCompact, formatPrecise } from "@/lib/format";
 import { prefillChoice, prefillNumber, type ToolPrefill } from "@/tools/prefill";
-import { convertUnits, UNITS, type UnitCategory } from "./calc";
+import {
+  convertToAll,
+  convertUnits,
+  UNITS,
+  type UnitCategory,
+} from "./calc";
 
 const CATEGORIES = Object.keys(UNITS) as UnitCategory[];
 
-/**
- * The conversion from the URL, or the tool's normal start. A link is used
- * only when the value and both units are valid for its category, so a broken
- * link never mixes its value with the default units.
- */
 const CATEGORY_KEY = "kit:enheder-category";
 
 function storedCategory(): UnitCategory | null {
@@ -29,6 +36,11 @@ function storedCategory(): UnitCategory | null {
   return null;
 }
 
+/**
+ * The conversion from the URL, or the tool's normal start. A link is used
+ * only when the value and both units are valid for its category, so a broken
+ * link never mixes its value with the default units.
+ */
 function initialConversion(prefill: ToolPrefill | undefined) {
   const category = prefillChoice(prefill, "category", CATEGORIES);
   const value = prefillNumber(prefill, "value");
@@ -90,6 +102,7 @@ export function EnhederTool({
   };
 
   const unitLabels = t.units;
+  const unitLabel = (id: string) => unitLabels[id] ?? id;
 
   const categories: { id: UnitCategory; label: string }[] = [
     { id: "length", label: t.length },
@@ -104,89 +117,120 @@ export function EnhederTool({
 
   const units = UNITS[category];
 
-  const result = useMemo(() => {
+  const parsed = useMemo(() => {
+    if (!value.trim()) return null;
     const n = Number(value.replace(",", "."));
-    return convertUnits(category, n, fromId, toId);
-  }, [category, value, fromId, toId]);
+    return Number.isFinite(n) ? n : null;
+  }, [value]);
+
+  const result = useMemo(
+    () => (parsed === null ? null : convertUnits(category, parsed, fromId, toId)),
+    [category, parsed, fromId, toId],
+  );
+
+  const allUnits = useMemo(
+    () => (parsed === null ? [] : convertToAll(category, parsed, fromId)),
+    [category, parsed, fromId],
+  );
+
+  const swapUnits = () => {
+    setFromId(toId);
+    setToId(fromId);
+  };
+
+  const unitOptions = units.map((unit) => (
+    <option key={unit.id} value={unit.id}>
+      {unitLabel(unit.id)}
+    </option>
+  ));
 
   return (
     <div className="mx-auto max-w-xl space-y-6">
       {!forcedCategory && (
-        <div className="flex flex-wrap gap-2">
-          {categories.map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => selectCategory(item.id)}
-              className={`kit-touch-target rounded-[10px] border px-3 py-2 text-sm sm:min-h-0 ${
-                category === item.id
-                  ? "border-accent bg-accent text-white"
-                  : "border-border bg-surface text-muted hover:text-foreground"
-              }`}
-            >
-              {item.label}
-            </button>
-          ))}
-        </div>
+        <>
+          <div className="sm:hidden">
+            <Field label={t.category}>
+              <KitSelect
+                value={category}
+                onChange={(event) =>
+                  selectCategory(event.target.value as UnitCategory)
+                }
+              >
+                {categories.map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.label}
+                  </option>
+                ))}
+              </KitSelect>
+            </Field>
+          </div>
+          <div className="hidden sm:block">
+            <Segmented
+              value={category}
+              options={categories}
+              onChange={selectCategory}
+              ariaLabel={t.category}
+            />
+          </div>
+        </>
       )}
 
-      <label className="block">
-        <span className="mb-1.5 block text-sm font-medium">{t.value}</span>
+      <Field label={t.value}>
         <input
           type="number"
           inputMode="decimal"
           step="any"
           value={value}
           onChange={(event) => setValue(event.target.value)}
-          className="w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 text-[15px] outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)]"
+          className={fieldClass}
         />
-      </label>
+      </Field>
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <label className="block">
-          <span className="mb-1.5 block text-sm font-medium">{t.from}</span>
-          <select
+      <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:items-end">
+        <Field label={t.from}>
+          <KitSelect
             value={fromId}
             onChange={(event) => setFromId(event.target.value)}
-            className="w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 text-[15px] outline-none focus:border-accent"
           >
-            {units.map((unit) => (
-              <option key={unit.id} value={unit.id}>
-                {unitLabels[unit.id] ?? unit.id}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="block">
-          <span className="mb-1.5 block text-sm font-medium">{t.to}</span>
-          <select
-            value={toId}
-            onChange={(event) => setToId(event.target.value)}
-            className="w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 text-[15px] outline-none focus:border-accent"
-          >
-            {units.map((unit) => (
-              <option key={unit.id} value={unit.id}>
-                {unitLabels[unit.id] ?? unit.id}
-              </option>
-            ))}
-          </select>
-        </label>
+            {unitOptions}
+          </KitSelect>
+        </Field>
+        <button
+          type="button"
+          onClick={swapUnits}
+          aria-label={t.swap}
+          title={t.swap}
+          className={`${secondaryBtnClass} justify-self-start sm:justify-self-auto`}
+        >
+          <span aria-hidden className="mr-1.5 sm:mr-0">
+            ⇄
+          </span>
+          <span className="sm:sr-only">{t.swap}</span>
+        </button>
+        <Field label={t.to}>
+          <KitSelect value={toId} onChange={(event) => setToId(event.target.value)}>
+            {unitOptions}
+          </KitSelect>
+        </Field>
       </div>
 
       <div className="rounded-[12px] border border-border bg-surface px-5 py-5">
         {result !== null ? (
           <div className="flex items-start justify-between gap-3">
-            <div>
+            <div className="min-w-0">
               <p className="text-xs text-muted">{t.result}</p>
-              <p className="mt-1 text-3xl font-semibold tracking-tight">
-                {formatNumber(result, locale, 6)}{" "}
+              <p
+                className="mt-1 break-words text-3xl font-semibold tracking-tight"
+                aria-live="polite"
+              >
+                {formatPrecise(result, locale)}{" "}
                 <span className="text-lg font-medium text-muted">
-                  {unitLabels[toId] ?? toId}
+                  {unitLabel(toId)}
                 </span>
               </p>
             </div>
             <CopyButton
-              value={formatNumber(result, locale, 6)}
+              value={formatPrecise(result, locale)}
               label={t.copy}
               copiedLabel={t.copied}
             />
@@ -195,6 +239,37 @@ export function EnhederTool({
           <p className="text-sm text-muted">{t.empty}</p>
         )}
       </div>
+
+      {allUnits.length > 0 ? (
+        <section aria-label={t.allUnits}>
+          <h2 className="mb-2 text-xs font-medium uppercase tracking-[0.06em] text-muted">
+            {t.allUnits}
+          </h2>
+          <ul className="grid gap-x-4 sm:grid-cols-2">
+            {allUnits.map((row) => {
+              const active = row.id === toId;
+              return (
+                <li key={row.id} className="border-b border-border last:border-b-0">
+                  <button
+                    type="button"
+                    onClick={() => setToId(row.id)}
+                    title={t.useAsTarget}
+                    aria-pressed={active}
+                    className={`flex w-full items-baseline justify-between gap-3 py-1.5 text-left text-sm ${
+                      active ? "font-medium text-foreground" : "text-muted hover:text-foreground"
+                    }`}
+                  >
+                    <span className="min-w-0 truncate">{unitLabel(row.id)}</span>
+                    <span className="shrink-0 tabular-nums text-foreground">
+                      {formatCompact(row.value, locale)}
+                    </span>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      ) : null}
     </div>
   );
 }

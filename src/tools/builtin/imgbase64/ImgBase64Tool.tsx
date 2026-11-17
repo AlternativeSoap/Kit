@@ -122,7 +122,11 @@ export function ImgBase64Tool() {
         </label>
       )}
 
-      {error ? <p className="text-sm text-muted">{error}</p> : null}
+      {error ? (
+        <p className="rounded-[10px] border border-border bg-surface px-3 py-2 text-sm text-foreground">
+          {error}
+        </p>
+      ) : null}
 
       {dataUrl ? (
         <>
