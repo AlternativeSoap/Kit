@@ -2589,7 +2589,7 @@ const kitToolsManual: ToolDefinition[] = [
     slug: "faktura",
     name: "Invoice",
     description:
-      "Make a simple invoice with line items and VAT, then download a PDF. Local only.",
+      "Fill in seller, buyer, lines, and VAT, preview the layout, and download a PDF. Local only.",
     aliases: [
       "invoice",
       "faktura",

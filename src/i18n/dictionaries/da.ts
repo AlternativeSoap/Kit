@@ -690,7 +690,7 @@ export const da: Dictionary = {
     faktura: {
       name: "Faktura",
       description:
-        "Lav en simpel faktura med linjer og moms, og download som PDF. Kun lokalt.",
+        "Udfyld sælger, kunde, linjer og moms, se forhåndsvisning, og download en PDF. Kun lokalt.",
     },
     underskrift: {
       name: "Underskrift",
