@@ -470,3 +470,158 @@ details:not([open]) > :not(summary) {
     font-size: 10px;
   }
 }
+
+/* Dias: stage sizing + play transitions */
+.dias-stage {
+  container-type: size;
+  container-name: dias-stage;
+}
+
+.dias-present-slide {
+  container-type: inline-size;
+  container-name: dias-present;
+}
+
+.dias-present-root:fullscreen,
+.dias-present-root:-webkit-full-screen {
+  width: 100%;
+  height: 100%;
+  background: #000;
+}
+
+.dias-slide-none {
+  animation: none;
+}
+
+.dias-slide-fade {
+  animation: dias-fade 520ms ease both;
+}
+
+.dias-slide-left {
+  animation: dias-left 560ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.dias-slide-right {
+  animation: dias-right 560ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.dias-slide-up {
+  animation: dias-up 560ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.dias-slide-zoom {
+  animation: dias-zoom 560ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.dias-slide-wipe {
+  animation: dias-wipe 620ms ease both;
+}
+
+.dias-enter-fade {
+  animation: dias-fade 480ms ease both;
+}
+
+.dias-enter-up {
+  animation: dias-up 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.dias-enter-left {
+  animation: dias-left 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.dias-enter-zoom {
+  animation: dias-zoom 500ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.dias-enter-pop {
+  animation: dias-pop 480ms cubic-bezier(0.34, 1.4, 0.64, 1) both;
+}
+
+@keyframes dias-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes dias-left {
+  from {
+    opacity: 0;
+    transform: translateX(8%);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes dias-right {
+  from {
+    opacity: 0;
+    transform: translateX(-8%);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes dias-up {
+  from {
+    opacity: 0;
+    transform: translateY(10%);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes dias-zoom {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes dias-wipe {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+@keyframes dias-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dias-slide-fade,
+  .dias-slide-left,
+  .dias-slide-right,
+  .dias-slide-up,
+  .dias-slide-zoom,
+  .dias-slide-wipe,
+  .dias-enter-fade,
+  .dias-enter-up,
+  .dias-enter-left,
+  .dias-enter-zoom,
+  .dias-enter-pop {
+    animation: none !important;
+  }
+}

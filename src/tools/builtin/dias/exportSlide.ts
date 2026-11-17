@@ -36,10 +36,25 @@ async function drawBlock(
   if (block.kind === "image" && block.imageDataUrl) {
     try {
       const img = await loadImage(block.imageDataUrl);
-      const scale = Math.min(w / img.width, h / img.height);
-      const dw = img.width * scale;
-      const dh = img.height * scale;
-      ctx.drawImage(img, x + (w - dw) / 2, y + (h - dh) / 2, dw, dh);
+      const fit = block.imageFit ?? "contain";
+      if (fit === "fill") {
+        ctx.drawImage(img, x, y, w, h);
+      } else if (fit === "cover") {
+        const scale = Math.max(w / img.width, h / img.height);
+        const dw = img.width * scale;
+        const dh = img.height * scale;
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(x, y, w, h);
+        ctx.clip();
+        ctx.drawImage(img, x + (w - dw) / 2, y + (h - dh) / 2, dw, dh);
+        ctx.restore();
+      } else {
+        const scale = Math.min(w / img.width, h / img.height);
+        const dw = img.width * scale;
+        const dh = img.height * scale;
+        ctx.drawImage(img, x + (w - dw) / 2, y + (h - dh) / 2, dw, dh);
+      }
     } catch {
       /* skip broken image */
     }

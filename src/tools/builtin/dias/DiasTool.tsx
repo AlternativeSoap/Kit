@@ -33,16 +33,34 @@ import {
 import { downloadBlob } from "../media/canvas";
 import { deckToPdfBytes, slideToPngBlob } from "./exportSlide";
 import {
-  SLIDE_H,
   SLIDE_W,
   THEMES,
   applyTheme,
   emptyDeck,
   emptySlide,
+  fitImageToSlide,
   nextBlockId,
+  type BlockEntrance,
+  type ImageFit,
   type SlideBlock,
+  type SlideTransition,
   type SlidesDoc,
 } from "./slides";
+import {
+  BLOCK_ENTRANCES,
+  SLIDE_TRANSITIONS,
+  blockEntranceClass,
+  imageFitClass,
+  slideTransitionClass,
+} from "./transitions";
+import {
+  SLIDE_LAYOUTS,
+  STARTER_DECKS,
+  buildLayoutSlide,
+  buildStarterDeck,
+  type SlideLayoutId,
+  type StarterDeckId,
+} from "./templates";
 
 type DragState = {
   blockId: string;
@@ -73,8 +91,10 @@ export function DiasTool() {
   const [savedAt, setSavedAt] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [presenting, setPresenting] = useState(false);
+  const [presentTick, setPresentTick] = useState(0);
   const [exporting, setExporting] = useState(false);
   const stageRef = useRef<HTMLDivElement>(null);
+  const presentRootRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef<DragState | null>(null);
   const metaRef = useRef({
     slideIndex,
@@ -152,6 +172,27 @@ export function DiasTool() {
     setSlideIndex((i) => i + 1);
   }
 
+  function insertLayout(layoutId: SlideLayoutId) {
+    const built = buildLayoutSlide(layoutId, locale, slide.background);
+    setDoc((prev) => {
+      const slides = [...prev.slides];
+      slides.splice(metaRef.current.slideIndex + 1, 0, built);
+      return { ...prev, slides };
+    });
+    setSlideIndex((i) => i + 1);
+    setSelectedId(built.blocks.find((b) => b.kind === "title")?.id ?? built.blocks[0]?.id ?? null);
+  }
+
+  function openStarter(deckId: StarterDeckId) {
+    const id = newDraftId("dias");
+    const next = buildStarterDeck(deckId, locale);
+    setDraftId(id);
+    replaceDoc(next);
+    setSlideIndex(0);
+    setSelectedId(next.slides[0]?.blocks[0]?.id ?? null);
+    void persist(next, id);
+  }
+
   function duplicateSlide() {
     setDoc((prev) => {
       const copy = structuredClone(prev.slides[slideIndex]!);
@@ -187,6 +228,7 @@ export function DiasTool() {
       fontSize: kind === "title" ? 40 : 22,
       color: "#111111",
       align: "left",
+      entrance: kind === "title" ? "slideUp" : "fade",
       z: slide.blocks.length + 1,
     };
     updateSlide((s) => ({ ...s, blocks: [...s.blocks, block] }));
@@ -229,6 +271,8 @@ export function DiasTool() {
         w: 40,
         h: 45,
         imageDataUrl: dataUrl,
+        imageFit: "contain",
+        entrance: "fade",
         fontFamily: "system-ui, sans-serif",
         fontSize: 16,
         color: "#111111",
@@ -422,10 +466,42 @@ export function DiasTool() {
     void persist(next, id);
   }
 
+  function goPresentSlide(nextIndex: number) {
+    setSlideIndex(nextIndex);
+    setPresentTick((n) => n + 1);
+  }
+
+  async function startPresent() {
+    setPresenting(true);
+    setPresentTick((n) => n + 1);
+    window.setTimeout(() => {
+      void presentRootRef.current?.requestFullscreen?.().catch(() => {
+        /* fullscreen may be blocked; overlay still works */
+      });
+    }, 30);
+  }
+
+  async function exitPresent() {
+    setPresenting(false);
+    if (document.fullscreenElement) {
+      await document.exitFullscreen().catch(() => undefined);
+    }
+  }
+
   const sortedBlocks = useMemo(
     () => [...slide.blocks].sort((a, b) => a.z - b.z),
     [slide.blocks],
   );
+
+  useEffect(() => {
+    const onFs = () => {
+      if (!document.fullscreenElement && metaRef.current.presenting) {
+        setPresenting(false);
+      }
+    };
+    document.addEventListener("fullscreenchange", onFs);
+    return () => document.removeEventListener("fullscreenchange", onFs);
+  }, []);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -436,16 +512,19 @@ export function DiasTool() {
       const mod = e.ctrlKey || e.metaKey;
 
       if (isPresenting) {
-        if (e.key === "Escape") setPresenting(false);
+        if (e.key === "Escape") {
+          e.preventDefault();
+          void exitPresent();
+        }
         if (e.key === "ArrowRight" || e.key === " ") {
           e.preventDefault();
-          setSlideIndex((i) =>
-            Math.min(metaRef.current.doc.slides.length - 1, i + 1),
+          goPresentSlide(
+            Math.min(metaRef.current.doc.slides.length - 1, metaRef.current.slideIndex + 1),
           );
         }
         if (e.key === "ArrowLeft") {
           e.preventDefault();
-          setSlideIndex((i) => Math.max(0, i - 1));
+          goPresentSlide(Math.max(0, metaRef.current.slideIndex - 1));
         }
         return;
       }
@@ -491,7 +570,7 @@ export function DiasTool() {
   }, [undo, redo]);
 
   return (
-    <div className="papers-surface mx-auto max-w-6xl space-y-3 sm:space-y-4">
+    <div className="papers-surface mx-auto w-full max-w-[min(100%,92rem)] space-y-3 sm:space-y-4">
       <p className="hidden text-sm text-muted sm:block">{t.intro}</p>
       <p className="hidden text-xs text-muted sm:block">{t.note}</p>
 
@@ -529,9 +608,9 @@ export function DiasTool() {
           <button
             type="button"
             className={primaryBtnClass}
-            onClick={() => setPresenting(true)}
+            onClick={() => void startPresent()}
           >
-            {t.present}
+            {t.play}
           </button>
           <button
             type="button"
@@ -647,7 +726,43 @@ export function DiasTool() {
         </button>
       </div>
 
-      <div className="flex flex-wrap items-center gap-3 text-sm">
+      <div className="flex flex-wrap items-end gap-3 text-sm">
+        <Field label={t.starterPick}>
+          <KitSelect
+            value=""
+            onChange={(e) => {
+              const id = e.target.value as StarterDeckId;
+              if (!id) return;
+              openStarter(id);
+              e.target.value = "";
+            }}
+          >
+            <option value="">{t.starterPick}</option>
+            {STARTER_DECKS.map((id) => (
+              <option key={id} value={id}>
+                {t[`starter_${id}` as keyof typeof t] ?? id}
+              </option>
+            ))}
+          </KitSelect>
+        </Field>
+        <Field label={t.layoutPick}>
+          <KitSelect
+            value=""
+            onChange={(e) => {
+              const id = e.target.value as SlideLayoutId;
+              if (!id) return;
+              insertLayout(id);
+              e.target.value = "";
+            }}
+          >
+            <option value="">{t.layoutPick}</option>
+            {SLIDE_LAYOUTS.map((layout) => (
+              <option key={layout.id} value={layout.id}>
+                {t[`layout_${layout.id}` as keyof typeof t] ?? layout.id}
+              </option>
+            ))}
+          </KitSelect>
+        </Field>
         <Field label={t.theme}>
           <KitSelect
             value=""
@@ -666,7 +781,24 @@ export function DiasTool() {
             ))}
           </KitSelect>
         </Field>
-        <span className="text-xs text-muted">
+        <Field label={t.slideTransition}>
+          <KitSelect
+            value={slide.transition ?? "fade"}
+            onChange={(e) =>
+              updateSlide((s) => ({
+                ...s,
+                transition: e.target.value as SlideTransition,
+              }))
+            }
+          >
+            {SLIDE_TRANSITIONS.map((tr) => (
+              <option key={tr} value={tr}>
+                {t[`transition_${tr}` as keyof typeof t] ?? tr}
+              </option>
+            ))}
+          </KitSelect>
+        </Field>
+        <span className="pb-2 text-xs text-muted">
           {t.slideOf
             .replace("{current}", String(slideIndex + 1))
             .replace("{total}", String(doc.slides.length))}
@@ -675,6 +807,9 @@ export function DiasTool() {
             : ""}
         </span>
       </div>
+      <p className="hidden text-xs text-muted sm:block">
+        {t.starterHint} {t.layoutHint}
+      </p>
 
       <ErrorBanner>{error}</ErrorBanner>
 
@@ -723,8 +858,8 @@ export function DiasTool() {
       />
       <p className="hidden text-xs text-muted sm:block">{t.moveHint}</p>
 
-      <div className="papers-surface grid gap-3 sm:gap-4 lg:grid-cols-[7rem_minmax(0,1fr)_16rem]">
-        <div className="order-2 flex max-h-none gap-2 overflow-x-auto pb-1 lg:order-1 lg:max-h-[28rem] lg:flex-col lg:overflow-auto lg:pb-0">
+      <div className="grid gap-3 sm:gap-4 lg:grid-cols-[5.5rem_minmax(0,1fr)_15rem] lg:items-stretch">
+        <div className="order-2 flex max-h-none gap-2 overflow-x-auto pb-1 lg:order-1 lg:max-h-[min(70vh,42rem)] lg:flex-col lg:overflow-auto lg:pb-0">
           {doc.slides.map((s, i) => (
             <button
               key={s.id}
@@ -733,7 +868,7 @@ export function DiasTool() {
                 setSlideIndex(i);
                 setSelectedId(s.blocks[0]?.id ?? null);
               }}
-              className={`w-[4.75rem] shrink-0 rounded-[8px] border p-1 text-left lg:w-full ${
+              className={`w-[5.25rem] shrink-0 rounded-[8px] border p-1 text-left lg:w-full ${
                 i === slideIndex ? "border-accent" : "border-border"
               }`}
             >
@@ -748,7 +883,7 @@ export function DiasTool() {
 
         <div
           ref={stageRef}
-          className="relative order-1 aspect-video w-full overflow-hidden rounded-[12px] border border-border shadow-sm lg:order-2"
+          className="dias-stage relative order-1 aspect-video w-full min-h-[min(52vh,28rem)] overflow-hidden rounded-[12px] border border-border shadow-sm lg:order-2 lg:min-h-[min(68vh,36rem)]"
           style={{ background: slide.background }}
           onPointerMove={onPointerMove}
           onPointerUp={onPointerUp}
@@ -770,7 +905,7 @@ export function DiasTool() {
                   block.kind === "shape" ? block.fill ?? "#94a3b8" : "transparent",
                 color: block.color,
                 fontFamily: block.fontFamily,
-                fontSize: `${(block.fontSize / SLIDE_W) * 100}%`,
+                fontSize: `${(block.fontSize / SLIDE_W) * 100}cqw`,
                 fontWeight: block.bold ? 700 : 400,
                 fontStyle: block.italic ? "italic" : "normal",
                 textDecoration: block.underline ? "underline" : "none",
@@ -788,7 +923,7 @@ export function DiasTool() {
                 <img
                   src={block.imageDataUrl}
                   alt=""
-                  className="h-full w-full object-contain"
+                  className={`h-full w-full ${imageFitClass(block.imageFit)}`}
                   draggable={false}
                 />
               ) : block.kind !== "shape" ? (
@@ -806,7 +941,7 @@ export function DiasTool() {
           ))}
         </div>
 
-        <div className="order-3 space-y-3 rounded-[12px] border border-border bg-surface p-3">
+        <div className="order-3 space-y-3 rounded-[12px] border border-border bg-surface p-3 lg:max-h-[min(70vh,42rem)] lg:overflow-y-auto">
           <h2 className="text-sm font-medium">{t.inspector}</h2>
           {!selected ? (
             <p className="text-xs text-muted">{t.noSelection}</p>
@@ -824,59 +959,104 @@ export function DiasTool() {
                   />
                 </Field>
               )}
-              <Field label={t.fontFamily}>
+              <Field label={t.blockEntrance}>
                 <KitSelect
-                  value={selected.fontFamily}
-                  onChange={(e) =>
-                    updateBlock(selected.id, { fontFamily: e.target.value })
-                  }
-                >
-                  <option value="system-ui, sans-serif">Sans</option>
-                  <option value="Georgia, serif">Serif</option>
-                  <option value="ui-monospace, monospace">Mono</option>
-                  <option value="Georgia, 'Times New Roman', serif">
-                    Classic
-                  </option>
-                </KitSelect>
-              </Field>
-              <Field label={t.fontSize}>
-                <KitInput
-                  type="number"
-                  min={10}
-                  max={96}
-                  value={selected.fontSize}
+                  value={selected.entrance ?? "none"}
                   onChange={(e) =>
                     updateBlock(selected.id, {
-                      fontSize: Number(e.target.value) || 16,
+                      entrance: e.target.value as BlockEntrance,
                     })
                   }
-                />
+                >
+                  {BLOCK_ENTRANCES.map((en) => (
+                    <option key={en} value={en}>
+                      {t[`entrance_${en}` as keyof typeof t] ?? en}
+                    </option>
+                  ))}
+                </KitSelect>
               </Field>
-              <Field label={t.color}>
-                <input
-                  type="color"
-                  value={selected.color}
-                  onChange={(e) =>
-                    updateBlock(selected.id, { color: e.target.value })
-                  }
-                  className="h-10 w-full cursor-pointer rounded-[8px] border border-border"
-                />
-              </Field>
-              {(selected.kind === "title" || selected.kind === "body") && (
-                <Field label={t.align}>
-                  <KitSelect
-                    value={selected.align}
-                    onChange={(e) =>
-                      updateBlock(selected.id, {
-                        align: e.target.value as SlideBlock["align"],
-                      })
+              {selected.kind === "image" ? (
+                <>
+                  <Field label={t.imageFit}>
+                    <KitSelect
+                      value={selected.imageFit ?? "contain"}
+                      onChange={(e) =>
+                        updateBlock(selected.id, {
+                          imageFit: e.target.value as ImageFit,
+                        })
+                      }
+                    >
+                      <option value="contain">{t.imageFitContain}</option>
+                      <option value="cover">{t.imageFitCover}</option>
+                      <option value="fill">{t.imageFitFill}</option>
+                    </KitSelect>
+                  </Field>
+                  <button
+                    type="button"
+                    className={`${secondaryBtnClass} w-full`}
+                    onClick={() =>
+                      updateBlock(selected.id, fitImageToSlide(selected))
                     }
                   >
-                    <option value="left">{t.alignLeft}</option>
-                    <option value="center">{t.alignCenter}</option>
-                    <option value="right">{t.alignRight}</option>
-                  </KitSelect>
-                </Field>
+                    {t.fitImage}
+                  </button>
+                </>
+              ) : null}
+              {(selected.kind === "title" || selected.kind === "body") && (
+                <>
+                  <Field label={t.fontFamily}>
+                    <KitSelect
+                      value={selected.fontFamily}
+                      onChange={(e) =>
+                        updateBlock(selected.id, { fontFamily: e.target.value })
+                      }
+                    >
+                      <option value="system-ui, sans-serif">Sans</option>
+                      <option value="Georgia, serif">Serif</option>
+                      <option value="ui-monospace, monospace">Mono</option>
+                      <option value="Georgia, 'Times New Roman', serif">
+                        Classic
+                      </option>
+                    </KitSelect>
+                  </Field>
+                  <Field label={t.fontSize}>
+                    <KitInput
+                      type="number"
+                      min={10}
+                      max={96}
+                      value={selected.fontSize}
+                      onChange={(e) =>
+                        updateBlock(selected.id, {
+                          fontSize: Number(e.target.value) || 16,
+                        })
+                      }
+                    />
+                  </Field>
+                  <Field label={t.color}>
+                    <input
+                      type="color"
+                      value={selected.color}
+                      onChange={(e) =>
+                        updateBlock(selected.id, { color: e.target.value })
+                      }
+                      className="h-10 w-full cursor-pointer rounded-[8px] border border-border"
+                    />
+                  </Field>
+                  <Field label={t.align}>
+                    <KitSelect
+                      value={selected.align}
+                      onChange={(e) =>
+                        updateBlock(selected.id, {
+                          align: e.target.value as SlideBlock["align"],
+                        })
+                      }
+                    >
+                      <option value="left">{t.alignLeft}</option>
+                      <option value="center">{t.alignCenter}</option>
+                      <option value="right">{t.alignRight}</option>
+                    </KitSelect>
+                  </Field>
+                </>
               )}
               {selected.kind === "shape" ? (
                 <Field label={t.fill}>
@@ -896,30 +1076,56 @@ export function DiasTool() {
       </div>
 
       {presenting ? (
-        <div className="fixed inset-0 z-50 flex flex-col bg-black">
+        <div
+          ref={presentRootRef}
+          className="dias-present-root fixed inset-0 z-50 flex flex-col bg-black"
+        >
           <div className="flex items-center justify-between gap-2 px-4 py-2 text-sm text-white">
             <span>
               {t.slideOf
                 .replace("{current}", String(slideIndex + 1))
                 .replace("{total}", String(doc.slides.length))}
             </span>
-            <button
-              type="button"
-              className="rounded-[8px] border border-white/30 px-3 py-1.5"
-              onClick={() => setPresenting(false)}
-            >
-              {t.exitPresent}
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                className="rounded-[8px] border border-white/30 px-3 py-1.5 disabled:opacity-40"
+                disabled={slideIndex <= 0}
+                onClick={() => goPresentSlide(Math.max(0, slideIndex - 1))}
+              >
+                ←
+              </button>
+              <button
+                type="button"
+                className="rounded-[8px] border border-white/30 px-3 py-1.5 disabled:opacity-40"
+                disabled={slideIndex >= doc.slides.length - 1}
+                onClick={() =>
+                  goPresentSlide(
+                    Math.min(doc.slides.length - 1, slideIndex + 1),
+                  )
+                }
+              >
+                →
+              </button>
+              <button
+                type="button"
+                className="rounded-[8px] border border-white/30 px-3 py-1.5"
+                onClick={() => void exitPresent()}
+              >
+                {t.exitPresent}
+              </button>
+            </div>
           </div>
-          <div className="relative mx-auto aspect-video w-full max-w-6xl flex-1">
+          <div className="relative mx-auto flex w-full flex-1 items-center justify-center px-2 pb-2">
             <div
-              className="absolute inset-0 overflow-hidden"
+              key={`${slide.id}-${presentTick}`}
+              className={`dias-present-slide relative aspect-video h-auto max-h-full w-full max-w-[min(100%,calc((100vh-5.5rem)*16/9))] overflow-hidden ${slideTransitionClass(slide.transition)}`}
               style={{ background: slide.background }}
             >
-              {sortedBlocks.map((block) => (
+              {sortedBlocks.map((block, index) => (
                 <div
                   key={block.id}
-                  className="absolute overflow-hidden"
+                  className={`absolute overflow-hidden ${blockEntranceClass(block.entrance)}`}
                   style={{
                     left: `${block.x}%`,
                     top: `${block.y}%`,
@@ -932,8 +1138,15 @@ export function DiasTool() {
                         : "transparent",
                     color: block.color,
                     fontFamily: block.fontFamily,
-                    fontSize: `calc((100vw * ${block.fontSize}) / ${SLIDE_W})`,
+                    fontSize: `${(block.fontSize / SLIDE_W) * 100}cqw`,
+                    fontWeight: block.bold ? 700 : 400,
+                    fontStyle: block.italic ? "italic" : "normal",
+                    textDecoration: block.underline ? "underline" : "none",
                     textAlign: block.align,
+                    animationDelay:
+                      block.entrance && block.entrance !== "none"
+                        ? `${index * 90}ms`
+                        : undefined,
                   }}
                 >
                   {block.kind === "image" && block.imageDataUrl ? (
@@ -941,7 +1154,7 @@ export function DiasTool() {
                     <img
                       src={block.imageDataUrl}
                       alt=""
-                      className="h-full w-full object-contain"
+                      className={`h-full w-full ${imageFitClass(block.imageFit)}`}
                     />
                   ) : block.kind !== "shape" ? (
                     <div className="h-full w-full whitespace-pre-wrap p-[4%] leading-snug">
@@ -952,9 +1165,7 @@ export function DiasTool() {
               ))}
             </div>
           </div>
-          <p className="pb-3 text-center text-xs text-white/70">
-            {t.presentHint} · {SLIDE_H}p ref
-          </p>
+          <p className="pb-3 text-center text-xs text-white/70">{t.presentHint}</p>
         </div>
       ) : null}
     </div>
