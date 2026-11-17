@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { FontFamilyInput } from "@/components/tools/FontFamilyInput";
 import { FontSizeInput } from "@/components/tools/FontSizeInput";
 import { secondaryBtnClass } from "@/components/tools/ui";
 
@@ -31,23 +32,15 @@ export type PapersFormatLabels = {
   fillColor: string;
   fontFamily: string;
   fontSize: string;
+  fontSearch?: string;
   textStyle?: string;
   styleTitle?: string;
   styleHeading?: string;
   paragraph?: string;
 };
 
-const FONTS = [
-  { id: "Calibri, 'Segoe UI', system-ui, sans-serif", label: "Calibri" },
-  { id: "Georgia, 'Times New Roman', serif", label: "Georgia" },
-  { id: "'Times New Roman', Times, serif", label: "Times" },
-  { id: "Arial, Helvetica, sans-serif", label: "Arial" },
-  { id: "system-ui, sans-serif", label: "Sans" },
-  { id: "ui-monospace, monospace", label: "Mono" },
-] as const;
-
 /** Compact field styles for ribbon controls (never w-full). */
-const ribbonSelectClass =
+const ribbonFontClass =
   "h-10 min-w-0 flex-1 rounded-[8px] border border-border bg-white px-2.5 text-base font-medium text-[#141414] outline-none focus:border-accent sm:h-9 sm:text-sm";
 
 const ribbonSizeClass =
@@ -81,18 +74,6 @@ function ToolBtn({
       {children}
     </button>
   );
-}
-
-function resolveFontValue(fontFamily: string) {
-  const exact = FONTS.find((f) => f.id === fontFamily);
-  if (exact) return exact.id;
-  const lower = fontFamily.toLowerCase();
-  const fuzzy = FONTS.find(
-    (f) =>
-      lower.includes(f.label.toLowerCase()) ||
-      f.id.toLowerCase().includes(lower.split(",")[0]?.trim() ?? ""),
-  );
-  return fuzzy?.id ?? FONTS[0]!.id;
 }
 
 function BlockStyleSelect({
@@ -157,8 +138,6 @@ export function PapersFormatBar({
   /** ribbon = compact strip for paper chrome; bar = standalone card */
   variant?: "bar" | "ribbon";
 }) {
-  const fontValue = resolveFontValue(value.fontFamily);
-
   const tools = (
     <>
       <ToolBtn
@@ -246,19 +225,13 @@ export function PapersFormatBar({
           labels={labels}
         />
       ) : null}
-      <select
-        value={fontValue}
-        onChange={(e) => onChange({ fontFamily: e.target.value })}
-        className={ribbonSelectClass}
+      <FontFamilyInput
+        value={value.fontFamily}
+        onChange={(fontFamily) => onChange({ fontFamily })}
         title={labels.fontFamily}
-        aria-label={labels.fontFamily}
-      >
-        {FONTS.map((f) => (
-          <option key={f.id} value={f.id}>
-            {f.label}
-          </option>
-        ))}
-      </select>
+        placeholder={labels.fontSearch ?? labels.fontFamily}
+        className={ribbonFontClass}
+      />
       <FontSizeInput
         value={value.fontSize}
         onChange={(fontSize) => onChange({ fontSize })}
@@ -292,19 +265,13 @@ export function PapersFormatBar({
           className={`${styleSelectClass} flex-none`}
         />
       ) : null}
-      <select
-        value={fontValue}
-        onChange={(e) => onChange({ fontFamily: e.target.value })}
-        className={`${ribbonSelectClass} max-w-[10rem] flex-none`}
+      <FontFamilyInput
+        value={value.fontFamily}
+        onChange={(fontFamily) => onChange({ fontFamily })}
         title={labels.fontFamily}
-        aria-label={labels.fontFamily}
-      >
-        {FONTS.map((f) => (
-          <option key={f.id} value={f.id}>
-            {f.label}
-          </option>
-        ))}
-      </select>
+        placeholder={labels.fontSearch ?? labels.fontFamily}
+        className={`${ribbonFontClass} max-w-[12rem] flex-none`}
+      />
       <FontSizeInput
         value={value.fontSize}
         onChange={(fontSize) => onChange({ fontSize })}

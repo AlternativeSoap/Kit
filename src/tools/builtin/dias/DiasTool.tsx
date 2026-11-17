@@ -8,6 +8,20 @@ import {
   useState,
   type PointerEvent as ReactPointerEvent,
 } from "react";
+import { FontFamilyInput } from "@/components/tools/FontFamilyInput";
+import {
+  IconBringForward,
+  IconCopy,
+  IconPlus,
+  IconRedo,
+  IconSendBackward,
+  IconTrash,
+  IconUndo,
+  PapersDocBar,
+  PapersIconBtn,
+  PapersMenu,
+  papersCompactBtnClass,
+} from "@/components/tools/PapersChrome";
 import {
   PapersFormatBar,
   type PapersFormatState,
@@ -15,7 +29,6 @@ import {
 import {
   ErrorBanner,
   Field,
-  FileInput,
   KitInput,
   KitSelect,
   primaryBtnClass,
@@ -40,6 +53,7 @@ import {
   emptySlide,
   fitImageToSlide,
   nextBlockId,
+  placeImageInBlock,
   type BlockEntrance,
   type ImageFit,
   type SlideBlock,
@@ -68,6 +82,7 @@ type DragState = {
   startX: number;
   startY: number;
   orig: SlideBlock;
+  moved: boolean;
 };
 
 export function DiasTool() {
@@ -88,6 +103,7 @@ export function DiasTool() {
   const [draftId, setDraftId] = useState(() => newDraftId("dias"));
   const [slideIndex, setSlideIndex] = useState(0);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [savedAt, setSavedAt] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [presenting, setPresenting] = useState(false);
@@ -95,7 +111,9 @@ export function DiasTool() {
   const [exporting, setExporting] = useState(false);
   const stageRef = useRef<HTMLDivElement>(null);
   const presentRootRef = useRef<HTMLDivElement>(null);
+  const editRef = useRef<HTMLTextAreaElement>(null);
   const dragRef = useRef<DragState | null>(null);
+  const suppressClickRef = useRef(false);
   const metaRef = useRef({
     slideIndex,
     selectedId,
@@ -106,6 +124,31 @@ export function DiasTool() {
 
   const slide = doc.slides[slideIndex] ?? doc.slides[0]!;
   const selected = slide.blocks.find((b) => b.id === selectedId) ?? null;
+
+  function isTextBlock(block: SlideBlock) {
+    return block.kind === "title" || block.kind === "body";
+  }
+
+  function selectBlock(id: string, startEdit = false) {
+    setSelectedId(id);
+    const block = metaRef.current.doc.slides[metaRef.current.slideIndex]?.blocks.find(
+      (b) => b.id === id,
+    );
+    if (startEdit && block && isTextBlock(block)) {
+      setEditingId(id);
+    } else {
+      setEditingId(null);
+    }
+  }
+
+  useEffect(() => {
+    if (!editingId) return;
+    const node = editRef.current;
+    if (!node) return;
+    node.focus();
+    const len = node.value.length;
+    node.setSelectionRange(len, len);
+  }, [editingId]);
 
   useEffect(() => {
     void (async () => {
@@ -213,6 +256,7 @@ export function DiasTool() {
     });
     setSlideIndex((i) => Math.max(0, Math.min(i, doc.slides.length - 2)));
     setSelectedId(null);
+    setEditingId(null);
   }
 
   function addTextBlock(kind: "title" | "body") {
@@ -232,7 +276,7 @@ export function DiasTool() {
       z: slide.blocks.length + 1,
     };
     updateSlide((s) => ({ ...s, blocks: [...s.blocks, block] }));
-    setSelectedId(block.id);
+    selectBlock(block.id, true);
   }
 
   function addShape() {
@@ -251,38 +295,89 @@ export function DiasTool() {
       z: slide.blocks.length + 1,
     };
     updateSlide((s) => ({ ...s, blocks: [...s.blocks, block] }));
-    setSelectedId(block.id);
+    selectBlock(block.id, false);
   }
 
-  async function addImage(file: File | null) {
-    if (!file) return;
+  function readImageFile(file: File | null): Promise<string | null> {
+    if (!file) return Promise.resolve(null);
     if (!file.type.startsWith("image/")) {
       setError(t.invalidImage);
+      return Promise.resolve(null);
+    }
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result ?? ""));
+      reader.onerror = () => {
+        setError(t.invalidImage);
+        resolve(null);
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  /** Insert into the selected box when possible; otherwise add a new image block. */
+  async function addImage(file: File | null, forceNew = false) {
+    const dataUrl = await readImageFile(file);
+    if (!dataUrl) return;
+    const targetId = forceNew ? null : metaRef.current.selectedId;
+    const current = metaRef.current.doc.slides[metaRef.current.slideIndex];
+    const target = targetId
+      ? current?.blocks.find((b) => b.id === targetId)
+      : undefined;
+
+    if (target && target.kind !== "image") {
+      updateBlock(
+        target.id,
+        placeImageInBlock(target, dataUrl, "cover"),
+      );
+      selectBlock(target.id, false);
       return;
     }
-    const reader = new FileReader();
-    reader.onload = () => {
-      const dataUrl = String(reader.result ?? "");
-      const block: SlideBlock = {
-        id: nextBlockId(),
-        kind: "image",
-        x: 15,
-        y: 20,
-        w: 40,
-        h: 45,
+    if (target?.kind === "image") {
+      updateBlock(target.id, {
         imageDataUrl: dataUrl,
-        imageFit: "contain",
-        entrance: "fade",
-        fontFamily: "system-ui, sans-serif",
-        fontSize: 16,
-        color: "#111111",
-        align: "center",
-        z: slide.blocks.length + 1,
-      };
-      updateSlide((s) => ({ ...s, blocks: [...s.blocks, block] }));
-      setSelectedId(block.id);
+        imageFit: target.imageFit ?? "cover",
+      });
+      return;
+    }
+
+    const block: SlideBlock = {
+      id: nextBlockId(),
+      kind: "image",
+      x: 15,
+      y: 20,
+      w: 40,
+      h: 45,
+      imageDataUrl: dataUrl,
+      imageFit: "contain",
+      entrance: "fade",
+      fontFamily: "system-ui, sans-serif",
+      fontSize: 16,
+      color: "#111111",
+      align: "center",
+      z: (current?.blocks.length ?? 0) + 1,
     };
-    reader.readAsDataURL(file);
+    updateSlide((s) => ({ ...s, blocks: [...s.blocks, block] }));
+    selectBlock(block.id, false);
+  }
+
+  async function insertImageInSelectedBox(file: File | null) {
+    const id = metaRef.current.selectedId;
+    if (!id) return;
+    const dataUrl = await readImageFile(file);
+    if (!dataUrl) return;
+    const current = metaRef.current.doc.slides[metaRef.current.slideIndex];
+    const target = current?.blocks.find((b) => b.id === id);
+    if (!target) return;
+    if (target.kind === "image") {
+      updateBlock(id, {
+        imageDataUrl: dataUrl,
+        imageFit: target.imageFit ?? "cover",
+      });
+      return;
+    }
+    updateBlock(id, placeImageInBlock(target, dataUrl, "cover"));
+    selectBlock(id, false);
   }
 
   function deleteBlock() {
@@ -293,6 +388,7 @@ export function DiasTool() {
       blocks: s.blocks.filter((b) => b.id !== id),
     }));
     setSelectedId(null);
+    setEditingId(null);
   }
 
   function duplicateBlock() {
@@ -309,7 +405,7 @@ export function DiasTool() {
       z: (current?.blocks.length ?? 0) + 1,
     };
     updateSlide((s) => ({ ...s, blocks: [...s.blocks, copy] }));
-    setSelectedId(copy.id);
+    selectBlock(copy.id, isTextBlock(copy));
   }
 
   function nudgeBlock(dx: number, dy: number) {
@@ -388,6 +484,11 @@ export function DiasTool() {
   ) {
     e.stopPropagation();
     setSelectedId(block.id);
+    if (mode === "move" && isTextBlock(block) && editingId === block.id) {
+      /* Keep typing; move via the drag grip instead. */
+      return;
+    }
+    setEditingId(null);
     markGestureStart();
     dragRef.current = {
       blockId: block.id,
@@ -395,6 +496,7 @@ export function DiasTool() {
       startX: e.clientX,
       startY: e.clientY,
       orig: { ...block },
+      moved: false,
     };
     (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
   }
@@ -406,6 +508,9 @@ export function DiasTool() {
     const rect = stage.getBoundingClientRect();
     const dx = ((e.clientX - drag.startX) / rect.width) * 100;
     const dy = ((e.clientY - drag.startY) / rect.height) * 100;
+    if (Math.abs(dx) + Math.abs(dy) > 0.35) {
+      drag.moved = true;
+    }
     if (drag.mode === "move") {
       updateBlock(
         drag.blockId,
@@ -428,7 +533,11 @@ export function DiasTool() {
   }
 
   function onPointerUp() {
-    if (dragRef.current) markGestureEnd();
+    const drag = dragRef.current;
+    if (drag) {
+      if (drag.moved) suppressClickRef.current = true;
+      markGestureEnd();
+    }
     dragRef.current = null;
   }
 
@@ -572,324 +681,324 @@ export function DiasTool() {
   return (
     <div className="papers-surface mx-auto w-full max-w-[min(100%,92rem)] space-y-3 sm:space-y-4">
       <p className="hidden text-sm text-muted sm:block">{t.intro}</p>
-      <p className="hidden text-xs text-muted sm:block">{t.note}</p>
 
-      <div className="space-y-2">
-        <Field label={t.title}>
-          <KitInput
-            value={doc.title}
-            onChange={(e) =>
-              setDoc((prev) => ({ ...prev, title: e.target.value }))
-            }
-          />
-        </Field>
-        <div className="kit-h-scroll sm:flex-wrap">
-          <FileInput
-            inline
-            label={t.openFile}
-            accept=".kitslides,.json"
-            onFile={(f) => void onOpenFile(f)}
-          />
-          <button type="button" className={secondaryBtnClass} onClick={newDeck}>
-            {t.newDeck}
-          </button>
-          <button
-            type="button"
-            className={secondaryBtnClass}
-            onClick={() =>
-              downloadJsonFile(
-                `${(doc.title || "slides").replace(/[^\w\-]+/g, "_")}.kitslides`,
-                doc,
-              )
-            }
-          >
-            {t.saveFile}
-          </button>
-          <button
-            type="button"
-            className={primaryBtnClass}
-            onClick={() => void startPresent()}
-          >
-            {t.play}
-          </button>
-          <button
-            type="button"
-            className={secondaryBtnClass}
-            onClick={() => void exportPng()}
-            disabled={exporting}
-          >
-            {t.exportPng}
-          </button>
-          <button
-            type="button"
-            className={secondaryBtnClass}
-            onClick={() => void exportPdf()}
-            disabled={exporting}
-          >
-            {t.exportPdf}
-          </button>
-        </div>
-      </div>
-
-      <div className="kit-h-scroll sm:flex-wrap">
-        <button type="button" className={secondaryBtnClass} onClick={addSlide}>
-          {t.addSlide}
-        </button>
-        <button type="button" className={secondaryBtnClass} onClick={duplicateSlide}>
-          {t.duplicateSlide}
-        </button>
+      <PapersDocBar
+        titleLabel={t.title}
+        title={doc.title}
+        onTitleChange={(value) =>
+          setDoc((prev) => ({ ...prev, title: value }))
+        }
+      >
+        <PapersMenu
+          label={t.fileMenu}
+          items={[
+            {
+              type: "file",
+              id: "open",
+              label: t.openFile,
+              accept: ".kitslides,.json",
+              onFile: (f) => void onOpenFile(f),
+            },
+            {
+              type: "action",
+              id: "new",
+              label: t.newDeck,
+              onSelect: newDeck,
+            },
+            {
+              type: "action",
+              id: "save",
+              label: t.saveFile,
+              onSelect: () =>
+                downloadJsonFile(
+                  `${(doc.title || "slides").replace(/[^\w\-]+/g, "_")}.kitslides`,
+                  doc,
+                ),
+            },
+            { type: "sep", id: "sep-export" },
+            {
+              type: "action",
+              id: "png",
+              label: t.exportPng,
+              onSelect: () => void exportPng(),
+              disabled: exporting,
+            },
+            {
+              type: "action",
+              id: "pdf",
+              label: t.exportPdf,
+              onSelect: () => void exportPdf(),
+              disabled: exporting,
+            },
+            { type: "sep", id: "sep-ideas" },
+            ...STARTER_DECKS.map((id) => ({
+              type: "action" as const,
+              id: `starter-${id}`,
+              label: String(t[`starter_${id}` as keyof typeof t] ?? id),
+              onSelect: () => openStarter(id),
+            })),
+          ]}
+        />
+        <PapersIconBtn label={t.undo} onClick={undo} disabled={!canUndo}>
+          <IconUndo />
+        </PapersIconBtn>
+        <PapersIconBtn label={t.redo} onClick={redo} disabled={!canRedo}>
+          <IconRedo />
+        </PapersIconBtn>
         <button
           type="button"
-          className={secondaryBtnClass}
-          onClick={deleteSlide}
-          disabled={doc.slides.length <= 1}
+          className={primaryBtnClass}
+          onClick={() => void startPresent()}
         >
-          {t.deleteSlide}
+          {t.play}
         </button>
-        <button
-          type="button"
-          className={secondaryBtnClass}
-          onClick={() => addTextBlock("title")}
-        >
-          {t.addTitle}
-        </button>
-        <button
-          type="button"
-          className={secondaryBtnClass}
-          onClick={() => addTextBlock("body")}
-        >
-          {t.addBody}
-        </button>
-        <button type="button" className={secondaryBtnClass} onClick={addShape}>
-          {t.addShape}
-        </button>
-        <label className={`${secondaryBtnClass} cursor-pointer`}>
-          {t.addImage}
-          <input
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={(e) => {
-              const f = e.target.files?.[0] ?? null;
-              e.target.value = "";
-              void addImage(f);
-            }}
-          />
-        </label>
-        <button
-          type="button"
-          className={secondaryBtnClass}
-          onClick={duplicateBlock}
-          disabled={!selectedId}
-        >
-          {t.duplicateBlock}
-        </button>
-        <button
-          type="button"
-          className={secondaryBtnClass}
-          onClick={() => shiftZ(1)}
-          disabled={!selectedId}
-        >
-          {t.bringForward}
-        </button>
-        <button
-          type="button"
-          className={secondaryBtnClass}
-          onClick={() => shiftZ(-1)}
-          disabled={!selectedId}
-        >
-          {t.sendBackward}
-        </button>
-        <button
-          type="button"
-          className={secondaryBtnClass}
-          onClick={deleteBlock}
-          disabled={!selectedId}
-        >
-          {t.deleteBlock}
-        </button>
-        <button
-          type="button"
-          className={secondaryBtnClass}
-          onClick={undo}
-          disabled={!canUndo}
-        >
-          {t.undo}
-        </button>
-        <button
-          type="button"
-          className={secondaryBtnClass}
-          onClick={redo}
-          disabled={!canRedo}
-        >
-          {t.redo}
-        </button>
-      </div>
-
-      <div className="flex flex-wrap items-end gap-3 text-sm">
-        <Field label={t.starterPick}>
-          <KitSelect
-            value=""
-            onChange={(e) => {
-              const id = e.target.value as StarterDeckId;
-              if (!id) return;
-              openStarter(id);
-              e.target.value = "";
-            }}
-          >
-            <option value="">{t.starterPick}</option>
-            {STARTER_DECKS.map((id) => (
-              <option key={id} value={id}>
-                {t[`starter_${id}` as keyof typeof t] ?? id}
-              </option>
-            ))}
-          </KitSelect>
-        </Field>
-        <Field label={t.layoutPick}>
-          <KitSelect
-            value=""
-            onChange={(e) => {
-              const id = e.target.value as SlideLayoutId;
-              if (!id) return;
-              insertLayout(id);
-              e.target.value = "";
-            }}
-          >
-            <option value="">{t.layoutPick}</option>
-            {SLIDE_LAYOUTS.map((layout) => (
-              <option key={layout.id} value={layout.id}>
-                {t[`layout_${layout.id}` as keyof typeof t] ?? layout.id}
-              </option>
-            ))}
-          </KitSelect>
-        </Field>
-        <Field label={t.theme}>
-          <KitSelect
-            value=""
-            onChange={(e) => {
-              const id = e.target.value;
-              if (!id) return;
-              updateSlide((s) => applyTheme(s, id));
-              e.target.value = "";
-            }}
-          >
-            <option value="">{t.themePick}</option>
-            {THEMES.map((theme) => (
-              <option key={theme.id} value={theme.id}>
-                {t[`theme_${theme.id}` as keyof typeof t] ?? theme.id}
-              </option>
-            ))}
-          </KitSelect>
-        </Field>
-        <Field label={t.slideTransition}>
-          <KitSelect
-            value={slide.transition ?? "fade"}
-            onChange={(e) =>
-              updateSlide((s) => ({
-                ...s,
-                transition: e.target.value as SlideTransition,
-              }))
-            }
-          >
-            {SLIDE_TRANSITIONS.map((tr) => (
-              <option key={tr} value={tr}>
-                {t[`transition_${tr}` as keyof typeof t] ?? tr}
-              </option>
-            ))}
-          </KitSelect>
-        </Field>
-        <span className="pb-2 text-xs text-muted">
-          {t.slideOf
-            .replace("{current}", String(slideIndex + 1))
-            .replace("{total}", String(doc.slides.length))}
-          {savedAt
-            ? ` · ${t.savedAt.replace("{time}", new Date(savedAt).toLocaleTimeString())}`
-            : ""}
-        </span>
-      </div>
-      <p className="hidden text-xs text-muted sm:block">
-        {t.starterHint} {t.layoutHint}
-      </p>
+      </PapersDocBar>
 
       <ErrorBanner>{error}</ErrorBanner>
 
-      <PapersFormatBar
-        value={
-          {
-            bold: !!selected?.bold,
-            italic: !!selected?.italic,
-            underline: !!selected?.underline,
-            align: selected?.align ?? "left",
-            color: selected?.color ?? "#111111",
-            background: selected?.fill ?? "#ffffff",
-            fontFamily:
-              selected?.fontFamily ?? "Calibri, 'Segoe UI', system-ui, sans-serif",
-            fontSize: selected?.fontSize ?? 22,
-          } satisfies PapersFormatState
-        }
-        onChange={(patch) => {
-          if (!selected) return;
-          updateBlock(selected.id, {
-            bold: patch.bold ?? selected.bold,
-            italic: patch.italic ?? selected.italic,
-            underline: patch.underline ?? selected.underline,
-            align: patch.align ?? selected.align,
-            color: patch.color ?? selected.color,
-            fontFamily: patch.fontFamily ?? selected.fontFamily,
-            fontSize: patch.fontSize ?? selected.fontSize,
-            fill:
-              selected.kind === "shape"
-                ? patch.background ?? selected.fill
-                : selected.fill,
-          });
-        }}
-        labels={{
-          bold: t.bold,
-          italic: t.italic,
-          underline: t.underline,
-          alignLeft: t.alignLeft,
-          alignCenter: t.alignCenter,
-          alignRight: t.alignRight,
-          textColor: t.color,
-          fillColor: t.fill,
-          fontFamily: t.fontFamily,
-          fontSize: t.fontSize,
-        }}
-      />
-      <p className="hidden text-xs text-muted sm:block">{t.moveHint}</p>
-
-      <div className="grid gap-3 sm:gap-4 lg:grid-cols-[5.5rem_minmax(0,1fr)_15rem] lg:items-stretch">
-        <div className="order-2 flex max-h-none gap-2 overflow-x-auto pb-1 lg:order-1 lg:max-h-[min(70vh,42rem)] lg:flex-col lg:overflow-auto lg:pb-0">
-          {doc.slides.map((s, i) => (
-            <button
-              key={s.id}
-              type="button"
-              onClick={() => {
-                setSlideIndex(i);
-                setSelectedId(s.blocks[0]?.id ?? null);
-              }}
-              className={`w-[5.25rem] shrink-0 rounded-[8px] border p-1 text-left lg:w-full ${
-                i === slideIndex ? "border-accent" : "border-border"
-              }`}
+      <div className="grid gap-3 sm:gap-4 lg:grid-cols-[6.5rem_minmax(0,1fr)_15rem] lg:items-stretch">
+        <div className="order-2 flex flex-col gap-2 lg:order-1 lg:max-h-[min(70vh,42rem)]">
+          <div className="flex items-center gap-1 lg:flex-col lg:items-stretch">
+            <PapersIconBtn label={t.addSlide} onClick={addSlide}>
+              <IconPlus />
+            </PapersIconBtn>
+            <PapersIconBtn label={t.duplicateSlide} onClick={duplicateSlide}>
+              <IconCopy />
+            </PapersIconBtn>
+            <PapersIconBtn
+              label={t.deleteSlide}
+              onClick={deleteSlide}
+              disabled={doc.slides.length <= 1}
             >
-              <div
-                className="aspect-video w-full rounded-[4px] border border-border"
-                style={{ background: s.background }}
-              />
-              <span className="mt-1 block text-[11px] text-muted">{i + 1}</span>
-            </button>
-          ))}
+              <IconTrash />
+            </PapersIconBtn>
+          </div>
+          <div className="flex gap-2 overflow-x-auto pb-1 lg:flex-1 lg:flex-col lg:overflow-auto lg:pb-0">
+            {doc.slides.map((s, i) => (
+              <button
+                key={s.id}
+                type="button"
+                onClick={() => {
+                  setSlideIndex(i);
+                  setSelectedId(s.blocks[0]?.id ?? null);
+                  setEditingId(null);
+                }}
+                className={`w-[5.25rem] shrink-0 rounded-[8px] border p-1 text-left lg:w-full ${
+                  i === slideIndex ? "border-accent" : "border-border"
+                }`}
+              >
+                <div
+                  className="aspect-video w-full rounded-[4px] border border-border"
+                  style={{ background: s.background }}
+                />
+                <span className="mt-1 block text-[11px] text-muted">{i + 1}</span>
+              </button>
+            ))}
+          </div>
+          <PapersMenu
+            label={t.layoutPick.replace("…", "").replace("...", "")}
+            variant="compact"
+            items={SLIDE_LAYOUTS.map((layout) => ({
+              type: "action" as const,
+              id: layout.id,
+              label: String(t[`layout_${layout.id}` as keyof typeof t] ?? layout.id),
+              onSelect: () => insertLayout(layout.id),
+            }))}
+          />
         </div>
 
-        <div
-          ref={stageRef}
-          className="dias-stage relative order-1 aspect-video w-full min-h-[min(52vh,28rem)] overflow-hidden rounded-[12px] border border-border shadow-sm lg:order-2 lg:min-h-[min(68vh,36rem)]"
-          style={{ background: slide.background }}
-          onPointerMove={onPointerMove}
-          onPointerUp={onPointerUp}
-          onClick={() => setSelectedId(null)}
-        >
-          {sortedBlocks.map((block) => (
+        <div className="order-1 flex min-w-0 flex-col gap-2 lg:order-2">
+          <div className="flex flex-wrap items-center gap-1.5">
+            <PapersMenu
+              label={t.insertMenu}
+              variant="compact"
+              items={[
+                {
+                  type: "action",
+                  id: "title",
+                  label: t.addTitle,
+                  onSelect: () => addTextBlock("title"),
+                },
+                {
+                  type: "action",
+                  id: "body",
+                  label: t.addBody,
+                  onSelect: () => addTextBlock("body"),
+                },
+                {
+                  type: "action",
+                  id: "shape",
+                  label: t.addShape,
+                  onSelect: addShape,
+                },
+                {
+                  type: "file",
+                  id: "image",
+                  label: t.addImage,
+                  accept: "image/*",
+                  onFile: (f) => void addImage(f, true),
+                },
+                ...(selected && selected.kind !== "image"
+                  ? [
+                      {
+                        type: "file" as const,
+                        id: "image-in-box",
+                        label: t.insertImageInBox,
+                        accept: "image/*",
+                        onFile: (f: File | null) =>
+                          void insertImageInSelectedBox(f),
+                      },
+                    ]
+                  : []),
+                ...(selected?.kind === "image"
+                  ? [
+                      {
+                        type: "file" as const,
+                        id: "replace-image",
+                        label: t.replaceImage,
+                        accept: "image/*",
+                        onFile: (f: File | null) =>
+                          void insertImageInSelectedBox(f),
+                      },
+                    ]
+                  : []),
+              ]}
+            />
+            <PapersIconBtn
+              label={t.duplicateBlock}
+              onClick={duplicateBlock}
+              disabled={!selectedId}
+            >
+              <IconCopy />
+            </PapersIconBtn>
+            <PapersIconBtn
+              label={t.bringForward}
+              onClick={() => shiftZ(1)}
+              disabled={!selectedId}
+            >
+              <IconBringForward />
+            </PapersIconBtn>
+            <PapersIconBtn
+              label={t.sendBackward}
+              onClick={() => shiftZ(-1)}
+              disabled={!selectedId}
+            >
+              <IconSendBackward />
+            </PapersIconBtn>
+            <PapersIconBtn
+              label={t.deleteBlock}
+              onClick={deleteBlock}
+              disabled={!selectedId}
+            >
+              <IconTrash />
+            </PapersIconBtn>
+            <span className="mx-0.5 hidden h-5 w-px bg-border sm:block" aria-hidden />
+            <KitSelect
+              value=""
+              onChange={(e) => {
+                const id = e.target.value;
+                if (!id) return;
+                updateSlide((s) => applyTheme(s, id));
+                e.target.value = "";
+              }}
+              className={`${papersCompactBtnClass} min-w-[7rem]`}
+            >
+              <option value="">{t.themePick}</option>
+              {THEMES.map((theme) => (
+                <option key={theme.id} value={theme.id}>
+                  {t[`theme_${theme.id}` as keyof typeof t] ?? theme.id}
+                </option>
+              ))}
+            </KitSelect>
+            <KitSelect
+              value={slide.transition ?? "fade"}
+              onChange={(e) =>
+                updateSlide((s) => ({
+                  ...s,
+                  transition: e.target.value as SlideTransition,
+                }))
+              }
+              className={`${papersCompactBtnClass} min-w-[7.5rem]`}
+              title={t.slideTransition}
+            >
+              {SLIDE_TRANSITIONS.map((tr) => (
+                <option key={tr} value={tr}>
+                  {t[`transition_${tr}` as keyof typeof t] ?? tr}
+                </option>
+              ))}
+            </KitSelect>
+            <span className="text-xs text-muted">
+              {t.slideOf
+                .replace("{current}", String(slideIndex + 1))
+                .replace("{total}", String(doc.slides.length))}
+              {savedAt
+                ? ` · ${t.savedAt.replace("{time}", new Date(savedAt).toLocaleTimeString())}`
+                : ""}
+            </span>
+          </div>
+
+          <PapersFormatBar
+            variant="ribbon"
+            value={
+              {
+                bold: !!selected?.bold,
+                italic: !!selected?.italic,
+                underline: !!selected?.underline,
+                align: selected?.align ?? "left",
+                color: selected?.color ?? "#111111",
+                background: selected?.fill ?? "#ffffff",
+                fontFamily:
+                  selected?.fontFamily ??
+                  "Calibri, 'Segoe UI', system-ui, sans-serif",
+                fontSize: selected?.fontSize ?? 22,
+              } satisfies PapersFormatState
+            }
+            onChange={(patch) => {
+              if (!selected) return;
+              updateBlock(selected.id, {
+                bold: patch.bold ?? selected.bold,
+                italic: patch.italic ?? selected.italic,
+                underline: patch.underline ?? selected.underline,
+                align: patch.align ?? selected.align,
+                color: patch.color ?? selected.color,
+                fontFamily: patch.fontFamily ?? selected.fontFamily,
+                fontSize: patch.fontSize ?? selected.fontSize,
+                fill:
+                  selected.kind === "shape"
+                    ? patch.background ?? selected.fill
+                    : selected.fill,
+              });
+            }}
+            labels={{
+              bold: t.bold,
+              italic: t.italic,
+              underline: t.underline,
+              alignLeft: t.alignLeft,
+              alignCenter: t.alignCenter,
+              alignRight: t.alignRight,
+              textColor: t.color,
+              fillColor: t.fill,
+              fontFamily: t.fontFamily,
+              fontSearch: t.fontSearch,
+              fontSize: t.fontSize,
+            }}
+          />
+
+          <div
+            ref={stageRef}
+            className="dias-stage relative aspect-video w-full min-h-[min(52vh,28rem)] overflow-hidden rounded-[12px] border border-border shadow-sm lg:min-h-[min(68vh,36rem)]"
+            style={{ background: slide.background }}
+            onPointerMove={onPointerMove}
+            onPointerUp={onPointerUp}
+            onClick={() => {
+              setSelectedId(null);
+              setEditingId(null);
+            }}
+          >
+          {sortedBlocks.map((block) => {
+            const textBlock = isTextBlock(block);
+            const editing = editingId === block.id && textBlock;
+            return (
             <div
               key={block.id}
               className={`absolute overflow-hidden ${
@@ -910,12 +1019,27 @@ export function DiasTool() {
                 fontStyle: block.italic ? "italic" : "normal",
                 textDecoration: block.underline ? "underline" : "none",
                 textAlign: block.align,
-                cursor: "move",
+                cursor: editing ? "text" : "move",
               }}
-              onPointerDown={(e) => onPointerDown(e, block, "move")}
+              onPointerDown={(e) => {
+                if (textBlock && editing) {
+                  e.stopPropagation();
+                  return;
+                }
+                onPointerDown(e, block, "move");
+              }}
               onClick={(e) => {
                 e.stopPropagation();
-                setSelectedId(block.id);
+                if (suppressClickRef.current) {
+                  suppressClickRef.current = false;
+                }
+                selectBlock(block.id, false);
+              }}
+              onDoubleClick={(e) => {
+                if (!textBlock) return;
+                e.stopPropagation();
+                suppressClickRef.current = false;
+                selectBlock(block.id, true);
               }}
             >
               {block.kind === "image" && block.imageDataUrl ? (
@@ -923,22 +1047,70 @@ export function DiasTool() {
                 <img
                   src={block.imageDataUrl}
                   alt=""
-                  className={`h-full w-full ${imageFitClass(block.imageFit)}`}
+                  className={`pointer-events-none h-full w-full object-center ${imageFitClass(block.imageFit)}`}
                   draggable={false}
                 />
-              ) : block.kind !== "shape" ? (
-                <div className="h-full w-full whitespace-pre-wrap p-[4%] leading-snug">
-                  {block.text}
-                </div>
+              ) : textBlock ? (
+                editing ? (
+                  <textarea
+                    ref={editRef}
+                    value={block.text ?? ""}
+                    rows={3}
+                    className="dias-inline-edit h-full w-full resize-none border-0 bg-transparent p-[4%] leading-snug outline-none"
+                    style={{
+                      color: block.color,
+                      fontFamily: block.fontFamily,
+                      fontWeight: block.bold ? 700 : 400,
+                      fontStyle: block.italic ? "italic" : "normal",
+                      textDecoration: block.underline ? "underline" : "none",
+                      textAlign: block.align,
+                    }}
+                    onPointerDown={(e) => e.stopPropagation()}
+                    onClick={(e) => e.stopPropagation()}
+                    onChange={(e) => {
+                      updateBlock(block.id, { text: e.target.value }, true);
+                    }}
+                    onFocus={() => markGestureStart()}
+                    onBlur={() => {
+                      markGestureEnd();
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Escape") {
+                        e.preventDefault();
+                        setEditingId(null);
+                        (e.target as HTMLTextAreaElement).blur();
+                      }
+                      e.stopPropagation();
+                    }}
+                  />
+                ) : (
+                  <div className="h-full w-full whitespace-pre-wrap p-[4%] leading-snug">
+                    {block.text}
+                  </div>
+                )
               ) : null}
               {selectedId === block.id ? (
-                <span
-                  className="absolute bottom-0 right-0 h-3 w-3 cursor-se-resize bg-accent"
-                  onPointerDown={(e) => onPointerDown(e, block, "resize")}
-                />
+                <>
+                  {textBlock ? (
+                    <span
+                      className="absolute left-1/2 top-0 z-10 h-2.5 w-8 -translate-x-1/2 -translate-y-1/2 cursor-move rounded-full bg-accent"
+                      title={t.moveHint}
+                      onPointerDown={(e) => {
+                        setEditingId(null);
+                        onPointerDown(e, block, "move");
+                      }}
+                    />
+                  ) : null}
+                  <span
+                    className="absolute bottom-0 right-0 z-10 h-3 w-3 cursor-se-resize bg-accent"
+                    onPointerDown={(e) => onPointerDown(e, block, "resize")}
+                  />
+                </>
               ) : null}
             </div>
-          ))}
+            );
+          })}
+          </div>
         </div>
 
         <div className="order-3 space-y-3 rounded-[12px] border border-border bg-surface p-3 lg:max-h-[min(70vh,42rem)] lg:overflow-y-auto">
@@ -947,18 +1119,6 @@ export function DiasTool() {
             <p className="text-xs text-muted">{t.noSelection}</p>
           ) : (
             <>
-              {(selected.kind === "title" || selected.kind === "body") && (
-                <Field label={t.text}>
-                  <textarea
-                    value={selected.text ?? ""}
-                    onChange={(e) =>
-                      updateBlock(selected.id, { text: e.target.value })
-                    }
-                    rows={4}
-                    className="kit-field w-full rounded-[10px] border border-border bg-background px-3 py-2 text-sm"
-                  />
-                </Field>
-              )}
               <Field label={t.blockEntrance}>
                 <KitSelect
                   value={selected.entrance ?? "none"}
@@ -977,9 +1137,10 @@ export function DiasTool() {
               </Field>
               {selected.kind === "image" ? (
                 <>
+                  <p className="text-xs text-muted">{t.imageInBoxHint}</p>
                   <Field label={t.imageFit}>
                     <KitSelect
-                      value={selected.imageFit ?? "contain"}
+                      value={selected.imageFit ?? "cover"}
                       onChange={(e) =>
                         updateBlock(selected.id, {
                           imageFit: e.target.value as ImageFit,
@@ -991,6 +1152,18 @@ export function DiasTool() {
                       <option value="fill">{t.imageFitFill}</option>
                     </KitSelect>
                   </Field>
+                  <label className={`${secondaryBtnClass} w-full cursor-pointer text-center`}>
+                    {t.replaceImage}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="sr-only"
+                      onChange={(e) => {
+                        void insertImageInSelectedBox(e.target.files?.[0] ?? null);
+                        e.target.value = "";
+                      }}
+                    />
+                  </label>
                   <button
                     type="button"
                     className={`${secondaryBtnClass} w-full`}
@@ -1002,22 +1175,36 @@ export function DiasTool() {
                   </button>
                 </>
               ) : null}
+              {(selected.kind === "title" ||
+                selected.kind === "body" ||
+                selected.kind === "shape") && (
+                <>
+                  <p className="text-xs text-muted">{t.imageInBoxHint}</p>
+                  <label className={`${secondaryBtnClass} w-full cursor-pointer text-center`}>
+                    {t.insertImageInBox}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="sr-only"
+                      onChange={(e) => {
+                        void insertImageInSelectedBox(e.target.files?.[0] ?? null);
+                        e.target.value = "";
+                      }}
+                    />
+                  </label>
+                </>
+              )}
               {(selected.kind === "title" || selected.kind === "body") && (
                 <>
                   <Field label={t.fontFamily}>
-                    <KitSelect
+                    <FontFamilyInput
                       value={selected.fontFamily}
-                      onChange={(e) =>
-                        updateBlock(selected.id, { fontFamily: e.target.value })
+                      onChange={(fontFamily) =>
+                        updateBlock(selected.id, { fontFamily })
                       }
-                    >
-                      <option value="system-ui, sans-serif">Sans</option>
-                      <option value="Georgia, serif">Serif</option>
-                      <option value="ui-monospace, monospace">Mono</option>
-                      <option value="Georgia, 'Times New Roman', serif">
-                        Classic
-                      </option>
-                    </KitSelect>
+                      title={t.fontFamily}
+                      placeholder={t.fontSearch}
+                    />
                   </Field>
                   <Field label={t.fontSize}>
                     <KitInput
@@ -1154,7 +1341,7 @@ export function DiasTool() {
                     <img
                       src={block.imageDataUrl}
                       alt=""
-                      className={`h-full w-full ${imageFitClass(block.imageFit)}`}
+                      className={`h-full w-full object-center ${imageFitClass(block.imageFit)}`}
                     />
                   ) : block.kind !== "shape" ? (
                     <div className="h-full w-full whitespace-pre-wrap p-[4%] leading-snug">

@@ -138,6 +138,22 @@ export function fitImageToSlide(block: SlideBlock): SlideBlock {
   };
 }
 
+/** Put an image inside an existing box. Keeps size and position; clips to the box. */
+export function placeImageInBlock(
+  block: SlideBlock,
+  dataUrl: string,
+  fit: ImageFit = "cover",
+): SlideBlock {
+  return {
+    ...block,
+    kind: "image",
+    imageDataUrl: dataUrl,
+    imageFit: fit,
+    text: undefined,
+    fill: undefined,
+  };
+}
+
 export const THEMES: Array<{ id: string; background: string; title: string; body: string }> = [
   { id: "light", background: "#ffffff", title: "#111111", body: "#333333" },
   { id: "ink", background: "#0f172a", title: "#f8fafc", body: "#cbd5e1" },

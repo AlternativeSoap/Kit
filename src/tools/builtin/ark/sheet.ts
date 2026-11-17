@@ -15,6 +15,7 @@ export type CellStyle = {
   align?: CellAlign;
   color?: string;
   background?: string;
+  fontFamily?: string;
   fontSize?: number;
   numberFormat?: NumberFormat;
 };
@@ -248,6 +249,7 @@ export function styleToCss(style: CellStyle): {
   textAlign?: CellAlign;
   color?: string;
   background?: string;
+  fontFamily?: string;
   fontSize?: string;
 } {
   return {
@@ -257,6 +259,7 @@ export function styleToCss(style: CellStyle): {
     textAlign: style.align,
     color: style.color,
     background: style.background,
+    fontFamily: style.fontFamily,
     fontSize: style.fontSize ? `${style.fontSize}px` : undefined,
   };
 }

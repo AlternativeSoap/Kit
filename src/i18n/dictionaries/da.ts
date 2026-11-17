@@ -183,6 +183,12 @@ export const da: Dictionary = {
     alternatives: "Relaterede valg",
     matchedBecause: "Matchede din søgning efter “{query}” via {matched}.",
   },
+  relatedSection: {
+    sitesHeading: "Andre sider",
+    sitesLead:
+      "Hvis du har brug for mere end Kit kan her, kan du prøve en af disse.",
+    kitHeading: "Relaterede Kit-værktøjer",
+  },
   language: {
     label: "Sprog",
     en: "Engelsk",
@@ -674,6 +680,54 @@ export const da: Dictionary = {
       description:
         "Lav enkle lokale dias med tekst, farver og skrift. En gratis PowerPoint-agtig præsentation der bliver på din enhed.",
     },
+    ics: {
+      name: "Kalenderbegivenhed",
+      description:
+        "Lav en kalenderbegivenhed og download en .ics-fil til telefon eller computer.",
+    },
+    faktura: {
+      name: "Faktura",
+      description:
+        "Lav en simpel faktura med linjer og moms, og download som PDF. Kun lokalt.",
+    },
+    underskrift: {
+      name: "Underskrift",
+      description: "Tegn en underskrift og download den som PNG. Intet uploades.",
+    },
+    annotate: {
+      name: "Annotér billede",
+      description:
+        "Markér et screenshot med pen eller slør-boks, og download som PNG.",
+    },
+    exifstrip: {
+      name: "Fjern billedmetadata",
+      description:
+        "Fjern EXIF- og GPS-metadata ved at genindkode billedet i browseren.",
+    },
+    wifiqr: {
+      name: "Wi‑Fi QR",
+      description:
+        "Lav en QR-kode til dit Wi‑Fi, så gæster kan forbinde ved at scanne.",
+    },
+    helligdage: {
+      name: "Danske helligdage",
+      description:
+        "Se danske helligdage for et år, inkl. bevægelige dage ud fra påske.",
+    },
+    timeseddel: {
+      name: "Timeseddel",
+      description: "Registrér timer pr. dag med noter, og download en CSV med total.",
+    },
+    pakkeliste: {
+      name: "Pakkeliste",
+      description:
+        "Byg en tjekliste til rejse, flytning eller festival. Gemmes lokalt i browseren.",
+    },
+    lejevsob: {
+      name: "Leje vs køb",
+      description:
+        "Sammenlign leje og køb over tid med lån, ejerudgifter og værdistigning. Kun estimat.",
+    },
     "palette": {
       name: "Farvepalette",
       description: "Lav analoge, komplementære og monokrome paletter ud fra en startfarve.",
@@ -970,8 +1024,14 @@ export const da: Dictionary = {
       description: "Generér farvepaletter.",
     },
     "qr-code": {
-      name: "QR-kodegenerator",
-      description: "Lav en QR-kode fra et link eller en tekst.",
+      name: "goQR.me",
+      description:
+        "Enkle QR-koder online med PNG, SVG og EPS. Ingen konto nødvendig.",
+    },
+    qrcodemonkey: {
+      name: "QRCode Monkey",
+      description:
+        "Gratis QR-koder med farver, logo og SVG. God når du skal designe mere.",
     },
     mdn: {
       name: "MDN Web Docs",
@@ -979,11 +1039,13 @@ export const da: Dictionary = {
     },
     regex101: {
       name: "Regex101",
-      description: "Byg og test regulære udtryk med forklaringer.",
+      description:
+        "Byg og test regulære udtryk med forklaringer og flere dialekter.",
     },
     jsonformatter: {
       name: "JSON Formatter",
-      description: "Formatér og validér JSON i browseren.",
+      description:
+        "Formatér og validér JSON i browseren med flere visninger og valg.",
     },
     codepen: {
       name: "CodePen",
@@ -2390,6 +2452,8 @@ export const da: Dictionary = {
     untitled: "Unavngivet dokument",
     title: "Dokumenttitel",
     openFile: "Åbn .kitdoc eller tekst",
+    fileMenu: "Fil",
+    exportMenu: "Eksporter",
     newDoc: "Nyt dokument",
     saveKitdoc: "Download .kitdoc",
     exportTxt: "Download .txt",
@@ -2420,6 +2484,7 @@ export const da: Dictionary = {
     undo: "Fortryd",
     redo: "Gentag",
     fontFamily: "Skrifttype",
+    fontSearch: "Søg skrifttype…",
     fontSize: "Skriftstørrelse (pt)",
     pageSize: "Sidestørrelse",
     pagePreviewA4: "A4 · 210 × 297 mm",
@@ -2474,6 +2539,9 @@ export const da: Dictionary = {
     untitled: "Ark1",
     title: "Arktitel",
     openFile: "Åbn .kitsheet eller CSV",
+    fileMenu: "Fil",
+    exportMenu: "Eksporter",
+    sheetTools: "Ark",
     newSheet: "Nyt ark",
     saveKitsheet: "Download .kitsheet",
     exportCsv: "Download CSV",
@@ -2497,6 +2565,7 @@ export const da: Dictionary = {
     textColor: "Tekst",
     fillColor: "Fyld",
     fontFamily: "Skrift",
+    fontSearch: "Søg skrifttype…",
     fontSize: "Størrelse",
     merge: "Flet",
     unmerge: "Opdel",
@@ -2531,6 +2600,9 @@ export const da: Dictionary = {
     untitled: "Præsentation1",
     title: "Præsentationstitel",
     openFile: "Åbn .kitslides",
+    fileMenu: "Fil",
+    exportMenu: "Eksporter",
+    insertMenu: "Indsæt",
     newDeck: "Ny præsentation",
     saveFile: "Download .kitslides",
     present: "Præsenter",
@@ -2540,10 +2612,13 @@ export const da: Dictionary = {
     slideTransition: "Dias-overgang",
     blockEntrance: "Indgang",
     fitImage: "Fyld dias",
-    imageFit: "Billedpasning",
-    imageFitContain: "Tilpas",
-    imageFitCover: "Beskær til fyld",
-    imageFitFill: "Stræk",
+    imageFit: "Tilpas billede til boks",
+    imageFitContain: "Hele billedet i boksen",
+    imageFitCover: "Fyld boksen (beskær)",
+    imageFitFill: "Stræk til boksen",
+    insertImageInBox: "Indsæt billede i boks",
+    replaceImage: "Skift billede",
+    imageInBoxHint: "Billedet bliver inden for boksen. Vælg pasning herunder.",
     transition_none: "Ingen",
     transition_fade: "Fade",
     transition_slideLeft: "Skub venstre",
@@ -2612,6 +2687,7 @@ export const da: Dictionary = {
     noSelection: "Vælg en blok på diaset for at redigere den.",
     text: "Tekst",
     fontFamily: "Skrifttype",
+    fontSearch: "Søg skrifttype…",
     fontSize: "Skriftstørrelse",
     color: "Tekstfarve",
     align: "Justering",
@@ -2623,7 +2699,7 @@ export const da: Dictionary = {
     italic: "Kursiv",
     underline: "Understreg",
     moveHint:
-      "Træk en blok for at flytte den. Piletaster flytter 1%. Delete sletter. Ctrl+D duplikerer.",
+      "Træk en blok for at flytte den. Dobbeltklik tekst for at redigere. Delete sletter den valgte blok. Ctrl+D duplikerer.",
     defaultTitle: "Titel",
     defaultBody: "Tilføj din tekst her.",
     savedAt: "Kladde gemt {time}",

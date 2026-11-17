@@ -260,6 +260,46 @@ const ArkTool = lazyPlain(() =>
 const DiasTool = lazyPlain(() =>
   import("./dias/DiasTool").then((m) => ({ default: m.DiasTool })),
 );
+const IcsTool = lazyPlain(() =>
+  import("./ics/IcsTool").then((m) => ({ default: m.IcsTool })),
+);
+const FakturaTool = lazyPlain(() =>
+  import("./faktura/FakturaTool").then((m) => ({ default: m.FakturaTool })),
+);
+const UnderskriftTool = lazyPlain(() =>
+  import("./underskrift/UnderskriftTool").then((m) => ({
+    default: m.UnderskriftTool,
+  })),
+);
+const AnnotateTool = lazyPlain(() =>
+  import("./annotate/AnnotateTool").then((m) => ({ default: m.AnnotateTool })),
+);
+const ExifStripTool = lazyPlain(() =>
+  import("./exifstrip/ExifStripTool").then((m) => ({
+    default: m.ExifStripTool,
+  })),
+);
+const WifiQrTool = lazyPlain(() =>
+  import("./wifiqr/WifiQrTool").then((m) => ({ default: m.WifiQrTool })),
+);
+const HelligdageTool = lazyPlain(() =>
+  import("./helligdage/HelligdageTool").then((m) => ({
+    default: m.HelligdageTool,
+  })),
+);
+const TimeseddelTool = lazyPlain(() =>
+  import("./timeseddel/TimeseddelTool").then((m) => ({
+    default: m.TimeseddelTool,
+  })),
+);
+const PakkelisteTool = lazyPlain(() =>
+  import("./pakkeliste/PakkelisteTool").then((m) => ({
+    default: m.PakkelisteTool,
+  })),
+);
+const LejevsobTool = lazyPlain(() =>
+  import("./lejevsob/LejevsobTool").then((m) => ({ default: m.LejevsobTool })),
+);
 const SimpleTool = dynamic(
   () => import("./simple/SimpleTool").then((m) => ({ default: m.SimpleTool })),
   { loading: ToolLoading },
@@ -411,6 +451,26 @@ export function BuiltinToolView({
       return <ArkTool />;
     case "dias":
       return <DiasTool />;
+    case "ics":
+      return <IcsTool />;
+    case "faktura":
+      return <FakturaTool />;
+    case "underskrift":
+      return <UnderskriftTool />;
+    case "annotate":
+      return <AnnotateTool />;
+    case "exifstrip":
+      return <ExifStripTool />;
+    case "wifiqr":
+      return <WifiQrTool />;
+    case "helligdage":
+      return <HelligdageTool />;
+    case "timeseddel":
+      return <TimeseddelTool />;
+    case "pakkeliste":
+      return <PakkelisteTool />;
+    case "lejevsob":
+      return <LejevsobTool />;
     // Overlaps: route weaker duplicates into stronger tools.
     case "csvjson":
       return <CsvExcelTool prefill={prefill} />;

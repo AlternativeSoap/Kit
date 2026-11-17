@@ -9,6 +9,15 @@ import {
   type PointerEvent as ReactPointerEvent,
 } from "react";
 import {
+  IconPrint,
+  IconRedo,
+  IconUndo,
+  PapersDocBar,
+  PapersIconBtn,
+  PapersMenu,
+  papersCompactBtnClass,
+} from "@/components/tools/PapersChrome";
+import {
   PapersFormatBar,
   type PapersBlockStyle,
   type PapersFormatState,
@@ -20,10 +29,8 @@ import {
 import {
   ErrorBanner,
   Field,
-  FileInput,
   KitInput,
   KitSelect,
-  primaryBtnClass,
   secondaryBtnClass,
 } from "@/components/tools/ui";
 import { useLanguage } from "@/i18n/LanguageProvider";
@@ -603,6 +610,7 @@ export function SkrivTool() {
     textColor: t.textColor,
     fillColor: t.highlight,
     fontFamily: t.fontFamily,
+    fontSearch: t.fontSearch,
     fontSize: t.fontSize,
     textStyle: t.textStyle,
     styleTitle: t.styleTitle,
@@ -614,54 +622,55 @@ export function SkrivTool() {
     <div className="papers-surface mx-auto max-w-5xl space-y-3">
       <p className="hidden text-sm text-muted sm:block">{t.intro}</p>
 
-      <div className="space-y-2">
-        <Field label={t.title}>
-          <KitInput
-            value={doc.title}
-            onChange={(e) =>
-              setDoc((prev) => ({ ...prev, title: e.target.value }))
-            }
-          />
-        </Field>
-        <div className="kit-h-scroll sm:flex-wrap">
-          <FileInput
-            inline
-            label={t.openFile}
-            accept=".kitdoc,.json,.txt"
-            onFile={(f) => void onOpenFile(f)}
-          />
-          <button type="button" className={secondaryBtnClass} onClick={newDoc}>
-            {t.newDoc}
-          </button>
-          <button
-            type="button"
-            className={secondaryBtnClass}
-            onClick={() =>
-              downloadJsonFile(
-                `${(doc.title || "document").replace(/[^\w\-]+/g, "_")}.kitdoc`,
-                doc,
-              )
-            }
-          >
-            {t.saveKitdoc}
-          </button>
-          <button
-            type="button"
-            className={primaryBtnClass}
-            onClick={() =>
-              downloadTextFile(
-                `${(doc.title || "document").replace(/[^\w\-]+/g, "_")}.txt`,
-                htmlToPlainText(doc.html),
-              )
-            }
-          >
-            {t.exportTxt}
-          </button>
-          <button type="button" className={secondaryBtnClass} onClick={printDoc}>
-            {t.print}
-          </button>
-        </div>
-      </div>
+      <PapersDocBar
+        titleLabel={t.title}
+        title={doc.title}
+        onTitleChange={(value) =>
+          setDoc((prev) => ({ ...prev, title: value }))
+        }
+      >
+        <PapersMenu
+          label={t.fileMenu}
+          items={[
+            {
+              type: "file",
+              id: "open",
+              label: t.openFile,
+              accept: ".kitdoc,.json,.txt",
+              onFile: (f) => void onOpenFile(f),
+            },
+            {
+              type: "action",
+              id: "new",
+              label: t.newDoc,
+              onSelect: newDoc,
+            },
+            {
+              type: "action",
+              id: "save",
+              label: t.saveKitdoc,
+              onSelect: () =>
+                downloadJsonFile(
+                  `${(doc.title || "document").replace(/[^\w\-]+/g, "_")}.kitdoc`,
+                  doc,
+                ),
+            },
+            {
+              type: "action",
+              id: "txt",
+              label: t.exportTxt,
+              onSelect: () =>
+                downloadTextFile(
+                  `${(doc.title || "document").replace(/[^\w\-]+/g, "_")}.txt`,
+                  htmlToPlainText(doc.html),
+                ),
+            },
+          ]}
+        />
+        <PapersIconBtn label={t.print} onClick={printDoc}>
+          <IconPrint />
+        </PapersIconBtn>
+      </PapersDocBar>
 
       <ErrorBanner>{error}</ErrorBanner>
 
@@ -674,20 +683,18 @@ export function SkrivTool() {
             labels={formatLabels}
             extras={
               <>
-                <button
-                  type="button"
-                  className={compactBtn}
+                <PapersIconBtn
+                  label={t.undo}
                   onClick={() => format("undo")}
                 >
-                  {t.undo}
-                </button>
-                <button
-                  type="button"
-                  className={compactBtn}
+                  <IconUndo />
+                </PapersIconBtn>
+                <PapersIconBtn
+                  label={t.redo}
                   onClick={() => format("redo")}
                 >
-                  {t.redo}
-                </button>
+                  <IconRedo />
+                </PapersIconBtn>
                 <button
                   type="button"
                   className={compactBtn}
@@ -704,7 +711,7 @@ export function SkrivTool() {
                 </button>
                 <button
                   type="button"
-                  className={`${compactBtn} ${panel === "insert" ? "!bg-accent !text-white" : ""}`}
+                  className={`${papersCompactBtnClass} ${panel === "insert" ? "!bg-accent !text-white" : ""}`}
                   onClick={() =>
                     setPanel((p) => (p === "insert" ? "none" : "insert"))
                   }
@@ -713,7 +720,7 @@ export function SkrivTool() {
                 </button>
                 <button
                   type="button"
-                  className={`${compactBtn} ${panel === "page" ? "!bg-accent !text-white" : ""}`}
+                  className={`${papersCompactBtnClass} ${panel === "page" ? "!bg-accent !text-white" : ""}`}
                   onClick={() =>
                     setPanel((p) => (p === "page" ? "none" : "page"))
                   }
@@ -722,7 +729,7 @@ export function SkrivTool() {
                 </button>
                 <button
                   type="button"
-                  className={`${compactBtn} ${panel === "find" ? "!bg-accent !text-white" : ""}`}
+                  className={`${papersCompactBtnClass} ${panel === "find" ? "!bg-accent !text-white" : ""}`}
                   onClick={() =>
                     setPanel((p) => (p === "find" ? "none" : "find"))
                   }

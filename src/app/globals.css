@@ -312,6 +312,26 @@ details:not([open]) > :not(summary) {
   }
 }
 
+/* Simple calculators: shared readable form + sticky result panel */
+.simple-tool-panel {
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.7) inset;
+}
+
+.simple-tool-primary {
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--border));
+  background: color-mix(in srgb, var(--accent-soft) 55%, white);
+}
+
+.simple-tool-results {
+  min-height: 12rem;
+}
+
+@media (max-width: 639px) {
+  .simple-tool-results {
+    min-height: 0;
+  }
+}
+
 /* Kit Papers: clear text selection + paper desk chrome */
 .papers-surface ::selection {
   background: color-mix(in srgb, var(--accent) 38%, white);
@@ -342,6 +362,16 @@ details:not([open]) > :not(summary) {
   outline: 2px solid var(--accent);
   outline-offset: 0;
   box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.dias-inline-edit {
+  display: block;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  font-size: inherit;
+  line-height: inherit;
+  caret-color: currentColor;
 }
 
 .papers-textbox {

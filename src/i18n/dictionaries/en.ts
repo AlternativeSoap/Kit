@@ -183,6 +183,12 @@ export const en: Dictionary = {
     alternatives: "Related options",
     matchedBecause: "Matched your search for “{query}” via {matched}.",
   },
+  relatedSection: {
+    sitesHeading: "Other sites",
+    sitesLead:
+      "If you need more than this Kit tool offers, try one of these.",
+    kitHeading: "Related Kit tools",
+  },
   language: {
     label: "Language",
     en: "English",
@@ -324,6 +330,16 @@ export const en: Dictionary = {
       name: "QR code generator",
       description:
         "Create a QR code from text or a URL in your browser. Download as PNG.",
+    },
+    "qr-code": {
+      name: "goQR.me",
+      description:
+        "Simple online QR codes with PNG, SVG, and EPS download. No account needed.",
+    },
+    qrcodemonkey: {
+      name: "QRCode Monkey",
+      description:
+        "Free QR codes with colors, logo, and SVG export. Good when you need more design control.",
     },
     json: {
       name: "JSON formatter",
@@ -668,6 +684,54 @@ export const en: Dictionary = {
       name: "Dias",
       description:
         "Build simple local slides with text, pictures, colors, and fonts. A free PowerPoint-like deck that stays on your device.",
+    },
+    ics: {
+      name: "Calendar event",
+      description:
+        "Create a calendar event and download an .ics file for your phone or computer.",
+    },
+    faktura: {
+      name: "Invoice",
+      description:
+        "Make a simple invoice with line items and VAT, then download a PDF. Local only.",
+    },
+    underskrift: {
+      name: "Signature",
+      description: "Draw a signature and download it as a PNG. Nothing is uploaded.",
+    },
+    annotate: {
+      name: "Annotate image",
+      description:
+        "Mark up a screenshot with pen strokes or a blur box, then download a PNG.",
+    },
+    exifstrip: {
+      name: "Remove image metadata",
+      description:
+        "Strip EXIF and GPS metadata by re-encoding an image in your browser.",
+    },
+    wifiqr: {
+      name: "Wi‑Fi QR",
+      description:
+        "Make a QR code for your Wi‑Fi network so guests can connect by scanning.",
+    },
+    helligdage: {
+      name: "Danish holidays",
+      description:
+        "See Danish public holidays for a year, including movable Easter dates.",
+    },
+    timeseddel: {
+      name: "Timesheet",
+      description: "Log hours by day with notes, then download a CSV total.",
+    },
+    pakkeliste: {
+      name: "Packing list",
+      description:
+        "Build a checklist for travel, moving, or festivals. Saved locally in your browser.",
+    },
+    lejevsob: {
+      name: "Rent vs buy",
+      description:
+        "Compare renting and buying over time with loan, ownership costs, and appreciation. Estimate only.",
     },
     "palette": {
       name: "Color palette",
@@ -2090,6 +2154,8 @@ export const en: Dictionary = {
     untitled: "Untitled document",
     title: "Document title",
     openFile: "Open .kitdoc or text",
+    fileMenu: "File",
+    exportMenu: "Export",
     newDoc: "New document",
     saveKitdoc: "Download .kitdoc",
     exportTxt: "Download .txt",
@@ -2120,6 +2186,7 @@ export const en: Dictionary = {
     undo: "Undo",
     redo: "Redo",
     fontFamily: "Font",
+    fontSearch: "Search fonts…",
     fontSize: "Font size (pt)",
     pageSize: "Page size",
     pagePreviewA4: "A4 · 210 × 297 mm",
@@ -2174,6 +2241,9 @@ export const en: Dictionary = {
     untitled: "Sheet1",
     title: "Sheet title",
     openFile: "Open .kitsheet or CSV",
+    fileMenu: "File",
+    exportMenu: "Export",
+    sheetTools: "Sheet",
     newSheet: "New sheet",
     saveKitsheet: "Download .kitsheet",
     exportCsv: "Download CSV",
@@ -2197,6 +2267,7 @@ export const en: Dictionary = {
     textColor: "Text",
     fillColor: "Fill",
     fontFamily: "Font",
+    fontSearch: "Search fonts…",
     fontSize: "Size",
     merge: "Merge",
     unmerge: "Unmerge",
@@ -2231,6 +2302,9 @@ export const en: Dictionary = {
     untitled: "Presentation1",
     title: "Deck title",
     openFile: "Open .kitslides",
+    fileMenu: "File",
+    exportMenu: "Export",
+    insertMenu: "Insert",
     newDeck: "New deck",
     saveFile: "Download .kitslides",
     present: "Present",
@@ -2240,10 +2314,13 @@ export const en: Dictionary = {
     slideTransition: "Slide transition",
     blockEntrance: "Entrance",
     fitImage: "Fill slide",
-    imageFit: "Image fit",
-    imageFitContain: "Fit",
-    imageFitCover: "Crop to fill",
-    imageFitFill: "Stretch",
+    imageFit: "Fit image to box",
+    imageFitContain: "Fit whole image",
+    imageFitCover: "Fill box (crop)",
+    imageFitFill: "Stretch to box",
+    insertImageInBox: "Insert image in box",
+    replaceImage: "Replace image",
+    imageInBoxHint: "The image stays inside the box. Choose fit below.",
     transition_none: "None",
     transition_fade: "Fade",
     transition_slideLeft: "Push left",
@@ -2312,6 +2389,7 @@ export const en: Dictionary = {
     noSelection: "Select a block on the slide to edit it.",
     text: "Text",
     fontFamily: "Font",
+    fontSearch: "Search fonts…",
     fontSize: "Font size",
     color: "Text color",
     align: "Align",
@@ -2323,7 +2401,7 @@ export const en: Dictionary = {
     italic: "Italic",
     underline: "Underline",
     moveHint:
-      "Drag a block to move it. Arrow keys nudge 1%. Delete removes it. Ctrl+D duplicates.",
+      "Drag a block to move it. Double-click text to edit. Delete removes the selected block. Ctrl+D duplicates.",
     defaultTitle: "Title",
     defaultBody: "Add your text here.",
     savedAt: "Draft saved {time}",

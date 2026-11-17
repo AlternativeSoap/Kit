@@ -9,18 +9,28 @@ import {
   type PointerEvent as ReactPointerEvent,
 } from "react";
 import {
+  IconCols,
+  IconCopy,
+  IconRedo,
+  IconRows,
+  IconSortAsc,
+  IconSortDesc,
+  IconTrash,
+  IconUndo,
+  PapersDocBar,
+  PapersIconBtn,
+  PapersMenu,
+  papersCompactBtnClass,
+} from "@/components/tools/PapersChrome";
+import {
   PapersFormatBar,
   type PapersFormatState,
 } from "@/components/tools/PapersFormatBar";
 import {
   ErrorBanner,
-  Field,
-  FileInput,
   KitInput,
   KitSelect,
   fieldClass,
-  primaryBtnClass,
-  secondaryBtnClass,
 } from "@/components/tools/ui";
 import { useHistory } from "@/hooks/useHistory";
 import { useLanguage } from "@/i18n/LanguageProvider";
@@ -662,272 +672,266 @@ export function ArkTool() {
     align: activeStyle.align ?? "left",
     color: activeStyle.color ?? "#111111",
     background: activeStyle.background ?? "#ffffff",
-    fontFamily: "Calibri, 'Segoe UI', system-ui, sans-serif",
+    fontFamily:
+      activeStyle.fontFamily ?? "Calibri, 'Segoe UI', system-ui, sans-serif",
     fontSize: activeStyle.fontSize ?? 14,
   };
 
   return (
     <div className="papers-surface mx-auto max-w-6xl space-y-3 sm:space-y-4">
       <p className="hidden text-sm text-muted sm:block">{t.intro}</p>
-      <p className="hidden text-xs text-muted sm:block">{t.note}</p>
 
-      <div className="space-y-2">
-        <Field label={t.title}>
-          <KitInput
-            value={doc.title}
-            onChange={(e) =>
-              setDoc((prev) => ({ ...prev, title: e.target.value }))
-            }
-          />
-        </Field>
-        <div className="kit-h-scroll sm:flex-wrap">
-          <FileInput
-            inline
-            label={t.openFile}
-            accept=".kitsheet,.json,.csv,.txt"
-            onFile={(f) => void onOpenFile(f)}
-          />
-          <button type="button" className={secondaryBtnClass} onClick={newSheet}>
-            {t.newSheet}
-          </button>
-          <button
-            type="button"
-            className={secondaryBtnClass}
-            onClick={() =>
-              downloadJsonFile(
-                `${(doc.title || "sheet").replace(/[^\w\-]+/g, "_")}.kitsheet`,
-                doc,
-              )
-            }
-          >
-            {t.saveKitsheet}
-          </button>
-          <button
-            type="button"
-            className={secondaryBtnClass}
-            onClick={() =>
-              downloadTextFile(
-                `${(doc.title || "sheet").replace(/[^\w\-]+/g, "_")}.csv`,
-                "\uFEFF" + sheetToCsv(doc, ";"),
-                "text/csv;charset=utf-8",
-              )
-            }
-          >
-            {t.exportCsv}
-          </button>
-          <button
-            type="button"
-            className={primaryBtnClass}
-            onClick={() =>
-              downloadBlob(
-                new Blob([sheetToExcelXml(doc)], {
-                  type: "application/vnd.ms-excel",
-                }),
-                `${(doc.title || "sheet").replace(/[^\w\-]+/g, "_")}.xls`,
-              )
-            }
-          >
-            {t.exportExcel}
-          </button>
-        </div>
-      </div>
-
-      <div className="kit-h-scroll sm:flex-wrap">
-        <button type="button" className={secondaryBtnClass} onClick={() => addRows()}>
-          {t.addRows}
-        </button>
-        <button type="button" className={secondaryBtnClass} onClick={() => addCols()}>
-          {t.addCols}
-        </button>
-        <button
-          type="button"
-          className={secondaryBtnClass}
-          onClick={() => sortByColumn(sel.col, true)}
-        >
-          {t.sortAsc}
-        </button>
-        <button
-          type="button"
-          className={secondaryBtnClass}
-          onClick={() => sortByColumn(sel.col, false)}
-        >
-          {t.sortDesc}
-        </button>
-        <button
-          type="button"
-          className={secondaryBtnClass}
-          onClick={undo}
-          disabled={!canUndo}
-        >
-          {t.undo}
-        </button>
-        <button
-          type="button"
-          className={secondaryBtnClass}
-          onClick={redo}
-          disabled={!canRedo}
-        >
-          {t.redo}
-        </button>
-        <button type="button" className={secondaryBtnClass} onClick={copySelection}>
-          {t.copy}
-        </button>
-        <button type="button" className={secondaryBtnClass} onClick={pasteSelection}>
-          {t.paste}
-        </button>
-        <button type="button" className={secondaryBtnClass} onClick={clearSelection}>
-          {t.clearCells}
-        </button>
-      </div>
-
-      <PapersFormatBar
-        value={formatState}
-        onChange={(patch) => {
-          if (patch.bold !== undefined) toggleStyleFlag("bold");
-          else if (patch.italic !== undefined) toggleStyleFlag("italic");
-          else if (patch.underline !== undefined) toggleStyleFlag("underline");
-          else if (patch.align) applyAlign(patch.align);
-          else if (patch.color) patchSelectedStyles({ color: patch.color });
-          else if (patch.background)
-            patchSelectedStyles({ background: patch.background });
-          else if (patch.fontSize)
-            patchSelectedStyles({ fontSize: patch.fontSize });
-        }}
-        labels={{
-          bold: t.bold,
-          italic: t.italic,
-          underline: t.underline,
-          alignLeft: t.alignLeft,
-          alignCenter: t.alignCenter,
-          alignRight: t.alignRight,
-          textColor: t.textColor,
-          fillColor: t.fillColor,
-          fontFamily: t.fontFamily,
-          fontSize: t.fontSize,
-        }}
-        extras={
-          <>
-            <button type="button" className={secondaryBtnClass} onClick={doMerge}>
-              {t.merge}
-            </button>
-            <button
-              type="button"
-              className={secondaryBtnClass}
-              onClick={doUnmerge}
-            >
-              {t.unmerge}
-            </button>
-            <button
-              type="button"
-              className={secondaryBtnClass}
-              onClick={clearFormats}
-            >
-              {t.clearFormat}
-            </button>
-            <button
-              type="button"
-              className={`${secondaryBtnClass} ${moveMode ? "!bg-accent !text-white" : ""}`}
-              onClick={() => setMoveMode((v) => !v)}
-              title={t.moveHint}
-            >
-              {t.moveCells}
-            </button>
-            <button
-              type="button"
-              className={`${secondaryBtnClass} ${panMode ? "!bg-accent !text-white" : ""}`}
-              onClick={() => {
-                setPanMode((v) => !v);
-                setMoveMode(false);
-              }}
-              title={t.panHint}
-            >
-              {t.pan}
-            </button>
-            <label className="flex items-center gap-1 text-xs text-muted">
-              <span>{t.numberFormat}</span>
-              <KitSelect
-                value={activeStyle.numberFormat ?? "general"}
-                onChange={(e) =>
-                  applyNumberFormat(e.target.value as NumberFormat)
-                }
-                className="min-w-[7rem]"
-              >
-                <option value="general">{t.formatGeneral}</option>
-                <option value="number">{t.formatNumber}</option>
-                <option value="currency">{t.formatCurrency}</option>
-                <option value="percent">{t.formatPercent}</option>
-              </KitSelect>
-            </label>
-          </>
+      <PapersDocBar
+        titleLabel={t.title}
+        title={doc.title}
+        onTitleChange={(value) =>
+          setDoc((prev) => ({ ...prev, title: value }))
         }
-      />
-
-      <div className="flex flex-wrap items-center gap-3 text-sm">
-        <label className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            checked={freezeHeader}
-            onChange={(e) => setFreezeHeader(e.target.checked)}
-            className="h-4 w-4 accent-[var(--accent)]"
-          />
-          {t.freezeHeader}
-        </label>
-        <div className="min-w-[10rem] flex-1">
-          <KitInput
-            value={filterText}
-            onChange={(e) => setFilterText(e.target.value)}
-            placeholder={t.filterPlaceholder}
-          />
-        </div>
-        <span className="text-xs text-muted">
-          {savedAt
-            ? t.savedAt.replace(
-                "{time}",
-                new Date(savedAt).toLocaleTimeString(),
-              )
-            : t.unsaved}
-        </span>
-      </div>
-
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="rounded-[8px] border border-border bg-surface px-2 py-1.5 text-xs font-medium">
-          {selectionLabel}
-        </span>
-        <KitInput
-          value={formula}
-          onChange={(e) => {
-            setFormula(e.target.value);
-            setEditing(true);
-          }}
-          onFocus={() => setEditing(true)}
-          onBlur={commitFormula}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.preventDefault();
-              commitFormula();
-            }
-          }}
-          placeholder={t.formulaPlaceholder}
-          className={`${fieldClass} min-w-[12rem] flex-1`}
+      >
+        <PapersMenu
+          label={t.fileMenu}
+          items={[
+            {
+              type: "file",
+              id: "open",
+              label: t.openFile,
+              accept: ".kitsheet,.json,.csv,.txt",
+              onFile: (f) => void onOpenFile(f),
+            },
+            {
+              type: "action",
+              id: "new",
+              label: t.newSheet,
+              onSelect: newSheet,
+            },
+            {
+              type: "action",
+              id: "save",
+              label: t.saveKitsheet,
+              onSelect: () =>
+                downloadJsonFile(
+                  `${(doc.title || "sheet").replace(/[^\w\-]+/g, "_")}.kitsheet`,
+                  doc,
+                ),
+            },
+            { type: "sep", id: "sep-export" },
+            {
+              type: "action",
+              id: "csv",
+              label: t.exportCsv,
+              onSelect: () =>
+                downloadTextFile(
+                  `${(doc.title || "sheet").replace(/[^\w\-]+/g, "_")}.csv`,
+                  "\uFEFF" + sheetToCsv(doc, ";"),
+                  "text/csv;charset=utf-8",
+                ),
+            },
+            {
+              type: "action",
+              id: "xls",
+              label: t.exportExcel,
+              onSelect: () =>
+                downloadBlob(
+                  new Blob([sheetToExcelXml(doc)], {
+                    type: "application/vnd.ms-excel",
+                  }),
+                  `${(doc.title || "sheet").replace(/[^\w\-]+/g, "_")}.xls`,
+                ),
+            },
+          ]}
         />
-      </div>
+        <PapersIconBtn label={t.undo} onClick={undo} disabled={!canUndo}>
+          <IconUndo />
+        </PapersIconBtn>
+        <PapersIconBtn label={t.redo} onClick={redo} disabled={!canRedo}>
+          <IconRedo />
+        </PapersIconBtn>
+      </PapersDocBar>
 
       <ErrorBanner>{error}</ErrorBanner>
-      <p className="text-xs text-muted">{t.panHint}</p>
 
-      <div
-        ref={scrollRef}
-        className={`max-h-[min(62vh,40rem)] overflow-auto rounded-[12px] border border-border sm:max-h-[min(70vh,40rem)] ${
-          panning ? "cursor-grab active:cursor-grabbing select-none" : ""
-        }`}
-        onPointerDown={onScrollPointerDown}
-        onPointerMove={onScrollPointerMove}
-        onPointerUp={onScrollPointerUp}
-        onPointerCancel={onScrollPointerUp}
-        onAuxClick={(e) => {
-          if (e.button === 1) e.preventDefault();
-        }}
-      >
+      <div className="overflow-hidden rounded-[14px] border border-border bg-surface">
+        <div className="border-b border-border px-2 py-2">
+          <PapersFormatBar
+            variant="ribbon"
+            value={formatState}
+            onChange={(patch) => {
+              if (patch.bold !== undefined) toggleStyleFlag("bold");
+              else if (patch.italic !== undefined) toggleStyleFlag("italic");
+              else if (patch.underline !== undefined)
+                toggleStyleFlag("underline");
+              else if (patch.align) applyAlign(patch.align);
+              else if (patch.color) patchSelectedStyles({ color: patch.color });
+              else if (patch.background)
+                patchSelectedStyles({ background: patch.background });
+              else if (patch.fontFamily)
+                patchSelectedStyles({ fontFamily: patch.fontFamily });
+              else if (patch.fontSize)
+                patchSelectedStyles({ fontSize: patch.fontSize });
+            }}
+            labels={{
+              bold: t.bold,
+              italic: t.italic,
+              underline: t.underline,
+              alignLeft: t.alignLeft,
+              alignCenter: t.alignCenter,
+              alignRight: t.alignRight,
+              textColor: t.textColor,
+              fillColor: t.fillColor,
+              fontFamily: t.fontFamily,
+              fontSearch: t.fontSearch,
+              fontSize: t.fontSize,
+            }}
+            extras={
+              <>
+                <PapersIconBtn label={t.addRows} onClick={() => addRows()}>
+                  <IconRows />
+                </PapersIconBtn>
+                <PapersIconBtn label={t.addCols} onClick={() => addCols()}>
+                  <IconCols />
+                </PapersIconBtn>
+                <PapersIconBtn
+                  label={t.sortAsc}
+                  onClick={() => sortByColumn(sel.col, true)}
+                >
+                  <IconSortAsc />
+                </PapersIconBtn>
+                <PapersIconBtn
+                  label={t.sortDesc}
+                  onClick={() => sortByColumn(sel.col, false)}
+                >
+                  <IconSortDesc />
+                </PapersIconBtn>
+                <PapersIconBtn label={t.copy} onClick={copySelection}>
+                  <IconCopy />
+                </PapersIconBtn>
+                <PapersIconBtn label={t.clearCells} onClick={clearSelection}>
+                  <IconTrash />
+                </PapersIconBtn>
+                <PapersMenu
+                  label={t.sheetTools}
+                  variant="compact"
+                  items={[
+                    {
+                      type: "action",
+                      id: "paste",
+                      label: t.paste,
+                      onSelect: pasteSelection,
+                    },
+                    {
+                      type: "action",
+                      id: "merge",
+                      label: t.merge,
+                      onSelect: doMerge,
+                    },
+                    {
+                      type: "action",
+                      id: "unmerge",
+                      label: t.unmerge,
+                      onSelect: doUnmerge,
+                    },
+                    {
+                      type: "action",
+                      id: "clear-format",
+                      label: t.clearFormat,
+                      onSelect: clearFormats,
+                    },
+                    { type: "sep", id: "sep-modes" },
+                    {
+                      type: "action",
+                      id: "move",
+                      label: moveMode ? `${t.moveCells} ✓` : t.moveCells,
+                      onSelect: () => setMoveMode((v) => !v),
+                    },
+                    {
+                      type: "action",
+                      id: "pan",
+                      label: panMode ? `${t.pan} ✓` : t.pan,
+                      onSelect: () => {
+                        setPanMode((v) => !v);
+                        setMoveMode(false);
+                      },
+                    },
+                  ]}
+                />
+                <KitSelect
+                  value={activeStyle.numberFormat ?? "general"}
+                  onChange={(e) =>
+                    applyNumberFormat(e.target.value as NumberFormat)
+                  }
+                  className={`${papersCompactBtnClass} min-w-[7rem]`}
+                  title={t.numberFormat}
+                >
+                  <option value="general">{t.formatGeneral}</option>
+                  <option value="number">{t.formatNumber}</option>
+                  <option value="currency">{t.formatCurrency}</option>
+                  <option value="percent">{t.formatPercent}</option>
+                </KitSelect>
+              </>
+            }
+          />
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2 border-b border-border px-2 py-2">
+          <span className="rounded-[8px] border border-border bg-background px-2 py-1.5 text-xs font-medium">
+            {selectionLabel}
+          </span>
+          <KitInput
+            value={formula}
+            onChange={(e) => {
+              setFormula(e.target.value);
+              setEditing(true);
+            }}
+            onFocus={() => setEditing(true)}
+            onBlur={commitFormula}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                commitFormula();
+              }
+            }}
+            placeholder={t.formulaPlaceholder}
+            className={`${fieldClass} min-w-[12rem] flex-1`}
+          />
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={freezeHeader}
+              onChange={(e) => setFreezeHeader(e.target.checked)}
+              className="h-4 w-4 accent-[var(--accent)]"
+            />
+            {t.freezeHeader}
+          </label>
+          <div className="min-w-[8rem] flex-1">
+            <KitInput
+              value={filterText}
+              onChange={(e) => setFilterText(e.target.value)}
+              placeholder={t.filterPlaceholder}
+            />
+          </div>
+          <span className="text-xs text-muted">
+            {savedAt
+              ? t.savedAt.replace(
+                  "{time}",
+                  new Date(savedAt).toLocaleTimeString(),
+                )
+              : t.unsaved}
+          </span>
+        </div>
+
+        <div
+          ref={scrollRef}
+          className={`max-h-[min(62vh,40rem)] overflow-auto sm:max-h-[min(70vh,40rem)] ${
+            panning ? "cursor-grab active:cursor-grabbing select-none" : ""
+          }`}
+          onPointerDown={onScrollPointerDown}
+          onPointerMove={onScrollPointerMove}
+          onPointerUp={onScrollPointerUp}
+          onPointerCancel={onScrollPointerUp}
+          onAuxClick={(e) => {
+            if (e.button === 1) e.preventDefault();
+          }}
+        >
         <table className="min-w-full border-collapse text-sm">
           <thead>
             <tr className="bg-surface">
@@ -1075,9 +1079,10 @@ export function ArkTool() {
             ))}
           </tbody>
         </table>
+        </div>
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-2 rounded-[12px] border border-border bg-surface px-3 py-2 text-xs text-muted">
+      <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted">
         <span>
           {t.statusBar
             .replace("{cell}", selectionLabel)

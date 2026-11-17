@@ -54,6 +54,21 @@ function round(n: number, d = 4): string {
   return String(Math.round(n * f) / f);
 }
 
+function isoDateLocal(d: Date) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+function moneyRow(
+  labelEn: string,
+  labelDa: string,
+  value: string,
+): SimpleResultRow {
+  return { labelEn, labelDa, value, numeric: true };
+}
+
 /** Inclusive integer in [min, max] without modulo bias. */
 function randomInt(min: number, max: number): number {
   const span = max - min + 1;
@@ -2162,6 +2177,1273 @@ export const SIMPLE_TOOL_DEFS: SimpleToolDef[] = [
           value: "Approximate chart for tops. Brands vary.",
           valueDa: "Cirka-tabel for overdele. Mærker varierer.",
         },
+      ];
+    },
+  },
+  {
+    id: "percentagechange",
+    nameEn: "Percentage change",
+    nameDa: "Procentændring",
+    descriptionEn: "How much a value rose or fell between two numbers.",
+    descriptionDa: "Hvor meget en værdi er steget eller faldet mellem to tal.",
+    aliases: ["percent change", "percentage change", "procentændring", "stigning", "fald procent"],
+    intents: ["percent", "change", "finance"],
+    tags: ["finance", "math"],
+    popularity: 88,
+    fields: [
+      { key: "from", labelEn: "Start value", labelDa: "Startværdi", kind: "number", defaultValue: "80" },
+      { key: "to", labelEn: "End value", labelDa: "Slutværdi", kind: "number", defaultValue: "100" },
+    ],
+    compute: (v) => {
+      const from = num(v.from);
+      const to = num(v.to);
+      if (from === undefined || to === undefined || from === 0) return null;
+      const diff = to - from;
+      const change = (diff / Math.abs(from)) * 100;
+      const direction =
+        diff > 0 ? "increase" : diff < 0 ? "decrease" : "unchanged";
+      const directionDa =
+        diff > 0 ? "stigning" : diff < 0 ? "fald" : "uændret";
+      return [
+        { labelEn: "Change %", labelDa: "Ændring %", value: round(change, 2), numeric: true },
+        { labelEn: "Difference", labelDa: "Forskel", value: round(diff, 4), numeric: true },
+        { labelEn: "Direction", labelDa: "Retning", value: direction, valueDa: directionDa },
+      ];
+    },
+  },
+  {
+    id: "ruleof72",
+    nameEn: "Rule of 72",
+    nameDa: "72-reglen",
+    descriptionEn: "Estimate years to double money at a given annual return.",
+    descriptionDa: "Estimer år til at fordoble penge ved et givet årligt afkast.",
+    aliases: ["rule of 72", "72 rule", "double money", "fordoble penge"],
+    intents: ["invest", "finance", "compound"],
+    tags: ["finance"],
+    popularity: 79,
+    fields: [
+      {
+        key: "rate",
+        labelEn: "Annual return (%)",
+        labelDa: "Årligt afkast (%)",
+        kind: "number",
+        defaultValue: "7",
+        hintEn: "Rough rule of thumb, not exact compound math.",
+        hintDa: "Tommelfingerregel, ikke præcis rentes rente.",
+      },
+    ],
+    compute: (v) => {
+      const rate = num(v.rate);
+      if (rate === undefined || rate <= 0) return null;
+      const years = 72 / rate;
+      return [
+        { labelEn: "Years to double", labelDa: "År til fordobling", value: round(years, 1), numeric: true },
+        {
+          labelEn: "About",
+          labelDa: "Cirka",
+          value: `${Math.round(years)} years`,
+          valueDa: `${Math.round(years)} år`,
+        },
+      ];
+    },
+  },
+  {
+    id: "compound",
+    nameEn: "Compound interest",
+    nameDa: "Rentes rente",
+    descriptionEn: "Future value with compound interest from principal, rate, and years.",
+    descriptionDa: "Fremtidig værdi med rentes rente ud fra beløb, rente og år.",
+    aliases: ["compound interest", "rentes rente", "compound", "opsparing rente"],
+    intents: ["interest", "finance", "save"],
+    tags: ["finance"],
+    popularity: 90,
+    fields: [
+      { key: "principal", labelEn: "Starting amount", labelDa: "Startbeløb", kind: "number", defaultValue: "10000" },
+      { key: "rate", labelEn: "Annual rate (%)", labelDa: "Årlig rente (%)", kind: "number", defaultValue: "5" },
+      { key: "years", labelEn: "Years", labelDa: "År", kind: "number", defaultValue: "10" },
+      {
+        key: "n",
+        labelEn: "Compounding",
+        labelDa: "Rentetilskrivning",
+        kind: "select",
+        defaultValue: "12",
+        options: [
+          { value: "1", labelEn: "Yearly", labelDa: "Årligt" },
+          { value: "4", labelEn: "Quarterly", labelDa: "Kvartalsvis" },
+          { value: "12", labelEn: "Monthly", labelDa: "Månedligt" },
+          { value: "365", labelEn: "Daily", labelDa: "Dagligt" },
+        ],
+      },
+    ],
+    compute: (v) => {
+      const P = num(v.principal);
+      const r = num(v.rate);
+      const t = num(v.years);
+      const n = num(v.n) ?? 12;
+      if (P === undefined || r === undefined || t === undefined || P < 0 || t < 0 || n <= 0) return null;
+      const fv = P * (1 + r / 100 / n) ** (n * t);
+      return [
+        moneyRow("Future value", "Slutværdi", round(fv, 2)),
+        moneyRow("Interest earned", "Optjent rente", round(fv - P, 2)),
+        {
+          labelEn: "Growth",
+          labelDa: "Vækst",
+          value: P === 0 ? "—" : `${round(((fv - P) / P) * 100, 1)} %`,
+        },
+      ];
+    },
+  },
+  {
+    id: "fuelcost",
+    nameEn: "Trip fuel cost",
+    nameDa: "Turopkostning",
+    descriptionEn: "Estimate fuel cost from distance, consumption, and price per liter.",
+    descriptionDa: "Estimer brændstofpris ud fra distance, forbrug og literpris.",
+    aliases: ["fuel cost", "trip cost", "benzinpris", "dieselforbrug", "kørsel pris"],
+    intents: ["fuel", "travel", "cost"],
+    tags: ["everyday", "finance"],
+    popularity: 87,
+    fields: [
+      { key: "km", labelEn: "Distance (km)", labelDa: "Distance (km)", kind: "number", defaultValue: "120" },
+      { key: "lper100", labelEn: "Use (L/100 km)", labelDa: "Forbrug (L/100 km)", kind: "number", defaultValue: "6.5" },
+      { key: "price", labelEn: "Price per liter", labelDa: "Pris pr. liter", kind: "number", defaultValue: "14.5" },
+    ],
+    compute: (v) => {
+      const km = num(v.km);
+      const use = num(v.lper100);
+      const price = num(v.price);
+      if ([km, use, price].some((x) => x === undefined || x! < 0)) return null;
+      const liters = (km! * use!) / 100;
+      const cost = liters * price!;
+      return [
+        moneyRow("Trip cost", "Turpris", round(cost, 2)),
+        { labelEn: "Fuel used", labelDa: "Brændstof", value: `${round(liters, 2)} L` },
+        moneyRow("Cost per km", "Pris pr. km", round(km! === 0 ? 0 : cost / km!, 2)),
+      ];
+    },
+  },
+  {
+    id: "electricity",
+    nameEn: "Electricity cost",
+    nameDa: "Elpris for apparat",
+    descriptionEn: "Cost of running a device from watts, hours, and price per kWh.",
+    descriptionDa: "Pris for at køre et apparat ud fra watt, timer og pris pr. kWh.",
+    aliases: ["electricity cost", "kwh cost", "elpris", "watt timer"],
+    intents: ["energy", "cost", "electricity"],
+    tags: ["everyday", "finance"],
+    popularity: 84,
+    fields: [
+      { key: "watts", labelEn: "Power (W)", labelDa: "Effekt (W)", kind: "number", defaultValue: "60" },
+      { key: "hours", labelEn: "Hours per day", labelDa: "Timer pr. dag", kind: "number", defaultValue: "5" },
+      { key: "days", labelEn: "Days", labelDa: "Dage", kind: "number", defaultValue: "30" },
+      { key: "kwhPrice", labelEn: "Price per kWh", labelDa: "Pris pr. kWh", kind: "number", defaultValue: "2.5" },
+    ],
+    compute: (v) => {
+      const w = num(v.watts);
+      const hours = num(v.hours);
+      const days = num(v.days);
+      const price = num(v.kwhPrice);
+      if ([w, hours, days, price].some((x) => x === undefined || x! < 0)) return null;
+      if (hours! > 24) return null;
+      const kwh = (w! * hours! * days!) / 1000;
+      return [
+        moneyRow("Cost", "Pris", round(kwh * price!, 2)),
+        { labelEn: "Energy", labelDa: "Energi", value: `${round(kwh, 3)} kWh` },
+        moneyRow("Per day", "Pr. dag", round(((w! * hours!) / 1000) * price!, 2)),
+      ];
+    },
+  },
+  {
+    id: "recipe",
+    nameEn: "Recipe scaler",
+    nameDa: "Opskrift-skaler",
+    descriptionEn: "Scale ingredient amounts when changing serving size.",
+    descriptionDa: "Skalér ingredienser når du ændrer antal portioner.",
+    aliases: ["recipe scale", "servings", "opskrift", "portioner"],
+    intents: ["recipe", "cooking", "scale"],
+    tags: ["everyday"],
+    popularity: 83,
+    fields: [
+      { key: "from", labelEn: "Original servings", labelDa: "Oprindelige portioner", kind: "number", defaultValue: "4" },
+      { key: "to", labelEn: "New servings", labelDa: "Nye portioner", kind: "number", defaultValue: "6" },
+      {
+        key: "items",
+        labelEn: "Ingredients (one per line)",
+        labelDa: "Ingredienser (én pr. linje)",
+        multiline: true,
+        defaultValue: "250 g mel\n2 æg\n1 dl mælk",
+        hintEn: "Start each line with a number, e.g. 250 g flour.",
+        hintDa: "Start hver linje med et tal, fx 250 g mel.",
+      },
+    ],
+    compute: (v) => {
+      const from = num(v.from);
+      const to = num(v.to);
+      if (!from || !to || from <= 0 || to <= 0) return null;
+      const factor = to / from;
+      const lines = (v.items ?? "")
+        .split(/\r?\n/)
+        .map((line) => line.trim())
+        .filter(Boolean)
+        .map((line) => {
+          const m = /^(\d+(?:[.,]\d+)?)\s*(.*)$/.exec(line);
+          if (!m) return line;
+          const amount = Number(m[1]!.replace(",", "."));
+          if (!Number.isFinite(amount)) return line;
+          const scaled = amount * factor;
+          const nice =
+            Math.abs(scaled - Math.round(scaled)) < 1e-9
+              ? String(Math.round(scaled))
+              : round(scaled, 2);
+          return `${nice} ${m[2]}`.trim();
+        });
+      if (!lines.length) return null;
+      return [
+        { labelEn: "Scaled recipe", labelDa: "Skaleret opskrift", value: lines.join("\n") },
+        { labelEn: "Factor", labelDa: "Faktor", value: round(factor, 3), numeric: true },
+      ];
+    },
+  },
+  {
+    id: "currencyapprox",
+    nameEn: "Quick currency convert",
+    nameDa: "Hurtig valutaomregning",
+    descriptionEn: "Convert an amount with a rate you provide (for offline estimates).",
+    descriptionDa: "Omregn et beløb med en kurs du selv angiver (til hurtige overslag).",
+    aliases: ["currency convert", "exchange calc", "valutaomregner", "kurs"],
+    intents: ["currency", "convert", "exchange"],
+    tags: ["finance", "everyday"],
+    popularity: 86,
+    fields: [
+      { key: "amount", labelEn: "Amount", labelDa: "Beløb", kind: "number", defaultValue: "100" },
+      {
+        key: "rate",
+        labelEn: "Rate (1 from = ? to)",
+        labelDa: "Kurs (1 fra = ? til)",
+        kind: "number",
+        defaultValue: "7.45",
+        hintEn: "Example: 1 EUR = 7.45 DKK.",
+        hintDa: "Eksempel: 1 EUR = 7,45 DKK.",
+      },
+      { key: "from", labelEn: "From currency", labelDa: "Fra valuta", defaultValue: "EUR" },
+      { key: "to", labelEn: "To currency", labelDa: "Til valuta", defaultValue: "DKK" },
+    ],
+    compute: (v) => {
+      const amount = num(v.amount);
+      const rate = num(v.rate);
+      if (amount === undefined || rate === undefined || rate <= 0) return null;
+      const from = (v.from || "FROM").trim().toUpperCase() || "FROM";
+      const to = (v.to || "TO").trim().toUpperCase() || "TO";
+      const converted = amount * rate;
+      return [
+        moneyRow(`Amount in ${to}`, `Beløb i ${to}`, round(converted, 2)),
+        moneyRow(`Per 1 ${from}`, `Pr. 1 ${from}`, round(rate, 4)),
+        moneyRow(`Back to ${from}`, `Tilbage til ${from}`, round(converted / rate, 2)),
+      ];
+    },
+  },
+  {
+    id: "vatmargin",
+    nameEn: "Price from cost + margin + VAT",
+    nameDa: "Pris fra kost + avance + moms",
+    descriptionEn: "Build a selling price from cost, margin percent, and VAT.",
+    descriptionDa: "Byg en salgspris ud fra kostpris, avanceprocent og moms.",
+    aliases: ["selling price", "margin vat", "salgspris", "avance moms"],
+    intents: ["price", "vat", "margin"],
+    tags: ["finance"],
+    popularity: 85,
+    fields: [
+      { key: "cost", labelEn: "Cost price", labelDa: "Kostpris", kind: "number", defaultValue: "100" },
+      { key: "margin", labelEn: "Margin (%)", labelDa: "Avance (%)", kind: "number", defaultValue: "40" },
+      { key: "vat", labelEn: "VAT (%)", labelDa: "Moms (%)", kind: "number", defaultValue: "25" },
+    ],
+    compute: (v) => {
+      const cost = num(v.cost);
+      const margin = num(v.margin);
+      const vat = num(v.vat);
+      if ([cost, margin, vat].some((x) => x === undefined || x! < 0)) return null;
+      const exVat = cost! * (1 + margin! / 100);
+      const incVat = exVat * (1 + vat! / 100);
+      return [
+        moneyRow("Price incl. VAT", "Pris inkl. moms", round(incVat, 2)),
+        moneyRow("Price excl. VAT", "Pris ekskl. moms", round(exVat, 2)),
+        moneyRow("VAT amount", "Momsbeløb", round(incVat - exVat, 2)),
+        moneyRow("Your margin", "Din avance", round(exVat - cost!, 2)),
+      ];
+    },
+  },
+  {
+    id: "hoursminutes",
+    nameEn: "Hours ↔ minutes ↔ seconds",
+    nameDa: "Timer ↔ minutter ↔ sekunder",
+    descriptionEn: "Convert a duration between hours, minutes, and seconds.",
+    descriptionDa: "Omregn en varighed mellem timer, minutter og sekunder.",
+    aliases: ["hours minutes", "time convert", "timer minutter", "sekunder"],
+    intents: ["time", "convert"],
+    tags: ["time", "everyday"],
+    popularity: 81,
+    fields: [
+      { key: "value", labelEn: "Value", labelDa: "Værdi", kind: "number", defaultValue: "90" },
+      {
+        key: "unit",
+        labelEn: "Unit",
+        labelDa: "Enhed",
+        kind: "select",
+        defaultValue: "minutes",
+        options: [
+          { value: "hours", labelEn: "Hours", labelDa: "Timer" },
+          { value: "minutes", labelEn: "Minutes", labelDa: "Minutter" },
+          { value: "seconds", labelEn: "Seconds", labelDa: "Sekunder" },
+        ],
+      },
+    ],
+    compute: (v) => {
+      const n = num(v.value);
+      if (n === undefined || n < 0) return null;
+      let seconds = n;
+      if (v.unit === "hours") seconds = n * 3600;
+      else if (v.unit === "minutes") seconds = n * 60;
+      const h = Math.floor(seconds / 3600);
+      const m = Math.floor((seconds % 3600) / 60);
+      const s = Math.round(seconds % 60);
+      return [
+        {
+          labelEn: "Clock",
+          labelDa: "Ur",
+          value: `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`,
+        },
+        { labelEn: "Hours", labelDa: "Timer", value: round(seconds / 3600, 4), numeric: true },
+        { labelEn: "Minutes", labelDa: "Minutter", value: round(seconds / 60, 4), numeric: true },
+        { labelEn: "Seconds", labelDa: "Sekunder", value: round(seconds, 2), numeric: true },
+      ];
+    },
+  },
+  {
+    id: "ageondate",
+    nameEn: "Age on a date",
+    nameDa: "Alder på en dato",
+    descriptionEn: "Exact age in years, months, and days on a chosen date.",
+    descriptionDa: "Præcis alder i år, måneder og dage på en valgt dato.",
+    aliases: ["age on date", "exact age", "alder på dato", "fødselsdag alder"],
+    intents: ["age", "date"],
+    tags: ["time", "everyday"],
+    popularity: 80,
+    fields: [
+      { key: "birth", labelEn: "Birth date", labelDa: "Fødselsdato", defaultValue: "1990-05-20", hintEn: "YYYY-MM-DD", hintDa: "ÅÅÅÅ-MM-DD" },
+      { key: "on", labelEn: "On this date", labelDa: "På denne dato", defaultValue: "2026-11-17", hintEn: "YYYY-MM-DD", hintDa: "ÅÅÅÅ-MM-DD" },
+    ],
+    compute: (v) => {
+      const birthParts = /^(\d{4})-(\d{2})-(\d{2})$/.exec((v.birth ?? "").trim());
+      const onParts = /^(\d{4})-(\d{2})-(\d{2})$/.exec((v.on ?? "").trim());
+      if (!birthParts || !onParts) return null;
+      const birth = new Date(Number(birthParts[1]), Number(birthParts[2]) - 1, Number(birthParts[3]));
+      const on = new Date(Number(onParts[1]), Number(onParts[2]) - 1, Number(onParts[3]));
+      if (Number.isNaN(birth.getTime()) || Number.isNaN(on.getTime()) || on < birth) return null;
+      let years = on.getFullYear() - birth.getFullYear();
+      let months = on.getMonth() - birth.getMonth();
+      let days = on.getDate() - birth.getDate();
+      if (days < 0) {
+        months -= 1;
+        const prev = new Date(on.getFullYear(), on.getMonth(), 0).getDate();
+        days += prev;
+      }
+      if (months < 0) {
+        years -= 1;
+        months += 12;
+      }
+      const totalDays = Math.floor((on.getTime() - birth.getTime()) / 86400000);
+      return [
+        {
+          labelEn: "Age",
+          labelDa: "Alder",
+          value: `${years} years, ${months} months, ${days} days`,
+          valueDa: `${years} år, ${months} mdr., ${days} dage`,
+        },
+        { labelEn: "Total days", labelDa: "Samlede dage", value: String(totalDays) },
+      ];
+    },
+  },
+  {
+    id: "adddays",
+    nameEn: "Add / subtract days",
+    nameDa: "Læg til / træk fra dage",
+    descriptionEn: "Find a calendar date by adding or subtracting days.",
+    descriptionDa: "Find en kalenderdato ved at lægge dage til eller trække fra.",
+    aliases: ["add days", "subtract days", "date plus", "dato plus", "dage frem"],
+    intents: ["date", "calendar"],
+    tags: ["time"],
+    popularity: 84,
+    fields: [
+      { key: "date", labelEn: "Start date", labelDa: "Startdato", defaultValue: "2026-11-17", hintEn: "YYYY-MM-DD", hintDa: "ÅÅÅÅ-MM-DD" },
+      { key: "days", labelEn: "Days (+/-)", labelDa: "Dage (+/-)", kind: "number", defaultValue: "14", hintEn: "Use negative numbers to go back.", hintDa: "Brug negative tal for at gå tilbage." },
+    ],
+    compute: (v) => {
+      const parts = /^(\d{4})-(\d{2})-(\d{2})$/.exec((v.date ?? "").trim());
+      const days = Math.trunc(num(v.days) ?? NaN);
+      if (!parts || !Number.isFinite(days)) return null;
+      const d = new Date(Number(parts[1]), Number(parts[2]) - 1, Number(parts[3]));
+      d.setDate(d.getDate() + days);
+      const iso = isoDateLocal(d);
+      const weekday = d.toLocaleDateString("en-GB", { weekday: "long" });
+      const weekdayDa = d.toLocaleDateString("da-DK", { weekday: "long" });
+      return [
+        { labelEn: "Result date", labelDa: "Resultatdato", value: iso },
+        { labelEn: "Weekday", labelDa: "Ugedag", value: weekday, valueDa: weekdayDa },
+      ];
+    },
+  },
+  {
+    id: "countdownhours",
+    nameEn: "Time until datetime",
+    nameDa: "Tid til tidspunkt",
+    descriptionEn: "Days, hours, and minutes remaining until a target datetime.",
+    descriptionDa: "Dage, timer og minutter tilbage til et valgt tidspunkt.",
+    aliases: ["time until", "hours until", "tid til", "countdown time"],
+    intents: ["countdown", "time"],
+    tags: ["time"],
+    popularity: 82,
+    fields: [
+      {
+        key: "target",
+        labelEn: "Target datetime",
+        labelDa: "Måltidspunkt",
+        defaultValue: "2026-12-24T18:00",
+        hintEn: "Format: YYYY-MM-DDTHH:MM",
+        hintDa: "Format: ÅÅÅÅ-MM-DDTT:MM",
+      },
+    ],
+    compute: (v) => {
+      const target = new Date(v.target ?? "");
+      if (Number.isNaN(target.getTime())) return null;
+      const diff = target.getTime() - Date.now();
+      const past = diff < 0;
+      const abs = Math.abs(diff);
+      const days = Math.floor(abs / 86400000);
+      const hours = Math.floor((abs % 86400000) / 3600000);
+      const minutes = Math.floor((abs % 3600000) / 60000);
+      return [
+        {
+          labelEn: past ? "Time since" : "Time left",
+          labelDa: past ? "Tid siden" : "Tid tilbage",
+          value: `${days}d ${hours}h ${minutes}m`,
+          valueDa: `${days}d ${hours}t ${minutes}m`,
+        },
+        {
+          labelEn: "Total hours",
+          labelDa: "Timer i alt",
+          value: round(abs / 3600000, 1),
+          numeric: true,
+        },
+      ];
+    },
+  },
+  {
+    id: "workhours",
+    nameEn: "Work hours pay",
+    nameDa: "Arbejdstimer løn",
+    descriptionEn: "Pay from hours worked and hourly rate, with optional overtime.",
+    descriptionDa: "Løn ud fra arbejdstimer og timeløn, med valgfri overtid.",
+    aliases: ["work hours", "hourly pay", "overtime", "arbejdstimer", "overtid"],
+    intents: ["salary", "hours", "pay"],
+    tags: ["finance", "everyday"],
+    popularity: 86,
+    fields: [
+      { key: "hours", labelEn: "Regular hours", labelDa: "Almindelige timer", kind: "number", defaultValue: "37" },
+      { key: "ot", labelEn: "Overtime hours", labelDa: "Overtidstimer", kind: "number", defaultValue: "3" },
+      { key: "rate", labelEn: "Hourly rate", labelDa: "Timeløn", kind: "number", defaultValue: "180" },
+      { key: "otFactor", labelEn: "Overtime factor", labelDa: "Overtidsfaktor", kind: "number", defaultValue: "1.5", hintEn: "1.5 = 50% extra.", hintDa: "1,5 = 50% ekstra." },
+    ],
+    compute: (v) => {
+      const hours = num(v.hours);
+      const ot = num(v.ot) ?? 0;
+      const rate = num(v.rate);
+      const factor = num(v.otFactor) ?? 1.5;
+      if (hours === undefined || rate === undefined || hours < 0 || ot < 0 || rate < 0 || factor < 0) return null;
+      const regular = hours * rate;
+      const overtime = ot * rate * factor;
+      return [
+        moneyRow("Total pay", "Samlet løn", round(regular + overtime, 2)),
+        moneyRow("Regular pay", "Almindelig løn", round(regular, 2)),
+        moneyRow("Overtime pay", "Overtidsløn", round(overtime, 2)),
+      ];
+    },
+  },
+  {
+    id: "loanextra",
+    nameEn: "Extra loan payment",
+    nameDa: "Ekstra afdrag på lån",
+    descriptionEn: "See interest saved if you add a fixed extra monthly payment.",
+    descriptionDa: "Se rente sparet hvis du lægger et fast ekstra månedligt afdrag.",
+    aliases: ["extra payment", "pay off loan faster", "ekstra afdrag", "indfri lån"],
+    intents: ["loan", "finance"],
+    tags: ["finance"],
+    popularity: 83,
+    fields: [
+      { key: "principal", labelEn: "Loan amount", labelDa: "Lånebeløb", kind: "number", defaultValue: "200000" },
+      { key: "rate", labelEn: "Annual rate (%)", labelDa: "Årlig rente (%)", kind: "number", defaultValue: "5" },
+      { key: "years", labelEn: "Years", labelDa: "År", kind: "number", defaultValue: "10" },
+      { key: "extra", labelEn: "Extra monthly", labelDa: "Ekstra pr. måned", kind: "number", defaultValue: "500" },
+    ],
+    compute: (v) => {
+      const P = num(v.principal);
+      const annual = num(v.rate);
+      const years = num(v.years);
+      const extra = num(v.extra) ?? 0;
+      if (P === undefined || annual === undefined || years === undefined || P <= 0 || years <= 0 || annual < 0) return null;
+      const r = annual / 100 / 12;
+      const n = Math.round(years * 12);
+      const basePay = r === 0 ? P / n : (P * r * (1 + r) ** n) / ((1 + r) ** n - 1);
+      const simulate = (payment: number) => {
+        let bal = P;
+        let months = 0;
+        let interest = 0;
+        while (bal > 0.01 && months < n * 4) {
+          const i = r === 0 ? 0 : bal * r;
+          interest += i;
+          const principalPay = Math.min(bal, payment - i);
+          if (principalPay <= 0) return { months: Infinity, interest: Infinity };
+          bal -= principalPay;
+          months += 1;
+        }
+        return { months, interest };
+      };
+      const normal = simulate(basePay);
+      const faster = simulate(basePay + Math.max(0, extra));
+      if (!Number.isFinite(faster.months)) return null;
+      const monthsSaved = Math.max(0, normal.months - faster.months);
+      return [
+        moneyRow("Interest saved", "Rente sparet", round(Math.max(0, normal.interest - faster.interest), 2)),
+        {
+          labelEn: "Months saved",
+          labelDa: "Måneder sparet",
+          value: String(monthsSaved),
+        },
+        moneyRow("Base monthly payment", "Basisydelse", round(basePay, 2)),
+        {
+          labelEn: "Payoff with extra",
+          labelDa: "Indfrielse med ekstra",
+          value: `${faster.months} months`,
+          valueDa: `${faster.months} måneder`,
+        },
+      ];
+    },
+  },
+  {
+    id: "probability",
+    nameEn: "Probability helper",
+    nameDa: "Sandsynlighed",
+    descriptionEn: "Odds from favorable outcomes over total outcomes.",
+    descriptionDa: "Sandsynlighed ud fra gunstige udfald over mulige udfald.",
+    aliases: ["probability", "odds", "chance", "sandsynlighed"],
+    intents: ["math", "probability"],
+    tags: ["math"],
+    popularity: 74,
+    fields: [
+      { key: "fav", labelEn: "Favorable outcomes", labelDa: "Gunstige udfald", kind: "number", defaultValue: "1" },
+      { key: "total", labelEn: "Total outcomes", labelDa: "Mulige udfald", kind: "number", defaultValue: "6" },
+    ],
+    compute: (v) => {
+      const fav = num(v.fav);
+      const total = num(v.total);
+      if (fav === undefined || total === undefined || total <= 0 || fav < 0 || fav > total) return null;
+      const p = fav / total;
+      return [
+        { labelEn: "Percent", labelDa: "Procent", value: round(p * 100, 2), numeric: true },
+        { labelEn: "Probability", labelDa: "Sandsynlighed", value: round(p, 6), numeric: true },
+        {
+          labelEn: "Odds for",
+          labelDa: "Odds for",
+          value: total - fav === 0 ? "certain" : `${round(fav / (total - fav), 3)} : 1`,
+          valueDa: total - fav === 0 ? "sikkert" : `${round(fav / (total - fav), 3)} : 1`,
+        },
+      ];
+    },
+  },
+  {
+    id: "percentageof",
+    nameEn: "What is X% of Y?",
+    nameDa: "Hvad er X% af Y?",
+    descriptionEn: "Find a percentage of a number, or the whole when you know the part.",
+    descriptionDa: "Find en procentdel af et tal, eller helheden når du kender delen.",
+    aliases: ["percent of", "x percent of y", "procent af"],
+    intents: ["percent", "math"],
+    tags: ["math", "everyday"],
+    popularity: 91,
+    fields: [
+      { key: "percent", labelEn: "Percent (X)", labelDa: "Procent (X)", kind: "number", defaultValue: "15" },
+      { key: "of", labelEn: "Of number (Y)", labelDa: "Af tal (Y)", kind: "number", defaultValue: "200" },
+    ],
+    compute: (v) => {
+      const p = num(v.percent);
+      const of = num(v.of);
+      if (p === undefined || of === undefined) return null;
+      const part = (p / 100) * of;
+      return [
+        {
+          labelEn: `${round(p, 2)}% of ${round(of, 4)}`,
+          labelDa: `${round(p, 2)}% af ${round(of, 4)}`,
+          value: round(part, 4),
+          numeric: true,
+        },
+        {
+          labelEn: `If ${round(of, 4)} is ${round(p, 2)}%, the whole is`,
+          labelDa: `Hvis ${round(of, 4)} er ${round(p, 2)}%, er helheden`,
+          value: p === 0 ? "—" : round(of / (p / 100), 4),
+          numeric: p !== 0,
+        },
+      ];
+    },
+  },
+  {
+    id: "aspectfit",
+    nameEn: "Fit box in aspect ratio",
+    nameDa: "Tilpas boks til billedformat",
+    descriptionEn: "Largest width and height that fit inside a box at a given ratio.",
+    descriptionDa: "Største bredde og højde der passer i en boks ved et givet format.",
+    aliases: ["fit aspect", "letterbox size", "billedformat tilpas"],
+    intents: ["aspect", "image", "design"],
+    tags: ["image", "design"],
+    popularity: 76,
+    fields: [
+      { key: "boxW", labelEn: "Box width", labelDa: "Boks bredde", kind: "number", defaultValue: "1920" },
+      { key: "boxH", labelEn: "Box height", labelDa: "Boks højde", kind: "number", defaultValue: "1080" },
+      { key: "rw", labelEn: "Ratio width", labelDa: "Format bredde", kind: "number", defaultValue: "16" },
+      { key: "rh", labelEn: "Ratio height", labelDa: "Format højde", kind: "number", defaultValue: "9" },
+    ],
+    compute: (v) => {
+      const boxW = num(v.boxW);
+      const boxH = num(v.boxH);
+      const rw = num(v.rw);
+      const rh = num(v.rh);
+      if ([boxW, boxH, rw, rh].some((x) => !x || x! <= 0)) return null;
+      const scale = Math.min(boxW! / rw!, boxH! / rh!);
+      const w = rw! * scale;
+      const h = rh! * scale;
+      return [
+        { labelEn: "Fitted size", labelDa: "Tilpasset størrelse", value: `${round(w, 1)} × ${round(h, 1)}` },
+        { labelEn: "Width", labelDa: "Bredde", value: round(w, 2), numeric: true },
+        { labelEn: "Height", labelDa: "Højde", value: round(h, 2), numeric: true },
+      ];
+    },
+  },
+  {
+    id: "colorhexrgb",
+    nameEn: "HEX ↔ RGB",
+    nameDa: "HEX ↔ RGB",
+    descriptionEn: "Convert between HEX colors and RGB values.",
+    descriptionDa: "Omregn mellem HEX-farver og RGB-værdier.",
+    aliases: ["hex to rgb", "rgb to hex", "farveomregner", "color convert"],
+    intents: ["color", "design", "convert"],
+    tags: ["design", "dev"],
+    popularity: 88,
+    fields: [
+      {
+        key: "value",
+        labelEn: "HEX or R,G,B",
+        labelDa: "HEX eller R,G,B",
+        defaultValue: "#2F6F4E",
+        hintEn: "Examples: #2F6F4E, #abc, or 47, 111, 78",
+        hintDa: "Eksempler: #2F6F4E, #abc eller 47, 111, 78",
+      },
+    ],
+    compute: (v) => {
+      const raw = (v.value ?? "").trim();
+      let hexMatch = /^#?([0-9a-fA-F]{6})$/.exec(raw);
+      if (!hexMatch) {
+        const short = /^#?([0-9a-fA-F]{3})$/.exec(raw);
+        if (short) {
+          const s = short[1]!;
+          hexMatch = [
+            "",
+            `${s[0]}${s[0]}${s[1]}${s[1]}${s[2]}${s[2]}`,
+          ] as unknown as RegExpExecArray;
+        }
+      }
+      if (hexMatch) {
+        const hex = hexMatch[1]!.toUpperCase();
+        const n = Number.parseInt(hex, 16);
+        const r = (n >> 16) & 255;
+        const g = (n >> 8) & 255;
+        const b = n & 255;
+        return [
+          { labelEn: "HEX", labelDa: "HEX", value: `#${hex}` },
+          { labelEn: "RGB", labelDa: "RGB", value: `${r}, ${g}, ${b}` },
+          { labelEn: "CSS", labelDa: "CSS", value: `rgb(${r}, ${g}, ${b})` },
+        ];
+      }
+      const parts = raw.split(/[,\s]+/).map((p) => Number(p));
+      if (parts.length !== 3 || parts.some((n) => !Number.isFinite(n) || n < 0 || n > 255)) {
+        return null;
+      }
+      const [r, g, b] = parts as [number, number, number];
+      const toHex = (n: number) => Math.round(n).toString(16).padStart(2, "0").toUpperCase();
+      const hex = `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+      return [
+        { labelEn: "HEX", labelDa: "HEX", value: hex },
+        { labelEn: "RGB", labelDa: "RGB", value: `${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)}` },
+        { labelEn: "CSS", labelDa: "CSS", value: `rgb(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)})` },
+      ];
+    },
+  },
+  {
+    id: "jsonminify",
+    nameEn: "JSON minify / pretty",
+    nameDa: "JSON minify / pretty",
+    descriptionEn: "Validate JSON, then minify it or pretty-print with indentation.",
+    descriptionDa: "Validér JSON, og minify eller pretty-print med indrykning.",
+    aliases: ["json minify", "json pretty", "json format", "json formatter"],
+    intents: ["json", "format", "dev"],
+    tags: ["dev"],
+    popularity: 87,
+    fields: [
+      {
+        key: "text",
+        labelEn: "JSON",
+        labelDa: "JSON",
+        multiline: true,
+        defaultValue: '{"name":"Kit","ok":true,"n":3}',
+      },
+      {
+        key: "mode",
+        labelEn: "Mode",
+        labelDa: "Tilstand",
+        kind: "select",
+        defaultValue: "pretty",
+        options: [
+          { value: "pretty", labelEn: "Pretty", labelDa: "Pretty" },
+          { value: "minify", labelEn: "Minify", labelDa: "Minify" },
+        ],
+      },
+    ],
+    compute: (v) => {
+      try {
+        const data = JSON.parse(v.text ?? "");
+        const out =
+          v.mode === "minify" ? JSON.stringify(data) : JSON.stringify(data, null, 2);
+        return [
+          { labelEn: "Output", labelDa: "Output", value: out },
+          { labelEn: "Characters", labelDa: "Tegn", value: String(out.length) },
+        ];
+      } catch {
+        return null;
+      }
+    },
+  },
+  {
+    id: "jwtpayload",
+    nameEn: "JWT payload peek",
+    nameDa: "JWT payload-kig",
+    descriptionEn: "Decode a JWT payload locally without verifying the signature.",
+    descriptionDa: "Afkod et JWT-payload lokalt uden at verificere signaturen.",
+    aliases: ["jwt decode", "jwt payload", "decode jwt"],
+    intents: ["jwt", "dev", "decode"],
+    tags: ["dev", "security"],
+    popularity: 84,
+    fields: [
+      {
+        key: "token",
+        labelEn: "JWT",
+        labelDa: "JWT",
+        multiline: true,
+        defaultValue:
+          "eyJhbGciOiJub25lIn0.eyJzdWIiOiIxMjM0IiwibmFtZSI6IktpdCIsImlhdCI6MTcwMDAwMDAwMH0.",
+        hintEn: "Paste header.payload.signature. Signature is not checked.",
+        hintDa: "Indsæt header.payload.signature. Signaturen tjekkes ikke.",
+      },
+    ],
+    compute: (v) => {
+      const token = (v.token ?? "").trim();
+      const parts = token.split(".");
+      if (parts.length < 2 || !parts[1]) return null;
+      try {
+        const b64 = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+        const pad = b64 + "=".repeat((4 - (b64.length % 4)) % 4);
+        const json =
+          typeof atob === "function"
+            ? decodeURIComponent(
+                [...atob(pad)]
+                  .map((c) => `%${c.charCodeAt(0).toString(16).padStart(2, "0")}`)
+                  .join(""),
+              )
+            : Buffer.from(pad, "base64").toString("utf8");
+        const pretty = JSON.stringify(JSON.parse(json), null, 2);
+        return [
+          { labelEn: "Payload", labelDa: "Payload", value: pretty },
+          {
+            labelEn: "Note",
+            labelDa: "Bemærkning",
+            value: "Signature is not verified.",
+            valueDa: "Signaturen verificeres ikke.",
+          },
+        ];
+      } catch {
+        return null;
+      }
+    },
+  },
+  {
+    id: "passwordphrase",
+    nameEn: "Passphrase idea",
+    nameDa: "Adgangskode-sætning",
+    descriptionEn: "Build a memorable passphrase from random common words.",
+    descriptionDa: "Byg en huskevenlig adgangskode af tilfældige almindelige ord.",
+    aliases: ["passphrase", "word password", "adgangskode sætning"],
+    intents: ["password", "security", "generate"],
+    tags: ["security"],
+    popularity: 85,
+    volatile: true,
+    actionEn: "Generate again",
+    actionDa: "Generér igen",
+    fields: [
+      { key: "words", labelEn: "Word count", labelDa: "Antal ord", kind: "number", defaultValue: "4" },
+      {
+        key: "lang",
+        labelEn: "Word list",
+        labelDa: "Ordliste",
+        kind: "select",
+        defaultValue: "en",
+        options: [
+          { value: "en", labelEn: "English", labelDa: "Engelsk" },
+          { value: "da", labelEn: "Danish", labelDa: "Dansk" },
+        ],
+      },
+      {
+        key: "sep",
+        labelEn: "Separator",
+        labelDa: "Separator",
+        kind: "select",
+        defaultValue: "-",
+        options: [
+          { value: "-", labelEn: "Hyphen", labelDa: "Bindestreg" },
+          { value: " ", labelEn: "Space", labelDa: "Mellemrum" },
+          { value: ".", labelEn: "Dot", labelDa: "Punktum" },
+        ],
+      },
+    ],
+    compute: (v) => {
+      const count = Math.min(10, Math.max(3, Math.floor(num(v.words) ?? 4)));
+      const en =
+        "apple river quiet yellow garden planet silver mountain ocean candle window forest canyon harbor lantern orbit pebble quarry raven sunset tunnel valley willow zebra coral meadow".split(
+          " ",
+        );
+      const da =
+        "æble flod stille gul have planet sølv bjerg hav stearinlys vindue skov kløft havn lygte kredsløb stenbrud ravn solnedgang tunnel dal piletræ zebra koral eng".split(
+          " ",
+        );
+      const vocab = v.lang === "da" ? da : en;
+      const picked: string[] = [];
+      for (let i = 0; i < count; i++) {
+        picked.push(vocab[randomInt(0, vocab.length - 1)]!);
+      }
+      const phrase = picked.join(v.sep || "-");
+      return [
+        { labelEn: "Passphrase", labelDa: "Sætning", value: phrase },
+        { labelEn: "Characters", labelDa: "Tegn", value: String(phrase.length) },
+      ];
+    },
+  },
+  {
+    id: "textstats",
+    nameEn: "Text stats",
+    nameDa: "Tekststatistik",
+    descriptionEn: "Count characters, words, sentences, and paragraphs.",
+    descriptionDa: "Tæl tegn, ord, sætninger og afsnit.",
+    aliases: ["text stats", "character count", "sentence count", "tekststatistik"],
+    intents: ["text", "count"],
+    tags: ["text"],
+    popularity: 86,
+    fields: [
+      {
+        key: "text",
+        labelEn: "Text",
+        labelDa: "Tekst",
+        multiline: true,
+        defaultValue: "Hej verden. Dette er sætning to.\n\nNyt afsnit.",
+      },
+    ],
+    compute: (v) => {
+      const text = v.text ?? "";
+      const chars = text.length;
+      const charsNoSpace = text.replace(/\s/g, "").length;
+      const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+      const sentences = (text.match(/[^.!?…]+[.!?…]+/g) ?? []).length || (text.trim() ? 1 : 0);
+      const paragraphs = text.trim()
+        ? text
+            .trim()
+            .split(/\n\s*\n/)
+            .filter(Boolean).length
+        : 0;
+      return [
+        { labelEn: "Words", labelDa: "Ord", value: String(words) },
+        { labelEn: "Characters", labelDa: "Tegn", value: String(chars) },
+        { labelEn: "Characters (no spaces)", labelDa: "Tegn uden mellemrum", value: String(charsNoSpace) },
+        { labelEn: "Sentences", labelDa: "Sætninger", value: String(sentences) },
+        { labelEn: "Paragraphs", labelDa: "Afsnit", value: String(paragraphs) },
+      ];
+    },
+  },
+  {
+    id: "linecounter",
+    nameEn: "Line counter",
+    nameDa: "Linjetæller",
+    descriptionEn: "Count lines, non-empty lines, and blank lines in text.",
+    descriptionDa: "Tæl linjer, ikke-tomme linjer og blanke linjer i tekst.",
+    aliases: ["line count", "count lines", "linjetæller"],
+    intents: ["text", "count", "lines"],
+    tags: ["text", "dev"],
+    popularity: 78,
+    fields: [
+      {
+        key: "text",
+        labelEn: "Text",
+        labelDa: "Tekst",
+        multiline: true,
+        defaultValue: "en\n\nto\ntre",
+      },
+    ],
+    compute: (v) => {
+      const lines = (v.text ?? "").split(/\r?\n/);
+      const nonEmpty = lines.filter((l) => l.trim().length > 0).length;
+      return [
+        { labelEn: "Lines", labelDa: "Linjer", value: String(lines.length) },
+        { labelEn: "Non-empty", labelDa: "Ikke-tomme", value: String(nonEmpty) },
+        { labelEn: "Blank", labelDa: "Blanke", value: String(lines.length - nonEmpty) },
+      ];
+    },
+  },
+  {
+    id: "listnumber",
+    nameEn: "Number a list",
+    nameDa: "Nummerér liste",
+    descriptionEn: "Add or remove numbers in front of each line.",
+    descriptionDa: "Tilføj eller fjern numre foran hver linje.",
+    aliases: ["number list", "numbered list", "nummerér liste", "list numbers"],
+    intents: ["text", "list"],
+    tags: ["text"],
+    popularity: 75,
+    fields: [
+      {
+        key: "text",
+        labelEn: "Lines",
+        labelDa: "Linjer",
+        multiline: true,
+        defaultValue: "Mælk\nÆg\nBrød",
+      },
+      {
+        key: "mode",
+        labelEn: "Mode",
+        labelDa: "Tilstand",
+        kind: "select",
+        defaultValue: "add",
+        options: [
+          { value: "add", labelEn: "Add numbers", labelDa: "Tilføj numre" },
+          { value: "remove", labelEn: "Remove numbers", labelDa: "Fjern numre" },
+        ],
+      },
+    ],
+    compute: (v) => {
+      const lines = (v.text ?? "").split(/\r?\n/);
+      if (v.mode === "remove") {
+        return [
+          {
+            labelEn: "Result",
+            labelDa: "Resultat",
+            value: lines.map((l) => l.replace(/^\s*\d+[.)]\s+/, "")).join("\n"),
+          },
+        ];
+      }
+      let n = 0;
+      return [
+        {
+          labelEn: "Result",
+          labelDa: "Resultat",
+          value: lines
+            .map((l) => {
+              if (!l.trim()) return l;
+              n += 1;
+              return `${n}. ${l}`;
+            })
+            .join("\n"),
+        },
+      ];
+    },
+  },
+  {
+    id: "unitpricebulk",
+    nameEn: "Bulk unit price",
+    nameDa: "Stykpris ved mængde",
+    descriptionEn: "Unit price and total when buying a pack of items.",
+    descriptionDa: "Stykpris og total når du køber en pakke med flere stk.",
+    aliases: ["unit price", "pack price", "stykpris", "pakkepris"],
+    intents: ["price", "shopping"],
+    tags: ["finance", "everyday"],
+    popularity: 82,
+    fields: [
+      { key: "pack", labelEn: "Pack price", labelDa: "Pakkepris", kind: "number", defaultValue: "49" },
+      { key: "count", labelEn: "Items in pack", labelDa: "Antal i pakken", kind: "number", defaultValue: "6" },
+      { key: "want", labelEn: "How many you need", labelDa: "Hvor mange du skal bruge", kind: "number", defaultValue: "10" },
+    ],
+    compute: (v) => {
+      const pack = num(v.pack);
+      const count = num(v.count);
+      const want = num(v.want);
+      if (pack === undefined || count === undefined || want === undefined || pack < 0 || count <= 0 || want < 0) return null;
+      const unit = pack / count;
+      const packs = Math.ceil(want / count);
+      return [
+        moneyRow("Total cost", "Samlet pris", round(packs * pack, 2)),
+        moneyRow("Unit price", "Stykpris", round(unit, 2)),
+        { labelEn: "Packs to buy", labelDa: "Pakker at købe", value: String(packs) },
+        { labelEn: "Leftover items", labelDa: "Til overs", value: String(packs * count - want) },
+      ];
+    },
+  },
+  {
+    id: "tiponbill",
+    nameEn: "Service fee on bill",
+    nameDa: "Servicegebyr på regning",
+    descriptionEn: "Add a service fee percent and split the new total.",
+    descriptionDa: "Læg et servicegebyr i procent oveni og del den nye total.",
+    aliases: ["service fee", "servicegebyr", "gebyr regning"],
+    intents: ["tip", "bill", "fee"],
+    tags: ["finance", "everyday"],
+    popularity: 80,
+    fields: [
+      { key: "bill", labelEn: "Bill", labelDa: "Regning", kind: "number", defaultValue: "800" },
+      { key: "fee", labelEn: "Fee (%)", labelDa: "Gebyr (%)", kind: "number", defaultValue: "10" },
+      { key: "people", labelEn: "People", labelDa: "Personer", kind: "number", defaultValue: "4" },
+    ],
+    compute: (v) => {
+      const bill = num(v.bill);
+      const fee = num(v.fee);
+      const people = Math.floor(num(v.people) ?? NaN);
+      if (
+        bill === undefined ||
+        fee === undefined ||
+        bill < 0 ||
+        fee < 0 ||
+        !Number.isFinite(people) ||
+        people < 1
+      ) {
+        return null;
+      }
+      const feeAmount = bill * (fee / 100);
+      const total = bill + feeAmount;
+      return [
+        moneyRow("Total", "Total", round(total, 2)),
+        moneyRow("Per person", "Pr. person", round(total / people, 2)),
+        moneyRow("Fee amount", "Gebyrbeløb", round(feeAmount, 2)),
+      ];
+    },
+  },
+  {
+    id: "temperature",
+    nameEn: "Temperature convert",
+    nameDa: "Temperatur-omregner",
+    descriptionEn: "Convert between Celsius, Fahrenheit, and Kelvin.",
+    descriptionDa: "Omregn mellem Celsius, Fahrenheit og Kelvin.",
+    aliases: ["celsius", "fahrenheit", "kelvin", "temperatur"],
+    intents: ["convert", "temperature"],
+    tags: ["everyday", "convert"],
+    popularity: 89,
+    fields: [
+      { key: "value", labelEn: "Value", labelDa: "Værdi", kind: "number", defaultValue: "20" },
+      {
+        key: "from",
+        labelEn: "From",
+        labelDa: "Fra",
+        kind: "select",
+        defaultValue: "C",
+        options: [
+          { value: "C", labelEn: "Celsius", labelDa: "Celsius" },
+          { value: "F", labelEn: "Fahrenheit", labelDa: "Fahrenheit" },
+          { value: "K", labelEn: "Kelvin", labelDa: "Kelvin" },
+        ],
+      },
+    ],
+    compute: (v) => {
+      const n = num(v.value);
+      if (n === undefined) return null;
+      let c = n;
+      if (v.from === "F") c = ((n - 32) * 5) / 9;
+      else if (v.from === "K") {
+        if (n < 0) return null;
+        c = n - 273.15;
+      }
+      const k = c + 273.15;
+      if (k < 0) return null;
+      return [
+        { labelEn: "Celsius", labelDa: "Celsius", value: round(c, 2), numeric: true },
+        { labelEn: "Fahrenheit", labelDa: "Fahrenheit", value: round((c * 9) / 5 + 32, 2), numeric: true },
+        { labelEn: "Kelvin", labelDa: "Kelvin", value: round(k, 2), numeric: true },
+      ];
+    },
+  },
+  {
+    id: "speedconvert",
+    nameEn: "Speed convert",
+    nameDa: "Hastigheds-omregner",
+    descriptionEn: "Convert between km/h, mph, and m/s.",
+    descriptionDa: "Omregn mellem km/t, mph og m/s.",
+    aliases: ["kmh to mph", "speed converter", "hastighed", "km/t"],
+    intents: ["convert", "speed"],
+    tags: ["everyday", "convert"],
+    popularity: 81,
+    fields: [
+      { key: "value", labelEn: "Value", labelDa: "Værdi", kind: "number", defaultValue: "100" },
+      {
+        key: "from",
+        labelEn: "From",
+        labelDa: "Fra",
+        kind: "select",
+        defaultValue: "kmh",
+        options: [
+          { value: "kmh", labelEn: "km/h", labelDa: "km/t" },
+          { value: "mph", labelEn: "mph", labelDa: "mph" },
+          { value: "ms", labelEn: "m/s", labelDa: "m/s" },
+        ],
+      },
+    ],
+    compute: (v) => {
+      const n = num(v.value);
+      if (n === undefined || n < 0) return null;
+      let ms = n;
+      if (v.from === "kmh") ms = n / 3.6;
+      else if (v.from === "mph") ms = n * 0.44704;
+      return [
+        { labelEn: "km/h", labelDa: "km/t", value: round(ms * 3.6, 3), numeric: true },
+        { labelEn: "mph", labelDa: "mph", value: round(ms / 0.44704, 3), numeric: true },
+        { labelEn: "m/s", labelDa: "m/s", value: round(ms, 3), numeric: true },
+      ];
+    },
+  },
+  {
+    id: "lengthconvert",
+    nameEn: "Length convert",
+    nameDa: "Længde-omregner",
+    descriptionEn: "Convert between meters, kilometers, feet, and miles.",
+    descriptionDa: "Omregn mellem meter, kilometer, fod og miles.",
+    aliases: ["meters to feet", "km to miles", "længde", "meter fod"],
+    intents: ["convert", "length"],
+    tags: ["everyday", "convert"],
+    popularity: 85,
+    fields: [
+      { key: "value", labelEn: "Value", labelDa: "Værdi", kind: "number", defaultValue: "1" },
+      {
+        key: "from",
+        labelEn: "From",
+        labelDa: "Fra",
+        kind: "select",
+        defaultValue: "m",
+        options: [
+          { value: "m", labelEn: "Meters", labelDa: "Meter" },
+          { value: "km", labelEn: "Kilometers", labelDa: "Kilometer" },
+          { value: "ft", labelEn: "Feet", labelDa: "Fod" },
+          { value: "mi", labelEn: "Miles", labelDa: "Miles" },
+        ],
+      },
+    ],
+    compute: (v) => {
+      const n = num(v.value);
+      if (n === undefined || n < 0) return null;
+      const toM: Record<string, number> = { m: 1, km: 1000, ft: 0.3048, mi: 1609.344 };
+      const meters = n * (toM[v.from ?? "m"] ?? 1);
+      return [
+        { labelEn: "Meters", labelDa: "Meter", value: round(meters, 4), numeric: true },
+        { labelEn: "Kilometers", labelDa: "Kilometer", value: round(meters / 1000, 6), numeric: true },
+        { labelEn: "Feet", labelDa: "Fod", value: round(meters / 0.3048, 4), numeric: true },
+        { labelEn: "Miles", labelDa: "Miles", value: round(meters / 1609.344, 6), numeric: true },
+      ];
+    },
+  },
+  {
+    id: "weightconvert",
+    nameEn: "Weight convert",
+    nameDa: "Vægt-omregner",
+    descriptionEn: "Convert between kilograms, grams, pounds, and ounces.",
+    descriptionDa: "Omregn mellem kilogram, gram, pounds og ounces.",
+    aliases: ["kg to lb", "pounds", "vægtomregner", "kilo gram"],
+    intents: ["convert", "weight"],
+    tags: ["everyday", "convert"],
+    popularity: 86,
+    fields: [
+      { key: "value", labelEn: "Value", labelDa: "Værdi", kind: "number", defaultValue: "1" },
+      {
+        key: "from",
+        labelEn: "From",
+        labelDa: "Fra",
+        kind: "select",
+        defaultValue: "kg",
+        options: [
+          { value: "kg", labelEn: "Kilograms", labelDa: "Kilogram" },
+          { value: "g", labelEn: "Grams", labelDa: "Gram" },
+          { value: "lb", labelEn: "Pounds", labelDa: "Pounds" },
+          { value: "oz", labelEn: "Ounces", labelDa: "Ounces" },
+        ],
+      },
+    ],
+    compute: (v) => {
+      const n = num(v.value);
+      if (n === undefined || n < 0) return null;
+      const toKg: Record<string, number> = { kg: 1, g: 0.001, lb: 0.45359237, oz: 0.028349523125 };
+      const kg = n * (toKg[v.from ?? "kg"] ?? 1);
+      return [
+        { labelEn: "Kilograms", labelDa: "Kilogram", value: round(kg, 6), numeric: true },
+        { labelEn: "Grams", labelDa: "Gram", value: round(kg * 1000, 3), numeric: true },
+        { labelEn: "Pounds", labelDa: "Pounds", value: round(kg / 0.45359237, 4), numeric: true },
+        { labelEn: "Ounces", labelDa: "Ounces", value: round(kg / 0.028349523125, 4), numeric: true },
+      ];
+    },
+  },
+  {
+    id: "checklistscore",
+    nameEn: "Checklist score",
+    nameDa: "Tjeklistescore",
+    descriptionEn: "Score a yes/no checklist as percent complete.",
+    descriptionDa: "Score en ja/nej-tjekliste som procent færdig.",
+    aliases: ["checklist", "progress score", "tjekliste", "færdigprocent"],
+    intents: ["checklist", "progress"],
+    tags: ["productivity", "everyday"],
+    popularity: 77,
+    fields: [
+      {
+        key: "rows",
+        labelEn: "Checklist",
+        labelDa: "Tjekliste",
+        multiline: true,
+        defaultValue: "Pak taske:ja\nBilletter:nej\nOplader:ja",
+        hintEn: "One item per line as name:yes or name:no",
+        hintDa: "Ét punkt pr. linje som navn:ja eller navn:nej",
+      },
+    ],
+    compute: (v) => {
+      const lines = (v.rows ?? "").trim().split(/\r?\n/).filter(Boolean);
+      if (!lines.length) return null;
+      let done = 0;
+      for (const line of lines) {
+        const flag = (line.includes(":") ? line.split(":").pop() : line)
+          ?.trim()
+          .toLowerCase();
+        if (
+          flag === "yes" ||
+          flag === "ja" ||
+          flag === "1" ||
+          flag === "true" ||
+          flag === "x" ||
+          flag === "done"
+        ) {
+          done += 1;
+        }
+      }
+      return [
+        {
+          labelEn: "Complete %",
+          labelDa: "Færdig %",
+          value: round((done / lines.length) * 100, 1),
+          numeric: true,
+        },
+        { labelEn: "Done", labelDa: "Færdige", value: `${done}/${lines.length}` },
+        { labelEn: "Left", labelDa: "Tilbage", value: String(lines.length - done) },
       ];
     },
   },

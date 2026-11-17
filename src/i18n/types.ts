@@ -250,6 +250,11 @@ export type Dictionary = {
     alternatives: string;
     matchedBecause: string;
   };
+  relatedSection: {
+    sitesHeading: string;
+    sitesLead: string;
+    kitHeading: string;
+  };
   language: {
     label: string;
     en: string;
@@ -1357,6 +1362,8 @@ export type Dictionary = {
     untitled: string;
     title: string;
     openFile: string;
+    fileMenu: string;
+    exportMenu: string;
     newDoc: string;
     saveKitdoc: string;
     exportTxt: string;
@@ -1387,6 +1394,7 @@ export type Dictionary = {
     undo: string;
     redo: string;
     fontFamily: string;
+    fontSearch: string;
     fontSize: string;
     pageSize: string;
     pagePreviewA4: string;
@@ -1437,6 +1445,9 @@ export type Dictionary = {
     untitled: string;
     title: string;
     openFile: string;
+    fileMenu: string;
+    exportMenu: string;
+    sheetTools: string;
     newSheet: string;
     saveKitsheet: string;
     exportCsv: string;
@@ -1459,6 +1470,7 @@ export type Dictionary = {
     textColor: string;
     fillColor: string;
     fontFamily: string;
+    fontSearch: string;
     fontSize: string;
     merge: string;
     unmerge: string;
@@ -1489,6 +1501,9 @@ export type Dictionary = {
     untitled: string;
     title: string;
     openFile: string;
+    fileMenu: string;
+    exportMenu: string;
+    insertMenu: string;
     newDeck: string;
     saveFile: string;
     present: string;
@@ -1502,6 +1517,9 @@ export type Dictionary = {
     imageFitContain: string;
     imageFitCover: string;
     imageFitFill: string;
+    insertImageInBox: string;
+    replaceImage: string;
+    imageInBoxHint: string;
     transition_none: string;
     transition_fade: string;
     transition_slideLeft: string;
@@ -1570,6 +1588,7 @@ export type Dictionary = {
     noSelection: string;
     text: string;
     fontFamily: string;
+    fontSearch: string;
     fontSize: string;
     color: string;
     align: string;

@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { FontFamilyInput } from "@/components/tools/FontFamilyInput";
 import { FontSizeInput } from "@/components/tools/FontSizeInput";
 import type {
   PapersBlockStyle,
@@ -8,17 +9,11 @@ import type {
   PapersFormatState,
 } from "./PapersFormatBar";
 
-const FONTS = [
-  { id: "Calibri, 'Segoe UI', system-ui, sans-serif", label: "Calibri" },
-  { id: "Georgia, 'Times New Roman', serif", label: "Georgia" },
-  { id: "'Times New Roman', Times, serif", label: "Times" },
-  { id: "Arial, Helvetica, sans-serif", label: "Arial" },
-  { id: "system-ui, sans-serif", label: "Sans" },
-  { id: "ui-monospace, monospace", label: "Mono" },
-] as const;
-
 const selectClass =
   "h-9 min-w-[6.5rem] max-w-[8rem] rounded-[7px] border border-border bg-white px-2 text-sm font-medium text-[#141414] outline-none";
+
+const fontClass =
+  "h-9 min-w-[7rem] max-w-[9.5rem] rounded-[7px] border border-border bg-white px-2 text-sm font-medium text-[#141414] outline-none";
 
 const sizeClass =
   "h-9 w-[3.5rem] rounded-[7px] border border-border bg-white px-1.5 text-sm font-medium text-[#141414] outline-none";
@@ -51,14 +46,6 @@ function BubbleBtn({
   );
 }
 
-function resolveFontValue(fontFamily: string) {
-  const exact = FONTS.find((f) => f.id === fontFamily);
-  if (exact) return exact.id;
-  const lower = fontFamily.toLowerCase();
-  const fuzzy = FONTS.find((f) => lower.includes(f.label.toLowerCase()));
-  return fuzzy?.id ?? FONTS[0]!.id;
-}
-
 export type SelectionBubblePos = { top: number; left: number };
 
 /** Compact floating format controls above a text selection. */
@@ -73,8 +60,6 @@ export function SkrivSelectionBubble({
   onChange: (patch: Partial<PapersFormatState>) => void;
   labels: PapersFormatLabels;
 }) {
-  const fontValue = resolveFontValue(value.fontFamily);
-
   return (
     <div
       className="papers-selection-bubble fixed z-[80] flex max-w-[min(96vw,30rem)] flex-wrap items-center gap-1 rounded-[12px] border border-border bg-surface px-2 py-1.5 shadow-[0_8px_28px_rgba(20,20,20,0.16)]"
@@ -155,20 +140,13 @@ export function SkrivSelectionBubble({
         </select>
       ) : null}
 
-      <select
-        value={fontValue}
-        onChange={(e) => onChange({ fontFamily: e.target.value })}
-        className={selectClass}
+      <FontFamilyInput
+        value={value.fontFamily}
+        onChange={(fontFamily) => onChange({ fontFamily })}
         title={labels.fontFamily}
-        aria-label={labels.fontFamily}
-        onMouseDown={(e) => e.stopPropagation()}
-      >
-        {FONTS.map((f) => (
-          <option key={f.id} value={f.id}>
-            {f.label}
-          </option>
-        ))}
-      </select>
+        placeholder={labels.fontSearch ?? labels.fontFamily}
+        className={fontClass}
+      />
 
       <FontSizeInput
         value={value.fontSize}
