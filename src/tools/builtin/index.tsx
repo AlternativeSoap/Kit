@@ -15,22 +15,22 @@ type EnhederProps = {
 type ImageProps = { mode: ImageToolMode; allowModeSwitch?: boolean };
 type IdProps = { id: string; prefill?: ToolPrefill };
 
-const fallback = {
-  loading: () => (
+function ToolLoading() {
+  return (
     <div className="mx-auto max-w-xl py-10 text-sm text-muted" aria-live="polite">
       …
     </div>
-  ),
-};
+  );
+}
 
 function lazyPrefill(
   loader: () => Promise<{ default: ComponentType<PrefillProps> }>,
 ) {
-  return dynamic(loader, fallback);
+  return dynamic(loader, { loading: ToolLoading });
 }
 
 function lazyPlain(loader: () => Promise<{ default: ComponentType }>) {
-  return dynamic(loader, fallback);
+  return dynamic(loader, { loading: ToolLoading });
 }
 
 const LonTool = lazyPrefill(() =>
@@ -58,7 +58,7 @@ const PasswordTool = lazyPrefill(() =>
 );
 const EnhederTool = dynamic(
   () => import("./enheder/EnhederTool").then((m) => ({ default: m.EnhederTool })),
-  fallback,
+  { loading: ToolLoading },
 ) as ComponentType<EnhederProps>;
 const DatoTool = lazyPrefill(() =>
   import("./dato/DatoTool").then((m) => ({ default: m.DatoTool })),
@@ -182,7 +182,7 @@ const ContrastTool = lazyPrefill(() =>
 );
 const ImageTool = dynamic(
   () => import("./media/ImageTool").then((m) => ({ default: m.ImageTool })),
-  fallback,
+  { loading: ToolLoading },
 ) as ComponentType<ImageProps>;
 const VideoCompressTool = lazyPlain(() =>
   import("./media/VideoCompressTool").then((m) => ({
@@ -253,7 +253,7 @@ const PdfCleanTool = lazyPrefill(() =>
 );
 const SimpleTool = dynamic(
   () => import("./simple/SimpleTool").then((m) => ({ default: m.SimpleTool })),
-  fallback,
+  { loading: ToolLoading },
 ) as ComponentType<IdProps>;
 
 export function BuiltinToolView({
