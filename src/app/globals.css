@@ -272,3 +272,49 @@ details:not([open]) > :not(summary) {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Kit Papers: clear text selection + paper desk chrome */
+.papers-surface ::selection {
+  background: color-mix(in srgb, var(--accent) 38%, white);
+  color: var(--foreground);
+}
+
+.papers-surface ::-moz-selection {
+  background: color-mix(in srgb, var(--accent) 38%, white);
+  color: var(--foreground);
+}
+
+.papers-desk {
+  background:
+    radial-gradient(circle at 20% 10%, rgba(255, 255, 255, 0.55), transparent 40%),
+    linear-gradient(180deg, #d9d9d4 0%, #cfcfc8 100%);
+}
+
+.papers-sheet {
+  background: #fff;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.8) inset,
+    0 12px 36px rgba(20, 20, 20, 0.18),
+    0 0 0 1px rgba(20, 20, 20, 0.08);
+}
+
+.papers-cell-selected {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+  box-shadow: inset 0 0 0 999px color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+.papers-block-selected {
+  outline: 2px solid var(--accent);
+  outline-offset: 0;
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.papers-textbox {
+  box-shadow: 0 0 0 1px rgba(20, 20, 20, 0.12);
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.papers-textbox[data-selected="true"] {
+  box-shadow: 0 0 0 2px var(--accent), 0 0 0 5px var(--accent-soft);
+}

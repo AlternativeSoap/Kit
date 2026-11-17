@@ -50,40 +50,82 @@ function canvasToFrameData(canvas: HTMLCanvasElement): Uint8ClampedArray {
   return ctx.getImageData(0, 0, canvas.width, canvas.height).data;
 }
 
+/** Smoothstep ease for softer in/out fades (less abrupt than linear). */
+export function easeFade(t: number): number {
+  const x = Math.min(1, Math.max(0, t));
+  return x * x * (3 - 2 * x);
+}
+
 function blendFrames(
   a: Uint8ClampedArray,
   b: Uint8ClampedArray,
   t: number,
 ): Uint8ClampedArray {
   const out = new Uint8ClampedArray(a.length);
-  const u = 1 - t;
+  const mix = easeFade(t);
+  const u = 1 - mix;
   for (let i = 0; i < a.length; i += 4) {
-    out[i] = a[i]! * u + b[i]! * t;
-    out[i + 1] = a[i + 1]! * u + b[i + 1]! * t;
-    out[i + 2] = a[i + 2]! * u + b[i + 2]! * t;
-    out[i + 3] = a[i + 3]! * u + b[i + 3]! * t;
+    out[i] = a[i]! * u + b[i]! * mix;
+    out[i + 1] = a[i + 1]! * u + b[i + 1]! * mix;
+    out[i + 2] = a[i + 2]! * u + b[i + 2]! * mix;
+    out[i + 3] = a[i + 3]! * u + b[i + 3]! * mix;
   }
   return out;
 }
 
-function fadeToColor(
+function mixTowardColor(
   src: Uint8ClampedArray,
-  t: number,
+  amount: number,
   rgb: [number, number, number],
-  toBlack: boolean,
 ): Uint8ClampedArray {
   const out = new Uint8ClampedArray(src.length);
+  const a = easeFade(amount);
+  const u = 1 - a;
   const [cr, cg, cb] = rgb;
-  // toBlack true: 0→0.5 fade out to color, 0.5→1 fade in from color uses other frame
-  const amount = toBlack ? Math.min(1, t * 2) : Math.min(1, (1 - t) * 2);
-  const u = 1 - amount;
   for (let i = 0; i < src.length; i += 4) {
-    out[i] = src[i]! * u + cr * amount;
-    out[i + 1] = src[i + 1]! * u + cg * amount;
-    out[i + 2] = src[i + 2]! * u + cb * amount;
+    out[i] = src[i]! * u + cr * a;
+    out[i + 1] = src[i + 1]! * u + cg * a;
+    out[i + 2] = src[i + 2]! * u + cb * a;
     out[i + 3] = 255;
   }
   return out;
+}
+
+function transitionFrameData(
+  cur: Uint8ClampedArray,
+  next: Uint8ClampedArray,
+  kind: TransitionKind,
+  t: number,
+): Uint8ClampedArray {
+  if (kind === "crossfade") {
+    return blendFrames(cur, next, t);
+  }
+  // Fade through black with an even out/in split and eased ends.
+  const e = easeFade(t);
+  if (e <= 0.5) {
+    return mixTowardColor(cur, e * 2, [0, 0, 0]);
+  }
+  return mixTowardColor(next, (1 - e) * 2, [0, 0, 0]);
+}
+
+function appendTransitionFrames(
+  out: AnimatedGifFrame[],
+  cur: Uint8ClampedArray,
+  next: Uint8ClampedArray,
+  kind: TransitionKind,
+  transitionMs: number,
+  steps: number,
+) {
+  if (kind === "none") return;
+  const stepDelay = Math.max(20, Math.round(transitionMs / steps));
+  for (let s = 1; s <= steps; s++) {
+    // Sample midpoints of equal time slices so the ease curve stays smooth.
+    const t = (s - 0.5) / steps;
+    out.push({
+      data: transitionFrameData(cur, next, kind, t),
+      delayMs: stepDelay,
+    });
+  }
 }
 
 export type BuildGifInput = {
@@ -100,6 +142,8 @@ export type BuildGifInput = {
   transitionSteps: number;
   pingPong: boolean;
   reverse: boolean;
+  /** Fade from the last frame back to the first for seamless loops. */
+  loopFade: boolean;
   targetDurationSec: number | null;
   onProgress?: (ratio: number) => void;
 };
@@ -118,6 +162,7 @@ export async function buildAnimatedFrames(
     transitionSteps,
     pingPong,
     reverse,
+    loopFade,
     targetDurationSec,
     onProgress,
   } = input;
@@ -160,26 +205,32 @@ export async function buildAnimatedFrames(
     out.push({ data: rendered[i]!, delayMs: delay });
 
     if (transition === "none" || i === rendered.length - 1) continue;
-    const next = rendered[i + 1]!;
-    const cur = rendered[i]!;
-    const stepDelay = Math.max(20, Math.round(transitionMs / steps));
+    appendTransitionFrames(
+      out,
+      rendered[i]!,
+      rendered[i + 1]!,
+      transition,
+      transitionMs,
+      steps,
+    );
+    onProgress?.(0.5 + (0.3 * (i + 1)) / rendered.length);
+    await yieldFrame();
+  }
 
-    for (let s = 1; s <= steps; s++) {
-      const t = s / (steps + 1);
-      let data: Uint8ClampedArray;
-      if (transition === "crossfade") {
-        data = blendFrames(cur, next, t);
-      } else {
-        // fade through black: first half fade out, second half fade in
-        if (t < 0.5) {
-          data = fadeToColor(cur, t, [0, 0, 0], true);
-        } else {
-          data = fadeToColor(next, t, [0, 0, 0], false);
-        }
-      }
-      out.push({ data, delayMs: stepDelay });
-    }
-    onProgress?.(0.5 + (0.35 * (i + 1)) / rendered.length);
+  if (
+    loopFade &&
+    transition !== "none" &&
+    rendered.length > 1
+  ) {
+    appendTransitionFrames(
+      out,
+      rendered[rendered.length - 1]!,
+      rendered[0]!,
+      transition,
+      transitionMs,
+      steps,
+    );
+    onProgress?.(0.85);
     await yieldFrame();
   }
 

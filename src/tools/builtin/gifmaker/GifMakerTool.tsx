@@ -75,19 +75,21 @@ export function GifMakerTool() {
   const t = dictionary.gifmakerTool;
 
   const [frames, setFrames] = useState<SourceFrame[]>([]);
-  const [delayMs, setDelayMs] = useState(500);
-  const [exportSize, setExportSize] = useState<ExportSize>(480);
+  // Balanced defaults: sharp enough, still shareable, calm video sampling.
+  const [delayMs, setDelayMs] = useState(400);
+  const [exportSize, setExportSize] = useState<ExportSize>(720);
   const [fit, setFit] = useState<FitMode>("contain");
   const [background, setBackground] = useState("#ffffff");
   const [transition, setTransition] = useState<TransitionKind>("none");
-  const [transitionMs, setTransitionMs] = useState(300);
-  const [transitionSteps, setTransitionSteps] = useState(4);
+  const [transitionMs, setTransitionMs] = useState(350);
+  const [transitionSteps, setTransitionSteps] = useState(6);
+  const [loopFade, setLoopFade] = useState(true);
   const [loops, setLoops] = useState(0);
   const [pingPong, setPingPong] = useState(false);
   const [reverse, setReverse] = useState(false);
   const [targetDuration, setTargetDuration] = useState("");
-  const [videoFps, setVideoFps] = useState(8);
-  const [videoMaxFrames, setVideoMaxFrames] = useState(48);
+  const [videoFps, setVideoFps] = useState(6);
+  const [videoMaxFrames, setVideoMaxFrames] = useState(36);
   const [busy, setBusy] = useState(false);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -126,15 +128,24 @@ export function GifMakerTool() {
       total += mid.reduce((sum, f) => sum + (f.delayMs ?? delayMs), 0);
     }
     if (transition !== "none" && frames.length > 1) {
-      const edges = pingPong
+      let edges = pingPong
         ? Math.max(0, frames.length * 2 - 3)
         : frames.length - 1;
+      if (loopFade) edges += 1;
       total += edges * transitionMs;
     }
     const target = Number(targetDuration.replace(",", "."));
     if (Number.isFinite(target) && target > 0) return Math.round(target * 1000);
     return total;
-  }, [frames, delayMs, pingPong, transition, transitionMs, targetDuration]);
+  }, [
+    frames,
+    delayMs,
+    pingPong,
+    transition,
+    transitionMs,
+    loopFade,
+    targetDuration,
+  ]);
 
   async function addFiles(fileList: FileList | File[] | null) {
     if (!fileList) return;
@@ -317,10 +328,23 @@ export function GifMakerTool() {
     if (dragId && dragId !== id) e.dataTransfer.dropEffect = "move";
   }
 
-  function onDrop(e: ReactDragEvent, id: string) {
+  function onFrameDrop(e: ReactDragEvent, id: string) {
     e.preventDefault();
+    e.stopPropagation();
+    const dropped = e.dataTransfer.files;
+    if (dropped?.length) {
+      setDragId(null);
+      void addFiles(dropped);
+      return;
+    }
     if (dragId) moveFrame(dragId, id);
     setDragId(null);
+  }
+
+  function onFilesDrop(e: ReactDragEvent) {
+    e.preventDefault();
+    setDropActive(false);
+    if (e.dataTransfer.files?.length) void addFiles(e.dataTransfer.files);
   }
 
   function clearAll() {
@@ -365,19 +389,30 @@ export function GifMakerTool() {
     try {
       const target = Number(targetDuration.replace(",", "."));
       // Long-edge export sized to the average aspect of all frames.
+      // Never upscale past the sharpest source long edge (upscaling makes GIF mush).
       let aspectSum = 0;
+      let sourceLongEdge = 0;
       for (const f of frames) {
         aspectSum += f.bitmap.width / Math.max(1, f.bitmap.height);
+        sourceLongEdge = Math.max(
+          sourceLongEdge,
+          f.bitmap.width,
+          f.bitmap.height,
+        );
       }
       const aspect = aspectSum / frames.length;
+      const longEdge = Math.max(
+        1,
+        Math.min(exportSize, sourceLongEdge || exportSize),
+      );
       let outW: number;
       let outH: number;
       if (aspect >= 1) {
-        outW = exportSize;
-        outH = Math.max(1, Math.round(exportSize / aspect));
+        outW = longEdge;
+        outH = Math.max(1, Math.round(longEdge / aspect));
       } else {
-        outH = exportSize;
-        outW = Math.max(1, Math.round(exportSize * aspect));
+        outH = longEdge;
+        outW = Math.max(1, Math.round(longEdge * aspect));
       }
       outW += outW % 2;
       outH += outH % 2;
@@ -394,6 +429,7 @@ export function GifMakerTool() {
         transitionSteps,
         pingPong,
         reverse,
+        loopFade,
         targetDurationSec:
           Number.isFinite(target) && target > 0 ? target : null,
         onProgress: (r) => {
@@ -452,7 +488,8 @@ export function GifMakerTool() {
             disabled={busy}
             className={fileInputClass}
             onChange={(e) => {
-              const files = e.target.files;
+              // FileList is live — snapshot before clearing the input.
+              const files = Array.from(e.target.files ?? []);
               e.target.value = "";
               void addFiles(files);
             }}
@@ -527,23 +564,41 @@ export function GifMakerTool() {
                 setDropActive(true);
               }}
               onDragLeave={() => setDropActive(false)}
-              onDrop={(e) => {
-                e.preventDefault();
-                setDropActive(false);
-                void addFiles(e.dataTransfer.files);
-              }}
+              onDrop={onFilesDrop}
             >
               {t.dropHint}
             </div>
           ) : (
-            <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            <ul
+              className={`grid grid-cols-2 gap-3 rounded-[12px] sm:grid-cols-3 ${
+                dropActive ? "ring-2 ring-accent ring-offset-2 ring-offset-background" : ""
+              }`}
+              onDragEnter={(e) => {
+                if (e.dataTransfer.types.includes("Files")) {
+                  e.preventDefault();
+                  setDropActive(true);
+                }
+              }}
+              onDragOver={(e) => {
+                if (e.dataTransfer.types.includes("Files")) {
+                  e.preventDefault();
+                  setDropActive(true);
+                }
+              }}
+              onDragLeave={(e) => {
+                if (!e.currentTarget.contains(e.relatedTarget as Node | null)) {
+                  setDropActive(false);
+                }
+              }}
+              onDrop={onFilesDrop}
+            >
               {frames.map((frame, index) => (
                 <li
                   key={frame.id}
                   draggable={!busy}
                   onDragStart={() => onDragStart(frame.id)}
                   onDragOver={(e) => onDragOver(e, frame.id)}
-                  onDrop={(e) => onDrop(e, frame.id)}
+                  onDrop={(e) => onFrameDrop(e, frame.id)}
                   onDragEnd={() => setDragId(null)}
                   className={`overflow-hidden rounded-[12px] border bg-surface ${
                     dragId === frame.id
@@ -691,30 +746,46 @@ export function GifMakerTool() {
           </Field>
 
           {transition !== "none" ? (
-            <div className="grid gap-3 sm:grid-cols-2">
-              <Field label={t.transitionMs}>
-                <KitInput
-                  type="number"
-                  min={50}
-                  max={3000}
-                  step={50}
-                  value={transitionMs}
-                  onChange={(e) =>
-                    setTransitionMs(Number(e.target.value) || 300)
-                  }
+            <div className="space-y-3">
+              <div className="grid gap-3 sm:grid-cols-2">
+                <Field label={t.transitionMs}>
+                  <KitInput
+                    type="number"
+                    min={50}
+                    max={3000}
+                    step={50}
+                    value={transitionMs}
+                    onChange={(e) =>
+                      setTransitionMs(Number(e.target.value) || 350)
+                    }
+                  />
+                </Field>
+                <Field label={t.transitionSteps}>
+                  <KitInput
+                    type="number"
+                    min={2}
+                    max={12}
+                    value={transitionSteps}
+                    onChange={(e) =>
+                      setTransitionSteps(Number(e.target.value) || 6)
+                    }
+                  />
+                </Field>
+              </div>
+              <label className="flex items-start gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={loopFade}
+                  onChange={(e) => setLoopFade(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 shrink-0 accent-[var(--accent)]"
                 />
-              </Field>
-              <Field label={t.transitionSteps}>
-                <KitInput
-                  type="number"
-                  min={2}
-                  max={12}
-                  value={transitionSteps}
-                  onChange={(e) =>
-                    setTransitionSteps(Number(e.target.value) || 4)
-                  }
-                />
-              </Field>
+                <span>
+                  <span className="block font-medium text-foreground">
+                    {t.loopFade}
+                  </span>
+                  <span className="block text-xs text-muted">{t.loopFadeHint}</span>
+                </span>
+              </label>
             </div>
           ) : null}
 

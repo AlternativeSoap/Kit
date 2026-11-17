@@ -32,4 +32,28 @@ describe("encodeAnimatedGif", () => {
     expect(bytes[bytes.length - 1]).toBe(0x3b);
     expect(bytes.length).toBeGreaterThan(100);
   });
+
+  it("encodes a gradient frame without throwing", async () => {
+    const w = 64;
+    const h = 48;
+    const data = new Uint8ClampedArray(w * h * 4);
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        const i = (y * w + x) * 4;
+        data[i] = Math.round((x / (w - 1)) * 255);
+        data[i + 1] = Math.round((y / (h - 1)) * 255);
+        data[i + 2] = 128;
+        data[i + 3] = 255;
+      }
+    }
+    const blob = encodeAnimatedGif([{ data, delayMs: 100 }], {
+      width: w,
+      height: h,
+      loops: 1,
+    });
+    const bytes = new Uint8Array(await blob.arrayBuffer());
+    expect(String.fromCharCode(...bytes.slice(0, 6))).toBe("GIF89a");
+    expect(bytes[bytes.length - 1]).toBe(0x3b);
+    expect(bytes.length).toBeGreaterThan(200);
+  });
 });

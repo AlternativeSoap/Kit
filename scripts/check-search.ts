@@ -100,6 +100,17 @@ const cases: [locale: "en" | "da", query: string, expect: Expectation][] = [
   ["en", "compress pdf", { includes: "pdf24" }],
   ["en", "edit photo", { first: "photopea" }],
   ["da", "nettoløn", { includes: "lon" }],
+
+  // Kit Papers (local office-like tools)
+  ["en", "word", { includes: "skriv" }],
+  ["da", "word", { includes: "skriv" }],
+  ["en", "excel", { includes: "ark" }],
+  ["da", "regneark", { includes: "ark" }],
+  ["en", "powerpoint", { includes: "dias" }],
+  ["da", "præsentation", { includes: "dias" }],
+  ["en", "office", { includes: "skriv" }],
+  ["en", "office", { includes: "ark" }],
+  ["en", "office", { includes: "dias" }],
 ];
 
 let failed = 0;

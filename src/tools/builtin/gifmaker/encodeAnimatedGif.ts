@@ -14,78 +14,237 @@ export type EncodeAnimatedGifOptions = {
   loops?: number;
 };
 
+type Rgb = [number, number, number];
+
+function clampByte(n: number): number {
+  return n < 0 ? 0 : n > 255 ? 255 : n | 0;
+}
+
 function nearestPaletteIndex(
   palette: number[],
+  colorCount: number,
   r: number,
   g: number,
   b: number,
+  skipIndex = -1,
 ): number {
-  let best = 0;
+  let best = skipIndex === 0 ? 1 : 0;
   let bestDist = Infinity;
-  const count = Math.min(255, palette.length / 3);
-  for (let i = 0; i < count; i++) {
+  for (let i = 0; i < colorCount; i++) {
+    if (i === skipIndex) continue;
     const pr = palette[i * 3]!;
     const pg = palette[i * 3 + 1]!;
     const pb = palette[i * 3 + 2]!;
-    const dist = (pr - r) ** 2 + (pg - g) ** 2 + (pb - b) ** 2;
+    const dr = pr - r;
+    const dg = pg - g;
+    const db = pb - b;
+    const dist = dr * dr + dg * dg + db * db;
     if (dist < bestDist) {
       bestDist = dist;
       best = i;
+      if (dist === 0) break;
     }
   }
   return best;
 }
 
-function quantizeFrame(data: Uint8ClampedArray): {
+/** Median-cut palette from opaque pixels (samples large frames). */
+function buildMedianCutPalette(
+  data: Uint8ClampedArray,
+  maxColors: number,
+): number[] {
+  const pixelCount = data.length / 4;
+  const sampleStep = Math.max(1, Math.floor(pixelCount / 80_000));
+  const samples: Rgb[] = [];
+
+  for (let i = 0; i < data.length; i += 4 * sampleStep) {
+    if (data[i + 3]! < 128) continue;
+    samples.push([data[i]!, data[i + 1]!, data[i + 2]!]);
+  }
+
+  if (!samples.length) {
+    return [0, 0, 0];
+  }
+
+  type Box = { pixels: Rgb[]; r0: number; r1: number; g0: number; g1: number; b0: number; b1: number };
+
+  function bounds(pixels: Rgb[]): Box {
+    let r0 = 255;
+    let r1 = 0;
+    let g0 = 255;
+    let g1 = 0;
+    let b0 = 255;
+    let b1 = 0;
+    for (const [r, g, b] of pixels) {
+      if (r < r0) r0 = r;
+      if (r > r1) r1 = r;
+      if (g < g0) g0 = g;
+      if (g > g1) g1 = g;
+      if (b < b0) b0 = b;
+      if (b > b1) b1 = b;
+    }
+    return { pixels, r0, r1, g0, g1, b0, b1 };
+  }
+
+  function split(box: Box): [Box, Box] | null {
+    const { pixels, r0, r1, g0, g1, b0, b1 } = box;
+    if (pixels.length < 2) return null;
+    const ranges: Array<{ ch: 0 | 1 | 2; span: number }> = [
+      { ch: 0, span: r1 - r0 },
+      { ch: 1, span: g1 - g0 },
+      { ch: 2, span: b1 - b0 },
+    ];
+    ranges.sort((a, b) => b.span - a.span);
+    const channel = ranges[0]!.ch;
+    const sorted = [...pixels].sort((a, b) => a[channel]! - b[channel]!);
+    const mid = Math.max(1, Math.floor(sorted.length / 2));
+    return [bounds(sorted.slice(0, mid)), bounds(sorted.slice(mid))];
+  }
+
+  function average(pixels: Rgb[]): Rgb {
+    let r = 0;
+    let g = 0;
+    let b = 0;
+    for (const p of pixels) {
+      r += p[0];
+      g += p[1];
+      b += p[2];
+    }
+    const n = pixels.length || 1;
+    return [Math.round(r / n), Math.round(g / n), Math.round(b / n)];
+  }
+
+  let boxes: Box[] = [bounds(samples)];
+  while (boxes.length < maxColors) {
+    let bestIdx = -1;
+    let bestScore = -1;
+    for (let i = 0; i < boxes.length; i++) {
+      const box = boxes[i]!;
+      if (box.pixels.length < 2) continue;
+      const score =
+        box.pixels.length *
+        Math.max(box.r1 - box.r0, box.g1 - box.g0, box.b1 - box.b0);
+      if (score > bestScore) {
+        bestScore = score;
+        bestIdx = i;
+      }
+    }
+    if (bestIdx < 0) break;
+    const parts = split(boxes[bestIdx]!);
+    if (!parts) break;
+    boxes.splice(bestIdx, 1, parts[0], parts[1]);
+  }
+
+  const palette: number[] = [];
+  for (const box of boxes) {
+    const [r, g, b] = average(box.pixels);
+    palette.push(r, g, b);
+  }
+  return palette;
+}
+
+function quantizeFrame(
+  data: Uint8ClampedArray,
+  width: number,
+  height: number,
+): {
   indexes: Uint8Array;
   palette: number[];
   transparentIndex: number;
 } {
-  const palette: number[] = [];
-  const colorIndex = new Map<number, number>();
-  const indexes = new Uint8Array(data.length / 4);
-  let transparentIndex = -1;
-
-  for (let i = 0, p = 0; i < data.length; i += 4, p++) {
-    const r = data[i]!;
-    const g = data[i + 1]!;
-    const b = data[i + 2]!;
-    const a = data[i + 3]!;
-    if (a < 128) {
-      if (transparentIndex < 0) {
-        transparentIndex = palette.length / 3;
-        palette.push(0, 0, 0);
-      }
-      indexes[p] = transparentIndex;
-      continue;
+  let needsTransparency = false;
+  for (let i = 3; i < data.length; i += 4) {
+    if (data[i]! < 128) {
+      needsTransparency = true;
+      break;
     }
-    const qr = r & 0xf8;
-    const qg = g & 0xf8;
-    const qb = b & 0xfc;
-    const key = (qr << 16) | (qg << 8) | qb;
-    let idx = colorIndex.get(key);
-    if (idx === undefined) {
-      if (palette.length / 3 >= 255) {
-        idx = nearestPaletteIndex(palette, qr, qg, qb);
-      } else {
-        idx = palette.length / 3;
-        colorIndex.set(key, idx);
-        palette.push(qr, qg, qb);
-      }
-    }
-    indexes[p] = idx;
   }
 
+  const colorSlots = needsTransparency ? 255 : 256;
+  const colorPalette = buildMedianCutPalette(data, colorSlots);
+  const palette: number[] = [];
+  let transparentIndex = -1;
+
+  if (needsTransparency) {
+    transparentIndex = 0;
+    palette.push(0, 0, 0);
+  }
+  for (let i = 0; i < colorPalette.length; i += 3) {
+    palette.push(colorPalette[i]!, colorPalette[i + 1]!, colorPalette[i + 2]!);
+  }
+  const colorCount = Math.max(1, Math.min(256, palette.length / 3));
   while (palette.length < 256 * 3) palette.push(0);
+  const indexes = new Uint8Array(width * height);
+
+  // Floyd–Steinberg dithering on a working RGB buffer (opaque pixels only).
+  const work = new Float32Array(width * height * 3);
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const p = y * width + x;
+      const i = p * 4;
+      work[p * 3] = data[i]!;
+      work[p * 3 + 1] = data[i + 1]!;
+      work[p * 3 + 2] = data[i + 2]!;
+    }
+  }
+
+  const distribute = (x: number, y: number, er: number, eg: number, eb: number, factor: number) => {
+    if (x < 0 || x >= width || y < 0 || y >= height) return;
+    const p = y * width + x;
+    if (data[p * 4 + 3]! < 128) return;
+    const o = p * 3;
+    work[o] = work[o]! + er * factor;
+    work[o + 1] = work[o + 1]! + eg * factor;
+    work[o + 2] = work[o + 2]! + eb * factor;
+  };
+
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const p = y * width + x;
+      const i = p * 4;
+      if (data[i + 3]! < 128) {
+        indexes[p] = transparentIndex >= 0 ? transparentIndex : 0;
+        continue;
+      }
+
+      const o = p * 3;
+      const r = clampByte(work[o]!);
+      const g = clampByte(work[o + 1]!);
+      const b = clampByte(work[o + 2]!);
+      const finalIdx = nearestPaletteIndex(
+        palette,
+        colorCount,
+        r,
+        g,
+        b,
+        transparentIndex,
+      );
+      indexes[p] = finalIdx;
+
+      const pr = palette[finalIdx * 3]!;
+      const pg = palette[finalIdx * 3 + 1]!;
+      const pb = palette[finalIdx * 3 + 2]!;
+      const er = r - pr;
+      const eg = g - pg;
+      const eb = b - pb;
+      distribute(x + 1, y, er, eg, eb, 7 / 16);
+      distribute(x - 1, y + 1, er, eg, eb, 3 / 16);
+      distribute(x, y + 1, er, eg, eb, 5 / 16);
+      distribute(x + 1, y + 1, er, eg, eb, 1 / 16);
+    }
+  }
+
   return { indexes, palette, transparentIndex };
 }
 
-function writeLzw(
-  out: number[],
-  indexes: Uint8Array,
-): void {
-  const clear = 256;
-  const end = 257;
+function writeLzw(out: number[], indexes: Uint8Array): void {
+  const minCodeSize = 8;
+  const clear = 1 << minCodeSize;
+  const eoi = clear + 1;
+  let nextCode = eoi + 1;
+  let codeSize = minCodeSize + 1;
+  const maxCode = 4095;
+
   let bitBuf = 0;
   let bitCount = 0;
   const block: number[] = [];
@@ -108,14 +267,63 @@ function writeLzw(
     }
   };
 
-  out.push(0x08); // LZW min code size
-  writeCode(clear, 9);
-  for (let i = 0; i < indexes.length; i++) {
-    writeCode(indexes[i]!, 9);
-    if ((i + 1) % 120 === 0) writeCode(clear, 9);
+  const flushBits = () => {
+    if (bitCount > 0) {
+      emitByte(bitBuf & 0xff);
+      bitBuf = 0;
+      bitCount = 0;
+    }
+  };
+
+  // Dictionary: prefix<<8 | nextByte -> code (prefix is previous code)
+  const dict = new Map<number, number>();
+
+  const resetDict = () => {
+    dict.clear();
+    nextCode = eoi + 1;
+    codeSize = minCodeSize + 1;
+  };
+
+  out.push(minCodeSize);
+  writeCode(clear, codeSize);
+  resetDict();
+
+  if (!indexes.length) {
+    writeCode(eoi, codeSize);
+    flushBits();
+    if (block.length) out.push(block.length, ...block);
+    out.push(0x00);
+    return;
   }
-  writeCode(end, 9);
-  if (bitCount > 0) emitByte(bitBuf & 0xff);
+
+  let prefix = indexes[0]!;
+  for (let i = 1; i < indexes.length; i++) {
+    const k = indexes[i]!;
+    const key = (prefix << 8) | k;
+    const existing = dict.get(key);
+    if (existing !== undefined) {
+      prefix = existing;
+      continue;
+    }
+
+    writeCode(prefix, codeSize);
+
+    if (nextCode <= maxCode) {
+      dict.set(key, nextCode);
+      if (nextCode === 1 << codeSize && codeSize < 12) {
+        codeSize += 1;
+      }
+      nextCode += 1;
+    } else {
+      writeCode(clear, codeSize);
+      resetDict();
+    }
+    prefix = k;
+  }
+
+  writeCode(prefix, codeSize);
+  writeCode(eoi, codeSize);
+  flushBits();
   if (block.length) out.push(block.length, ...block);
   out.push(0x00);
 }
@@ -169,7 +377,11 @@ export function encodeAnimatedGif(
     if (frame.data.length !== width * height * 4) {
       throw new Error("Frame size mismatch");
     }
-    const { indexes, palette, transparentIndex } = quantizeFrame(frame.data);
+    const { indexes, palette, transparentIndex } = quantizeFrame(
+      frame.data,
+      width,
+      height,
+    );
     const delayCs = Math.max(
       2,
       Math.min(0xffff, Math.round(frame.delayMs / 10)),
@@ -178,7 +390,7 @@ export function encodeAnimatedGif(
     // Graphic Control Extension
     const packed =
       (transparentIndex >= 0 ? 0x01 : 0x00) | // transparent
-      (0x02 << 2); // disposal: restore to background
+      (0x01 << 2); // disposal: do not dispose (keeps sharpness between frames)
     out.push(0x21, 0xf9, 0x04, packed);
     w16(delayCs);
     w(transparentIndex >= 0 ? transparentIndex : 0);

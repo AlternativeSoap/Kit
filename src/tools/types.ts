@@ -118,7 +118,10 @@ export type BuiltinToolId =
   | "doctopdf"
   | "bgremove"
   | "gifmaker"
-  | "csvexcel";
+  | "csvexcel"
+  | "skriv"
+  | "ark"
+  | "dias";
 
 /** kit = first-party tools and closely related utilities; web = popular destinations */
 export type ToolSurface = "kit" | "web";

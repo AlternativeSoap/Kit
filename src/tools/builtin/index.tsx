@@ -251,6 +251,15 @@ const CsvExcelTool = lazyPrefill(() =>
 const PdfCleanTool = lazyPrefill(() =>
   import("./pdfclean/PdfCleanTool").then((m) => ({ default: m.PdfCleanTool })),
 );
+const SkrivTool = lazyPlain(() =>
+  import("./skriv/SkrivTool").then((m) => ({ default: m.SkrivTool })),
+);
+const ArkTool = lazyPlain(() =>
+  import("./ark/ArkTool").then((m) => ({ default: m.ArkTool })),
+);
+const DiasTool = lazyPlain(() =>
+  import("./dias/DiasTool").then((m) => ({ default: m.DiasTool })),
+);
 const SimpleTool = dynamic(
   () => import("./simple/SimpleTool").then((m) => ({ default: m.SimpleTool })),
   { loading: ToolLoading },
@@ -396,6 +405,12 @@ export function BuiltinToolView({
       return <CsvExcelTool prefill={prefill} />;
     case "pdfclean":
       return <PdfCleanTool prefill={prefill} />;
+    case "skriv":
+      return <SkrivTool />;
+    case "ark":
+      return <ArkTool />;
+    case "dias":
+      return <DiasTool />;
     // Overlaps: route weaker duplicates into stronger tools.
     case "csvjson":
       return <CsvExcelTool prefill={prefill} />;
