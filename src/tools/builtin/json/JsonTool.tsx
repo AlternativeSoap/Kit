@@ -3,15 +3,19 @@
 import { useMemo, useState } from "react";
 import { CopyButton } from "@/components/tools/CopyButton";
 import { useDictionary } from "@/i18n/LanguageProvider";
-import type { ToolPrefill } from "@/tools/prefill";
+import { prefillChoice, type ToolPrefill } from "@/tools/prefill";
 import { lineColumnAt, processJson, type JsonMode } from "./calc";
+
+const JSON_MODES: readonly JsonMode[] = ["format", "minify", "validate"];
 
 export function JsonTool({ prefill }: { prefill?: ToolPrefill }) {
   const dictionary = useDictionary();
   const t = dictionary.json;
 
   const [input, setInput] = useState(() => prefill?.value ?? '{\n  \n}');
-  const [mode, setMode] = useState<JsonMode>("format");
+  const [mode, setMode] = useState<JsonMode>(
+    prefillChoice(prefill, "mode", JSON_MODES) ?? "format",
+  );
 
   const result = useMemo(() => processJson(input, mode), [input, mode]);
 

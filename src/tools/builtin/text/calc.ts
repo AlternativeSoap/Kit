@@ -11,7 +11,9 @@ export type TextTransform =
   | "kebab"
   | "sortLines"
   | "reverseChars"
-  | "reverseLines";
+  | "reverseLines"
+  | "numberLines"
+  | "unnumberLines";
 
 export type TextStats = {
   chars: number;
@@ -126,6 +128,22 @@ export function transformText(text: string, action: TextTransform): string {
       return Array.from(text).reverse().join("");
     case "reverseLines":
       return text.split("\n").reverse().join("\n");
+    case "numberLines": {
+      let n = 0;
+      return text
+        .split("\n")
+        .map((line) => {
+          if (!line.trim()) return line;
+          n += 1;
+          return `${n}. ${line.replace(/^\s*\d+[.)]\s+/, "")}`;
+        })
+        .join("\n");
+    }
+    case "unnumberLines":
+      return text
+        .split("\n")
+        .map((line) => line.replace(/^\s*\d+[.)]\s+/, ""))
+        .join("\n");
     case "slug":
     case "kebab":
       return toSlugBase(text);

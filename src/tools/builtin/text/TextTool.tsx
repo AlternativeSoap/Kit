@@ -38,6 +38,8 @@ export function TextTool({ prefill }: { prefill?: ToolPrefill }) {
     { id: "sortLines", label: t.sortLines },
     { id: "reverseChars", label: t.reverseChars },
     { id: "reverseLines", label: t.reverseLines },
+    { id: "numberLines", label: t.numberLines },
+    { id: "unnumberLines", label: t.unnumberLines },
     { id: "slug", label: t.slug },
     { id: "kebab", label: t.kebab },
     { id: "snake", label: t.snake },

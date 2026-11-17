@@ -311,7 +311,7 @@ export const da: Dictionary = {
     password: {
       name: "Passwordgenerator",
       description:
-        "Generér en stærk tilfældig adgangskode i browseren. Intet sendes til en server.",
+        "Generér en adgangskode eller sætning, eller tjek styrke lokalt. Intet sendes til en server.",
     },
     enheder: {
       name: "Enhedsomregner",
@@ -330,7 +330,7 @@ export const da: Dictionary = {
     qr: {
       name: "QR-kodegenerator",
       description:
-        "Lav en QR-kode fra tekst eller et link i browseren. Download som PNG.",
+        "Lav en QR-kode fra tekst, et link eller Wi‑Fi i browseren. Download som PNG.",
     },
     json: {
       name: "JSON-formatering",
@@ -1567,6 +1567,8 @@ export const da: Dictionary = {
     sortLines: "Sortér linjer",
     reverseChars: "Vend tegn om",
     reverseLines: "Vend linjer om",
+    numberLines: "Nummerér linjer",
+    unnumberLines: "Fjern numre",
     findLabel: "Find",
     replaceLabel: "Erstat med",
     replaceAll: "Erstat alle",

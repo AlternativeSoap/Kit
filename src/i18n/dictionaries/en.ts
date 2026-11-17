@@ -310,7 +310,7 @@ export const en: Dictionary = {
     password: {
       name: "Password generator",
       description:
-        "Generate a strong random password in your browser. Nothing is sent to a server.",
+        "Generate a password or passphrase, or check strength locally. Nothing is sent to a server.",
     },
     enheder: {
       name: "Unit converter",
@@ -329,7 +329,7 @@ export const en: Dictionary = {
     qr: {
       name: "QR code generator",
       description:
-        "Create a QR code from text or a URL in your browser. Download as PNG.",
+        "Create a QR code from text, a URL, or Wi‑Fi details in your browser. Download as PNG.",
     },
     "qr-code": {
       name: "goQR.me",
@@ -1269,6 +1269,8 @@ export const en: Dictionary = {
     sortLines: "Sort lines",
     reverseChars: "Reverse characters",
     reverseLines: "Reverse lines",
+    numberLines: "Number lines",
+    unnumberLines: "Remove numbers",
     findLabel: "Find",
     replaceLabel: "Replace with",
     replaceAll: "Replace all",

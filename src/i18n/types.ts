@@ -549,6 +549,8 @@ export type Dictionary = {
     sortLines: string;
     reverseChars: string;
     reverseLines: string;
+    numberLines: string;
+    unnumberLines: string;
     findLabel: string;
     replaceLabel: string;
     replaceAll: string;

@@ -5,14 +5,13 @@ import type { ComponentType } from "react";
 import type { ToolPrefill } from "@/tools/prefill";
 import type { BuiltinToolId } from "@/tools/types";
 import { SIMPLE_TOOL_IDS } from "./simple/defs";
-import type { ImageToolMode } from "./media/ImageTool";
 
 type PrefillProps = { prefill?: ToolPrefill };
 type EnhederProps = {
   prefill?: ToolPrefill;
   forcedCategory?: import("./enheder/calc").UnitCategory;
 };
-type ImageProps = { mode: ImageToolMode; allowModeSwitch?: boolean };
+type SuiteProps = { prefill?: ToolPrefill; initial?: string };
 type IdProps = { id: string; prefill?: ToolPrefill };
 
 function ToolLoading() {
@@ -43,12 +42,6 @@ const LommeregnerTool = lazyPrefill(() =>
   import("./lommeregner/LommeregnerTool").then((m) => ({
     default: m.LommeregnerTool,
   })),
-);
-const CountdownTool = lazyPrefill(() =>
-  import("./countdown/CountdownTool").then((m) => ({ default: m.CountdownTool })),
-);
-const MomsTool = lazyPrefill(() =>
-  import("./moms/MomsTool").then((m) => ({ default: m.MomsTool })),
 );
 const ProcentTool = lazyPrefill(() =>
   import("./procent/ProcentTool").then((m) => ({ default: m.ProcentTool })),
@@ -99,19 +92,8 @@ const FeriepengeTool = lazyPrefill(() =>
     default: m.FeriepengeTool,
   })),
 );
-const StopurTool = lazyPlain(() =>
-  import("./stopur/StopurTool").then((m) => ({ default: m.StopurTool })),
-);
 const EncodeTool = lazyPrefill(() =>
   import("./encode/EncodeTool").then((m) => ({ default: m.EncodeTool })),
-);
-const LanTool = lazyPrefill(() =>
-  import("./lan/LanTool").then((m) => ({ default: m.LanTool })),
-);
-const ArbejdstidTool = lazyPrefill(() =>
-  import("./arbejdstid/ArbejdstidTool").then((m) => ({
-    default: m.ArbejdstidTool,
-  })),
 );
 const HashTool = lazyPrefill(() =>
   import("./hash/HashTool").then((m) => ({ default: m.HashTool })),
@@ -137,16 +119,8 @@ const CidrTool = lazyPrefill(() =>
 const AlderTool = lazyPrefill(() =>
   import("./alder/AlderTool").then((m) => ({ default: m.AlderTool })),
 );
-const BmiTool = lazyPrefill(() =>
-  import("./bmi/BmiTool").then((m) => ({ default: m.BmiTool })),
-);
 const TipTool = lazyPrefill(() =>
   import("./tip/TipTool").then((m) => ({ default: m.TipTool })),
-);
-const OpsparingTool = lazyPrefill(() =>
-  import("./opsparing/OpsparingTool").then((m) => ({
-    default: m.OpsparingTool,
-  })),
 );
 const InflationTool = lazyPrefill(() =>
   import("./inflation/InflationTool").then((m) => ({
@@ -163,9 +137,6 @@ const UgenummerTool = lazyPrefill(() =>
     default: m.UgenummerTool,
   })),
 );
-const AspectTool = lazyPrefill(() =>
-  import("./aspect/AspectTool").then((m) => ({ default: m.AspectTool })),
-);
 const SlugTool = lazyPrefill(() =>
   import("./slug/SlugTool").then((m) => ({ default: m.SlugTool })),
 );
@@ -174,16 +145,9 @@ const BreakevenTool = lazyPrefill(() =>
     default: m.BreakevenTool,
   })),
 );
-const CagrTool = lazyPrefill(() =>
-  import("./cagr/CagrTool").then((m) => ({ default: m.CagrTool })),
-);
 const ContrastTool = lazyPrefill(() =>
   import("./contrast/ContrastTool").then((m) => ({ default: m.ContrastTool })),
 );
-const ImageTool = dynamic(
-  () => import("./media/ImageTool").then((m) => ({ default: m.ImageTool })),
-  { loading: ToolLoading },
-) as ComponentType<ImageProps>;
 const VideoCompressTool = lazyPlain(() =>
   import("./media/VideoCompressTool").then((m) => ({
     default: m.VideoCompressTool,
@@ -231,11 +195,6 @@ const SpinWheelTool = lazyPlain(() =>
     default: m.SpinWheelTool,
   })),
 );
-const WordCountTool = lazyPrefill(() =>
-  import("./wordcount/WordCountTool").then((m) => ({
-    default: m.WordCountTool,
-  })),
-);
 const DocToPdfTool = lazyPlain(() =>
   import("./doctopdf/DocToPdfTool").then((m) => ({ default: m.DocToPdfTool })),
 );
@@ -271,25 +230,9 @@ const UnderskriftTool = lazyPlain(() =>
     default: m.UnderskriftTool,
   })),
 );
-const AnnotateTool = lazyPlain(() =>
-  import("./annotate/AnnotateTool").then((m) => ({ default: m.AnnotateTool })),
-);
-const ExifStripTool = lazyPlain(() =>
-  import("./exifstrip/ExifStripTool").then((m) => ({
-    default: m.ExifStripTool,
-  })),
-);
-const WifiQrTool = lazyPlain(() =>
-  import("./wifiqr/WifiQrTool").then((m) => ({ default: m.WifiQrTool })),
-);
 const HelligdageTool = lazyPlain(() =>
   import("./helligdage/HelligdageTool").then((m) => ({
     default: m.HelligdageTool,
-  })),
-);
-const TimeseddelTool = lazyPlain(() =>
-  import("./timeseddel/TimeseddelTool").then((m) => ({
-    default: m.TimeseddelTool,
   })),
 );
 const PakkelisteTool = lazyPlain(() =>
@@ -300,6 +243,38 @@ const PakkelisteTool = lazyPlain(() =>
 const LejevsobTool = lazyPlain(() =>
   import("./lejevsob/LejevsobTool").then((m) => ({ default: m.LejevsobTool })),
 );
+const HealthSuiteTool = dynamic(
+  () =>
+    import("./HealthSuiteTool").then((m) => ({ default: m.HealthSuiteTool })),
+  { loading: ToolLoading },
+) as ComponentType<SuiteProps>;
+const TimeSuiteTool = dynamic(
+  () => import("./TimeSuiteTool").then((m) => ({ default: m.TimeSuiteTool })),
+  { loading: ToolLoading },
+) as ComponentType<SuiteProps>;
+const ImageSuiteTool = dynamic(
+  () =>
+    import("./ImageSuiteTool").then((m) => ({ default: m.ImageSuiteTool })),
+  { loading: ToolLoading },
+) as ComponentType<{ initial?: string }>;
+const GrowthSuiteTool = dynamic(
+  () =>
+    import("./GrowthSuiteTool").then((m) => ({ default: m.GrowthSuiteTool })),
+  { loading: ToolLoading },
+) as ComponentType<SuiteProps>;
+const LanSuiteTool = dynamic(
+  () => import("./LanSuiteTool").then((m) => ({ default: m.LanSuiteTool })),
+  { loading: ToolLoading },
+) as ComponentType<SuiteProps>;
+const MomsSuiteTool = dynamic(
+  () => import("./MomsSuiteTool").then((m) => ({ default: m.MomsSuiteTool })),
+  { loading: ToolLoading },
+) as ComponentType<SuiteProps>;
+const AspectSuiteTool = dynamic(
+  () =>
+    import("./AspectSuiteTool").then((m) => ({ default: m.AspectSuiteTool })),
+  { loading: ToolLoading },
+) as ComponentType<SuiteProps>;
 const SimpleTool = dynamic(
   () => import("./simple/SimpleTool").then((m) => ({ default: m.SimpleTool })),
   { loading: ToolLoading },
@@ -320,13 +295,71 @@ export function BuiltinToolView({
     case "lommeregner":
       return <LommeregnerTool prefill={prefill} />;
     case "countdown":
-      return <CountdownTool prefill={prefill} />;
+    case "stopur":
+    case "pomodoro":
+    case "arbejdstid":
+    case "timeseddel":
+    case "countdownhours":
+    case "hoursminutes":
+    case "workhours":
+      return (
+        <TimeSuiteTool
+          prefill={prefill}
+          initial={
+            id === "stopur"
+              ? "stopur"
+              : id === "pomodoro"
+                ? "pomodoro"
+                : id === "arbejdstid" || id === "workhours"
+                  ? "arbejdstid"
+                  : id === "hoursminutes"
+                    ? "hoursminutes"
+                    : id === "timeseddel"
+                      ? "timeseddel"
+                      : "countdown"
+          }
+        />
+      );
     case "moms":
-      return <MomsTool prefill={prefill} />;
+    case "vatmargin":
+      return (
+        <MomsSuiteTool
+          prefill={prefill}
+          initial={id === "vatmargin" ? "vatmargin" : "moms"}
+        />
+      );
     case "procent":
-      return <ProcentTool prefill={prefill} />;
+    case "percentagechange":
+    case "percentageof":
+      return (
+        <ProcentTool
+          prefill={{
+            ...prefill,
+            mode:
+              id === "percentagechange"
+                ? "change"
+                : id === "percentageof"
+                  ? "of"
+                  : (prefill?.mode ?? "of"),
+          }}
+        />
+      );
     case "password":
-      return <PasswordTool prefill={prefill} />;
+    case "passwordphrase":
+    case "passwordstrength":
+      return (
+        <PasswordTool
+          prefill={{
+            ...prefill,
+            mode:
+              id === "passwordphrase"
+                ? "phrase"
+                : id === "passwordstrength"
+                  ? "strength"
+                  : (prefill?.mode ?? "generate"),
+          }}
+        />
+      );
     case "enheder":
       return <EnhederTool prefill={prefill} />;
     case "dato":
@@ -334,12 +367,29 @@ export function BuiltinToolView({
     case "barsel":
       return <BarselTool prefill={prefill} />;
     case "qr":
-      return <QrTool prefill={prefill} />;
+    case "wifiqr":
+      return (
+        <QrTool
+          prefill={{
+            ...prefill,
+            mode: id === "wifiqr" ? "wifi" : (prefill?.mode ?? "text"),
+          }}
+        />
+      );
     case "json":
-      return <JsonTool prefill={prefill} />;
+    case "jsonminify":
+      return (
+        <JsonTool
+          prefill={{
+            ...prefill,
+            ...(id === "jsonminify" ? { mode: "minify" } : null),
+          }}
+        />
+      );
     case "text":
       return <TextTool prefill={prefill} />;
     case "color":
+    case "colorhexrgb":
       return <ColorTool prefill={prefill} />;
     case "uuid":
       return <UuidTool prefill={prefill} />;
@@ -348,17 +398,21 @@ export function BuiltinToolView({
     case "kilometerpenge":
       return <KilometerpengeTool prefill={prefill} />;
     case "braendstof":
+    case "fuelcost":
       return <BraendstofTool prefill={prefill} />;
     case "feriepenge":
       return <FeriepengeTool prefill={prefill} />;
-    case "stopur":
-      return <StopurTool />;
     case "encode":
       return <EncodeTool prefill={prefill} />;
     case "lan":
-      return <LanTool prefill={prefill} />;
-    case "arbejdstid":
-      return <ArbejdstidTool prefill={prefill} />;
+    case "loanextra":
+    case "mortgage":
+      return (
+        <LanSuiteTool
+          prefill={prefill}
+          initial={id === "loanextra" ? "loanextra" : "payment"}
+        />
+      );
     case "hash":
       return <HashTool prefill={prefill} />;
     case "diff":
@@ -368,45 +422,104 @@ export function BuiltinToolView({
     case "avance":
       return <AvanceTool prefill={prefill} />;
     case "jwt":
+    case "jwtpayload":
       return <JwtTool prefill={prefill} />;
     case "cron":
       return <CronTool prefill={prefill} />;
     case "cidr":
       return <CidrTool prefill={prefill} />;
     case "alder":
+    case "ageondate":
       return <AlderTool prefill={prefill} />;
     case "bmi":
-      return <BmiTool prefill={prefill} />;
+    case "bodyfat":
+    case "calorie":
+    case "water":
+    case "pace":
+      return (
+        <HealthSuiteTool
+          prefill={prefill}
+          initial={
+            id === "bodyfat"
+              ? "bodyfat"
+              : id === "calorie"
+                ? "calorie"
+                : id === "water"
+                  ? "water"
+                  : id === "pace"
+                    ? "pace"
+                    : "bmi"
+          }
+        />
+      );
     case "tip":
+    case "tiponbill":
       return <TipTool prefill={prefill} />;
     case "opsparing":
-      return <OpsparingTool prefill={prefill} />;
+    case "compound":
+    case "ruleof72":
+    case "cagr":
+      return (
+        <GrowthSuiteTool
+          prefill={prefill}
+          initial={
+            id === "compound"
+              ? "compound"
+              : id === "ruleof72"
+                ? "ruleof72"
+                : id === "cagr"
+                  ? "cagr"
+                  : "opsparing"
+          }
+        />
+      );
     case "inflation":
       return <InflationTool prefill={prefill} />;
     case "enhedspris":
+    case "unitpricebulk":
       return <EnhedsprisTool prefill={prefill} />;
     case "ugenummer":
       return <UgenummerTool prefill={prefill} />;
     case "aspect":
-      return <AspectTool prefill={prefill} />;
+    case "aspectfit":
+      return (
+        <AspectSuiteTool
+          prefill={prefill}
+          initial={id === "aspectfit" ? "aspectfit" : "aspect"}
+        />
+      );
     case "slug":
       return <SlugTool prefill={prefill} />;
     case "breakeven":
       return <BreakevenTool prefill={prefill} />;
-    case "cagr":
-      return <CagrTool prefill={prefill} />;
     case "contrast":
       return <ContrastTool prefill={prefill} />;
     case "crop":
-      return <ImageTool mode="crop" allowModeSwitch />;
     case "resize":
-      return <ImageTool mode="resize" allowModeSwitch />;
     case "imgcompress":
-      return <ImageTool mode="compress" allowModeSwitch />;
     case "imgconvert":
-      return <ImageTool mode="convert" allowModeSwitch />;
     case "imagerotate":
-      return <ImageTool mode="rotate" allowModeSwitch />;
+    case "annotate":
+    case "exifstrip":
+      return (
+        <ImageSuiteTool
+          initial={
+            id === "crop"
+              ? "crop"
+              : id === "resize"
+                ? "resize"
+                : id === "imgconvert"
+                  ? "convert"
+                  : id === "imagerotate"
+                    ? "rotate"
+                    : id === "annotate"
+                      ? "annotate"
+                      : id === "exifstrip"
+                        ? "exifstrip"
+                        : "compress"
+          }
+        />
+      );
     case "vidcompress":
       return <VideoCompressTool />;
     case "regex":
@@ -416,6 +529,7 @@ export function BuiltinToolView({
     case "markdown":
       return <MarkdownTool prefill={prefill} />;
     case "worldclock":
+    case "timezonemeet":
       return <WorldClockTool />;
     case "pdf":
       return <PdfTool />;
@@ -434,7 +548,7 @@ export function BuiltinToolView({
     case "spinwheel":
       return <SpinWheelTool />;
     case "wordcount":
-      return <WordCountTool prefill={prefill} />;
+      return <TextTool prefill={prefill} />;
     case "doctopdf":
       return <DocToPdfTool />;
     case "bgremove":
@@ -457,17 +571,10 @@ export function BuiltinToolView({
       return <FakturaTool />;
     case "underskrift":
       return <UnderskriftTool />;
-    case "annotate":
-      return <AnnotateTool />;
-    case "exifstrip":
-      return <ExifStripTool />;
-    case "wifiqr":
-      return <WifiQrTool />;
     case "helligdage":
       return <HelligdageTool />;
-    case "timeseddel":
-      return <TimeseddelTool />;
     case "pakkeliste":
+    case "checklistscore":
       return <PakkelisteTool />;
     case "lejevsob":
       return <LejevsobTool />;
@@ -476,11 +583,21 @@ export function BuiltinToolView({
       return <CsvExcelTool prefill={prefill} />;
     case "datasize":
       return <EnhederTool forcedCategory="data" prefill={prefill} />;
+    case "temperature":
+      return <EnhederTool forcedCategory="temperature" prefill={prefill} />;
+    case "speedconvert":
+      return <EnhederTool forcedCategory="speed" prefill={prefill} />;
+    case "lengthconvert":
+      return <EnhederTool forcedCategory="length" prefill={prefill} />;
+    case "weightconvert":
+      return <EnhederTool forcedCategory="weight" prefill={prefill} />;
     case "tippercent":
     case "invoicesplit":
       return <TipTool prefill={prefill} />;
-    case "mortgage":
-      return <LanTool prefill={prefill} />;
+    case "adddays":
+      return <DatoTool prefill={prefill} />;
+    case "businessdays":
+      return <DatoTool prefill={{ ...prefill, business: "1" }} />;
     case "cases":
     case "wordfreq":
     case "readingtime":
@@ -488,6 +605,9 @@ export function BuiltinToolView({
     case "sortlines":
     case "dedupe":
     case "textreverse":
+    case "textstats":
+    case "linecounter":
+    case "listnumber":
       return <TextTool prefill={prefill} />;
     default:
       if ((SIMPLE_TOOL_IDS as readonly string[]).includes(id)) {
