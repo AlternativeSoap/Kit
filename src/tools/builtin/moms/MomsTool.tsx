@@ -59,7 +59,7 @@ export function MomsTool({ prefill }: { prefill?: ToolPrefill }) {
             onClick={() => setMode("add")}
             className={`kit-touch-target rounded-[8px] px-3 py-1.5 text-sm transition-colors sm:min-h-0 ${
               mode === "add"
-                ? "bg-accent text-white"
+                ? "bg-accent text-on-accent"
                 : "text-muted hover:text-foreground"
             }`}
           >
@@ -70,7 +70,7 @@ export function MomsTool({ prefill }: { prefill?: ToolPrefill }) {
             onClick={() => setMode("remove")}
             className={`kit-touch-target rounded-[8px] px-3 py-1.5 text-sm transition-colors sm:min-h-0 ${
               mode === "remove"
-                ? "bg-accent text-white"
+                ? "bg-accent text-on-accent"
                 : "text-muted hover:text-foreground"
             }`}
           >

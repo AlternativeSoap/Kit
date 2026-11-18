@@ -195,6 +195,35 @@ const SpinWheelTool = lazyPlain(() =>
     default: m.SpinWheelTool,
   })),
 );
+const DiceTool = lazyPrefill(() =>
+  import("./dice/DiceTool").then((m) => ({ default: m.DiceTool })),
+);
+const CoinFlipTool = lazyPlain(() =>
+  import("./coinflip/CoinFlipTool").then((m) => ({ default: m.CoinFlipTool })),
+);
+const CurrencyApproxTool = lazyPrefill(() =>
+  import("./currencyapprox/CurrencyApproxTool").then((m) => ({
+    default: m.CurrencyApproxTool,
+  })),
+);
+const PeriodesystemTool = lazyPrefill(() =>
+  import("./periodesystem/PeriodesystemTool").then((m) => ({
+    default: m.PeriodesystemTool,
+  })),
+);
+const MetronomeTool = lazyPlain(() =>
+  import("./metronome/MetronomeTool").then((m) => ({
+    default: m.MetronomeTool,
+  })),
+);
+const GangetabelTool = lazyPlain(() =>
+  import("./gangetabel/GangetabelTool").then((m) => ({
+    default: m.GangetabelTool,
+  })),
+);
+const OcrTool = lazyPlain(() =>
+  import("./ocr/OcrTool").then((m) => ({ default: m.OcrTool })),
+);
 const DocToPdfTool = lazyPlain(() =>
   import("./doctopdf/DocToPdfTool").then((m) => ({ default: m.DocToPdfTool })),
 );
@@ -432,6 +461,7 @@ export function BuiltinToolView({
     case "ageondate":
       return <AlderTool prefill={prefill} />;
     case "bmi":
+    case "idealweight":
     case "bodyfat":
     case "calorie":
     case "water":
@@ -440,15 +470,17 @@ export function BuiltinToolView({
         <HealthSuiteTool
           prefill={prefill}
           initial={
-            id === "bodyfat"
-              ? "bodyfat"
-              : id === "calorie"
-                ? "calorie"
-                : id === "water"
-                  ? "water"
-                  : id === "pace"
-                    ? "pace"
-                    : "bmi"
+            id === "idealweight"
+              ? "idealweight"
+              : id === "bodyfat"
+                ? "bodyfat"
+                : id === "calorie"
+                  ? "calorie"
+                  : id === "water"
+                    ? "water"
+                    : id === "pace"
+                      ? "pace"
+                      : "bmi"
           }
         />
       );
@@ -547,6 +579,20 @@ export function BuiltinToolView({
       return <MimeTool />;
     case "spinwheel":
       return <SpinWheelTool />;
+    case "dice":
+      return <DiceTool prefill={prefill} />;
+    case "coinflip":
+      return <CoinFlipTool />;
+    case "currencyapprox":
+      return <CurrencyApproxTool prefill={prefill} />;
+    case "periodesystem":
+      return <PeriodesystemTool prefill={prefill} />;
+    case "metronome":
+      return <MetronomeTool />;
+    case "gangetabel":
+      return <GangetabelTool />;
+    case "ocr":
+      return <OcrTool />;
     case "wordcount":
       return <TextTool prefill={prefill} />;
     case "doctopdf":

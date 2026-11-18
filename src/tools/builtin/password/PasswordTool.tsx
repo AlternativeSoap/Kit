@@ -178,7 +178,7 @@ export function PasswordTool({ prefill }: { prefill?: ToolPrefill }) {
             type="button"
             onClick={regenerate}
             disabled={!canGenerate}
-            className="kit-touch-target rounded-[10px] bg-accent px-4 py-2.5 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50 sm:min-h-0"
+            className="kit-touch-target rounded-[10px] bg-accent px-4 py-2.5 text-sm font-medium text-on-accent hover:opacity-90 disabled:opacity-50 sm:min-h-0"
           >
             {t.generate}
           </button>
@@ -230,7 +230,7 @@ export function PasswordTool({ prefill }: { prefill?: ToolPrefill }) {
           <button
             type="button"
             onClick={regeneratePhrase}
-            className="kit-touch-target rounded-[10px] bg-accent px-4 py-2.5 text-sm font-medium text-white hover:opacity-90 sm:min-h-0"
+            className="kit-touch-target rounded-[10px] bg-accent px-4 py-2.5 text-sm font-medium text-on-accent hover:opacity-90 sm:min-h-0"
           >
             {da ? "Generér igen" : "Generate again"}
           </button>

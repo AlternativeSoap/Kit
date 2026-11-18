@@ -79,7 +79,7 @@ export function WifiQrTool() {
       <div className="flex flex-col items-center gap-3 rounded-[12px] border border-border bg-surface px-4 py-6">
         <canvas
           ref={canvasRef}
-          className="max-w-full rounded-[8px] border border-border bg-white"
+          className="max-w-full rounded-[8px] border border-border bg-paper"
         />
         {!ready ? (
           <p className="text-sm text-muted">

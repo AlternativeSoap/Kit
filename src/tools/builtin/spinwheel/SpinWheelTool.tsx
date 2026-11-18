@@ -366,7 +366,7 @@ export function SpinWheelTool() {
             type="button"
             disabled={!canSpin}
             onClick={spin}
-            className="kit-touch-target rounded-[10px] bg-accent px-6 py-3 text-sm font-medium text-white disabled:opacity-40 sm:min-h-0"
+            className="kit-touch-target rounded-[10px] bg-accent px-6 py-3 text-sm font-medium text-on-accent disabled:opacity-40 sm:min-h-0"
           >
             {spinning ? t.spinning : t.spin}
           </button>
@@ -445,7 +445,7 @@ export function SpinWheelTool() {
                   onClick={() => startEdit(index)}
                   title={t.editHint}
                   aria-label={t.editItem.replace("{item}", item)}
-                  className="min-w-0 flex-1 truncate rounded-[8px] py-1.5 text-left hover:text-accent disabled:opacity-60"
+                  className="kit-touch-target min-w-0 flex-1 truncate rounded-[8px] py-2 text-left hover:text-accent disabled:opacity-60 sm:min-h-0 sm:py-1.5"
                 >
                   {item}
                 </button>

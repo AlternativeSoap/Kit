@@ -376,7 +376,7 @@ export function CountdownTool({ prefill }: { prefill?: ToolPrefill }) {
           <button
             type="button"
             onClick={pause}
-            className="kit-touch-target rounded-[10px] bg-accent px-5 py-2.5 text-sm font-medium text-white hover:opacity-90 sm:min-h-0"
+            className="kit-touch-target rounded-[10px] bg-accent px-5 py-2.5 text-sm font-medium text-on-accent hover:opacity-90 sm:min-h-0"
           >
             {t.pause}
           </button>
@@ -385,7 +385,7 @@ export function CountdownTool({ prefill }: { prefill?: ToolPrefill }) {
             type="button"
             onClick={start}
             disabled={!canStart}
-            className="kit-touch-target rounded-[10px] bg-accent px-5 py-2.5 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50 sm:min-h-0"
+            className="kit-touch-target rounded-[10px] bg-accent px-5 py-2.5 text-sm font-medium text-on-accent hover:opacity-90 disabled:opacity-50 sm:min-h-0"
           >
             {isPaused ? t.resume : t.start}
           </button>

@@ -711,7 +711,7 @@ export function SkrivTool() {
                 </button>
                 <button
                   type="button"
-                  className={`${papersCompactBtnClass} ${panel === "insert" ? "!bg-accent !text-white" : ""}`}
+                  className={`${papersCompactBtnClass} ${panel === "insert" ? "!bg-accent !text-on-accent" : ""}`}
                   onClick={() =>
                     setPanel((p) => (p === "insert" ? "none" : "insert"))
                   }
@@ -720,7 +720,7 @@ export function SkrivTool() {
                 </button>
                 <button
                   type="button"
-                  className={`${papersCompactBtnClass} ${panel === "page" ? "!bg-accent !text-white" : ""}`}
+                  className={`${papersCompactBtnClass} ${panel === "page" ? "!bg-accent !text-on-accent" : ""}`}
                   onClick={() =>
                     setPanel((p) => (p === "page" ? "none" : "page"))
                   }
@@ -729,7 +729,7 @@ export function SkrivTool() {
                 </button>
                 <button
                   type="button"
-                  className={`${papersCompactBtnClass} ${panel === "find" ? "!bg-accent !text-white" : ""}`}
+                  className={`${papersCompactBtnClass} ${panel === "find" ? "!bg-accent !text-on-accent" : ""}`}
                   onClick={() =>
                     setPanel((p) => (p === "find" ? "none" : "find"))
                   }

@@ -32,7 +32,7 @@ export function LanguageSwitcher({ compact = false }: { compact?: boolean }) {
             title={label}
             className={`kit-touch-target inline-flex items-center justify-center rounded-[8px] px-3 py-2 text-xs font-medium transition-colors sm:px-2 sm:py-1 ${
               active
-                ? "bg-accent text-white"
+                ? "bg-accent text-on-accent"
                 : "text-muted hover:bg-accent-soft hover:text-foreground"
             }`}
           >

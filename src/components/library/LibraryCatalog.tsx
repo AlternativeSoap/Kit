@@ -188,14 +188,14 @@ export function LibraryCatalog() {
                 onClick={() => setScope(option.id)}
                 className={`kit-touch-target inline-flex items-center gap-2 rounded-[10px] px-3 py-2 text-sm font-medium transition-colors sm:min-h-0 ${
                   active
-                    ? "bg-accent text-white"
+                    ? "bg-accent text-on-accent"
                     : "text-muted hover:bg-accent-soft hover:text-foreground"
                 }`}
               >
                 {option.label}
                 <span
                   className={`tabular-nums text-xs ${
-                    active ? "text-white/80" : "text-muted"
+                    active ? "text-on-accent/80" : "text-muted"
                   }`}
                 >
                   {option.count}

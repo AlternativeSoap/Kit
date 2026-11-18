@@ -633,10 +633,10 @@ export function GifMakerTool() {
                       />
                       <span className="shrink-0">{t.frameDelay}</span>
                     </label>
-                    <div className="flex flex-wrap gap-1">
+                    <div className="kit-h-scroll gap-1.5">
                       <button
                         type="button"
-                        className="rounded-[6px] border border-border px-2 py-1 text-[11px] font-medium disabled:opacity-40"
+                        className="kit-touch-target rounded-[8px] border border-border px-3 py-2 text-xs font-medium disabled:opacity-40 sm:min-h-0 sm:px-2 sm:py-1"
                         onClick={() => moveFrameByOffset(frame.id, -1)}
                         disabled={busy || index === 0}
                       >
@@ -644,7 +644,7 @@ export function GifMakerTool() {
                       </button>
                       <button
                         type="button"
-                        className="rounded-[6px] border border-border px-2 py-1 text-[11px] font-medium disabled:opacity-40"
+                        className="kit-touch-target rounded-[8px] border border-border px-3 py-2 text-xs font-medium disabled:opacity-40 sm:min-h-0 sm:px-2 sm:py-1"
                         onClick={() => moveFrameByOffset(frame.id, 1)}
                         disabled={busy || index === frames.length - 1}
                       >
@@ -652,7 +652,7 @@ export function GifMakerTool() {
                       </button>
                       <button
                         type="button"
-                        className="rounded-[6px] border border-border px-2 py-1 text-[11px] font-medium"
+                        className="kit-touch-target rounded-[8px] border border-border px-3 py-2 text-xs font-medium disabled:opacity-40 sm:min-h-0 sm:px-2 sm:py-1"
                         onClick={() => duplicateFrame(frame.id)}
                         disabled={busy}
                       >
@@ -660,7 +660,7 @@ export function GifMakerTool() {
                       </button>
                       <button
                         type="button"
-                        className="rounded-[6px] border border-border px-2 py-1 text-[11px] font-medium"
+                        className="kit-touch-target rounded-[8px] border border-border px-3 py-2 text-xs font-medium disabled:opacity-40 sm:min-h-0 sm:px-2 sm:py-1"
                         onClick={() => removeFrame(frame.id)}
                         disabled={busy}
                       >

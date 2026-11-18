@@ -7,9 +7,22 @@ import type { ToolPrefill } from "@/tools/prefill";
 import { BmiTool } from "./bmi/BmiTool";
 import { SimpleTool } from "./simple/SimpleTool";
 
-type HealthTab = "bmi" | "bodyfat" | "calorie" | "water" | "pace";
+type HealthTab =
+  | "bmi"
+  | "idealweight"
+  | "bodyfat"
+  | "calorie"
+  | "water"
+  | "pace";
 
-const TABS: HealthTab[] = ["bmi", "bodyfat", "calorie", "water", "pace"];
+const TABS: HealthTab[] = [
+  "bmi",
+  "idealweight",
+  "bodyfat",
+  "calorie",
+  "water",
+  "pace",
+];
 
 export function HealthSuiteTool({
   prefill,
@@ -27,6 +40,7 @@ export function HealthSuiteTool({
 
   const labels: Record<HealthTab, string> = {
     bmi: "BMI",
+    idealweight: da ? "Idealvægt" : "Ideal weight",
     bodyfat: da ? "Fedtprocent" : "Body fat",
     calorie: da ? "Kalorier" : "Calories",
     water: da ? "Vand" : "Water",
@@ -34,18 +48,20 @@ export function HealthSuiteTool({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="kit-tool space-y-5">
       <Segmented
         value={tab}
         onChange={setTab}
         ariaLabel={da ? "Sundhedsværktøj" : "Health tool"}
         options={TABS.map((id) => ({ id, label: labels[id] }))}
       />
-      {tab === "bmi" ? (
-        <BmiTool prefill={prefill} />
-      ) : (
-        <SimpleTool id={tab} prefill={prefill} />
-      )}
+      <div key={tab} className="kit-fade-in">
+        {tab === "bmi" ? (
+          <BmiTool prefill={prefill} />
+        ) : (
+          <SimpleTool id={tab} prefill={prefill} />
+        )}
+      </div>
     </div>
   );
 }

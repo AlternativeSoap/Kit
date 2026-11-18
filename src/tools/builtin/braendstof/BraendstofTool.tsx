@@ -101,7 +101,7 @@ export function BraendstofTool({ prefill }: { prefill?: ToolPrefill }) {
                   onClick={() => selectMode(option.id)}
                   className={`kit-touch-target inline-flex items-center rounded-[10px] px-3 py-2 text-sm font-medium transition-colors sm:min-h-0 ${
                     active
-                      ? "bg-accent text-white"
+                      ? "bg-accent text-on-accent"
                       : "text-muted hover:bg-accent-soft hover:text-foreground"
                   }`}
                 >

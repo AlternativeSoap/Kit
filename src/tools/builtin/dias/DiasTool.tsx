@@ -986,7 +986,7 @@ export function DiasTool() {
 
           <div
             ref={stageRef}
-            className="dias-stage relative aspect-video w-full min-h-[min(52vh,28rem)] overflow-hidden rounded-[12px] border border-border shadow-sm lg:min-h-[min(68vh,36rem)]"
+            className="dias-stage relative aspect-video w-full min-h-[min(40vh,18rem)] overflow-hidden rounded-[12px] border border-border shadow-sm sm:min-h-[min(52vh,28rem)] lg:min-h-[min(68vh,36rem)]"
             style={{ background: slide.background }}
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}
@@ -1093,7 +1093,7 @@ export function DiasTool() {
                 <>
                   {textBlock ? (
                     <span
-                      className="absolute left-1/2 top-0 z-10 h-2.5 w-8 -translate-x-1/2 -translate-y-1/2 cursor-move rounded-full bg-accent"
+                      className="absolute left-1/2 top-0 z-10 h-4 w-11 -translate-x-1/2 -translate-y-1/2 cursor-move rounded-full bg-accent sm:h-2.5 sm:w-8"
                       title={t.moveHint}
                       onPointerDown={(e) => {
                         setEditingId(null);
@@ -1102,7 +1102,7 @@ export function DiasTool() {
                     />
                   ) : null}
                   <span
-                    className="absolute bottom-0 right-0 z-10 h-3 w-3 cursor-se-resize bg-accent"
+                    className="absolute bottom-0 right-0 z-10 h-5 w-5 cursor-se-resize bg-accent sm:h-3 sm:w-3"
                     onPointerDown={(e) => onPointerDown(e, block, "resize")}
                   />
                 </>
@@ -1267,7 +1267,7 @@ export function DiasTool() {
           ref={presentRootRef}
           className="dias-present-root fixed inset-0 z-50 flex flex-col bg-black"
         >
-          <div className="flex items-center justify-between gap-2 px-4 py-2 text-sm text-white">
+          <div className="flex items-center justify-between gap-2 px-4 py-2 text-sm text-on-accent">
             <span>
               {t.slideOf
                 .replace("{current}", String(slideIndex + 1))
@@ -1352,7 +1352,7 @@ export function DiasTool() {
               ))}
             </div>
           </div>
-          <p className="pb-3 text-center text-xs text-white/70">{t.presentHint}</p>
+          <p className="pb-3 text-center text-xs text-on-accent/70">{t.presentHint}</p>
         </div>
       ) : null}
     </div>

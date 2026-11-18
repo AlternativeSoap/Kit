@@ -78,7 +78,7 @@ export function ImgBase64Tool() {
             }}
             className={`kit-touch-target rounded-[10px] border px-3 py-2 text-sm sm:min-h-0 ${
               mode === item
-                ? "border-accent bg-accent text-white"
+                ? "border-accent bg-accent text-on-accent"
                 : "border-border bg-surface text-muted hover:text-foreground"
             }`}
           >
@@ -94,7 +94,7 @@ export function ImgBase64Tool() {
             type="file"
             accept="image/*,.heic,.heif,.avif,.bmp,.gif,.svg,.ico,.webp,.jpg,.jpeg,.png"
             onChange={(event) => void onPick(event.target.files?.[0] ?? null)}
-            className="block w-full text-sm text-muted file:mr-3 file:rounded-[8px] file:border-0 file:bg-accent file:px-3 file:py-2 file:text-sm file:font-medium file:text-white"
+            className="block w-full text-sm text-muted file:mr-3 file:rounded-[8px] file:border-0 file:bg-accent file:px-3 file:py-2 file:text-sm file:font-medium file:text-on-accent"
           />
         </label>
       ) : (
@@ -158,7 +158,7 @@ export function ImgBase64Tool() {
                 <button
                   type="button"
                   onClick={downloadFromDataUrl}
-                  className="kit-touch-target rounded-[10px] bg-accent px-4 py-2.5 text-sm font-medium text-white sm:min-h-0"
+                  className="kit-touch-target rounded-[10px] bg-accent px-4 py-2.5 text-sm font-medium text-on-accent sm:min-h-0"
                 >
                   {t.download}
                 </button>

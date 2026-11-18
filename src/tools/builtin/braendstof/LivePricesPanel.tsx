@@ -151,7 +151,7 @@ export function LivePricesPanel({ onApplyElectricPrice }: LivePricesPanelProps) 
                   onClick={() => setArea(option)}
                   className={`kit-touch-target inline-flex items-center rounded-[10px] px-3 py-2 text-xs font-medium transition-colors sm:min-h-0 ${
                     active
-                      ? "bg-accent text-white"
+                      ? "bg-accent text-on-accent"
                       : "text-muted hover:bg-accent-soft hover:text-foreground"
                   }`}
                 >

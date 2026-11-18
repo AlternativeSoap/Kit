@@ -17,7 +17,7 @@ export function ProgressBar({
         </div>
       ) : null}
       <div
-        className="h-2 overflow-hidden rounded-full bg-black/10"
+        className="h-2 overflow-hidden rounded-full bg-overlay-strong"
         role="progressbar"
         aria-valuemin={0}
         aria-valuemax={100}

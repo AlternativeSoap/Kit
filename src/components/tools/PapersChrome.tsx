@@ -36,7 +36,7 @@ export function PapersIconBtn({
       disabled={disabled}
       onClick={onClick}
       className={`${papersIconBtnClass} ${
-        active ? "!border-accent !bg-accent !text-white" : "hover:bg-accent-soft"
+        active ? "!border-accent !bg-accent !text-on-accent" : "hover:bg-accent-soft"
       }`}
     >
       {children}

@@ -17,6 +17,12 @@ import {
   togglePin,
   type Shortcut,
 } from "@/lib/personal";
+import {
+  THEME_EVENT,
+  getStoredTheme,
+  setThemePreference,
+  type ThemePreference,
+} from "@/lib/theme";
 import { kitTools, tools } from "@/tools/registry";
 
 export function SettingsForm() {
@@ -29,6 +35,7 @@ export function SettingsForm() {
   const [toolId, setToolId] = useState("moms");
   const [error, setError] = useState("");
   const [cleared, setCleared] = useState(false);
+  const [theme, setTheme] = useState<ThemePreference>("system");
 
   const refresh = () => {
     setShortcuts(getShortcuts());
@@ -42,11 +49,20 @@ export function SettingsForm() {
 
   useEffect(() => {
     refresh();
+    setTheme(getStoredTheme());
+    const onTheme = (event: Event) => {
+      const detail = (event as CustomEvent<{ preference?: ThemePreference }>)
+        .detail;
+      if (detail?.preference) setTheme(detail.preference);
+      else setTheme(getStoredTheme());
+    };
     window.addEventListener("kit:personal-changed", refresh);
     window.addEventListener("focus", refresh);
+    window.addEventListener(THEME_EVENT, onTheme);
     return () => {
       window.removeEventListener("kit:personal-changed", refresh);
       window.removeEventListener("focus", refresh);
+      window.removeEventListener(THEME_EVENT, onTheme);
     };
   }, []);
 
@@ -97,6 +113,46 @@ export function SettingsForm() {
       </header>
 
       <section className="space-y-3">
+        <h2 className="text-sm font-medium">{t.appearanceTitle}</h2>
+        <p className="text-xs text-muted sm:text-sm">{t.appearanceHelp}</p>
+        <div
+          role="radiogroup"
+          aria-label={t.appearanceTitle}
+          className="grid grid-cols-3 gap-2"
+        >
+          {(
+            [
+              { id: "light", label: t.themeLight },
+              { id: "system", label: t.themeSystem },
+              { id: "dark", label: t.themeDark },
+            ] as const
+          ).map((option) => {
+            const active = theme === option.id;
+            return (
+              <button
+                key={option.id}
+                type="button"
+                role="radio"
+                aria-checked={active}
+                onClick={() => {
+                  setThemePreference(option.id);
+                  setTheme(option.id);
+                  setCleared(false);
+                }}
+                className={`kit-touch-target rounded-[10px] border px-3 py-2.5 text-sm font-medium sm:min-h-0 sm:py-2 ${
+                  active
+                    ? "border-accent bg-accent text-on-accent"
+                    : "border-border bg-surface text-muted hover:text-foreground"
+                }`}
+              >
+                {option.label}
+              </button>
+            );
+          })}
+        </div>
+      </section>
+
+      <section className="mt-10 space-y-3 border-t border-border pt-8">
         <h2 className="text-sm font-medium">{t.pinsTitle}</h2>
         <p className="text-xs text-muted sm:text-sm">{t.pinsHelp}</p>
         {pins.length === 0 ? (
@@ -317,7 +373,7 @@ export function SettingsForm() {
         <button
           type="button"
           onClick={add}
-          className="kit-touch-target inline-flex w-full items-center justify-center rounded-[10px] bg-accent px-3 py-2.5 text-sm font-medium text-white hover:opacity-90 sm:w-auto sm:min-h-0 sm:min-w-0"
+          className="kit-touch-target inline-flex w-full items-center justify-center rounded-[10px] bg-accent px-3 py-2.5 text-sm font-medium text-on-accent hover:opacity-90 sm:w-auto sm:min-h-0 sm:min-w-0"
         >
           {t.addShortcut}
         </button>

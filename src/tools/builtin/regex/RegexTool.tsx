@@ -67,7 +67,7 @@ export function RegexTool({ prefill }: { prefill?: ToolPrefill }) {
                 }
                 className={`kit-touch-target rounded-[8px] border px-2.5 py-2 font-mono text-sm sm:min-h-0 ${
                   flags[key]
-                    ? "border-accent bg-accent text-white"
+                    ? "border-accent bg-accent text-on-accent"
                     : "border-border bg-surface text-muted hover:text-foreground"
                 }`}
                 title={flagTitles[key]}

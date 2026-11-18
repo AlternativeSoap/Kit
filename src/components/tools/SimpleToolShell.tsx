@@ -14,13 +14,13 @@ export function SimpleToolShell({
   footer?: ReactNode;
 }) {
   return (
-    <div className="simple-tool mx-auto w-full max-w-4xl">
-      <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-6">
-        <section className="simple-tool-panel space-y-4 rounded-[14px] border border-border bg-surface p-4 sm:p-5">
+    <div className="simple-tool kit-tool mx-auto w-full max-w-4xl px-0">
+      <div className="grid min-w-0 items-start gap-4 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-6">
+        <section className="simple-tool-panel min-w-0 space-y-4 rounded-[16px] border border-border bg-surface p-4 sm:p-5">
           {inputs}
           {footer ? <div className="pt-1">{footer}</div> : null}
         </section>
-        <section className="simple-tool-panel simple-tool-results rounded-[14px] border border-border bg-surface p-4 sm:p-5 lg:sticky lg:top-[calc(4.5rem+env(safe-area-inset-top))]">
+        <section className="simple-tool-panel simple-tool-results min-w-0 rounded-[16px] border border-border bg-surface p-4 sm:p-5 lg:sticky lg:top-[calc(4.5rem+env(safe-area-inset-top))]">
           {results}
         </section>
       </div>

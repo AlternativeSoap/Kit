@@ -179,7 +179,7 @@ export function FontFamilyInput({
         <ul
           id={listId}
           role="listbox"
-          className="absolute left-0 right-0 top-[calc(100%+4px)] z-[95] max-h-56 overflow-auto rounded-[10px] border border-border bg-surface py-1 shadow-[0_10px_28px_rgba(20,20,20,0.16)]"
+          className="absolute left-0 right-0 top-[calc(100%+4px)] z-[95] max-h-56 overflow-auto rounded-[10px] border border-border bg-surface py-1 shadow-suggest"
         >
           {filtered.map((font) => {
             const active = displayFontLabel(value) === font.label;

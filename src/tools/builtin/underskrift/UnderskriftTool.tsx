@@ -69,7 +69,7 @@ export function UnderskriftTool() {
       </p>
       <canvas
         ref={canvasRef}
-        className="h-[220px] w-full touch-none rounded-[12px] border border-border bg-white"
+        className="h-[220px] w-full touch-none rounded-[12px] border border-border bg-paper"
         onPointerDown={(e) => {
           const canvas = canvasRef.current;
           const ctx = canvas?.getContext("2d");

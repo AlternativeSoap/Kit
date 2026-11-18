@@ -872,51 +872,55 @@ export function ArkTool() {
           />
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 border-b border-border px-2 py-2">
-          <span className="rounded-[8px] border border-border bg-background px-2 py-1.5 text-xs font-medium">
-            {selectionLabel}
-          </span>
-          <KitInput
-            value={formula}
-            onChange={(e) => {
-              setFormula(e.target.value);
-              setEditing(true);
-            }}
-            onFocus={() => setEditing(true)}
-            onBlur={commitFormula}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault();
-                commitFormula();
-              }
-            }}
-            placeholder={t.formulaPlaceholder}
-            className={`${fieldClass} min-w-[12rem] flex-1`}
-          />
-          <label className="flex items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              checked={freezeHeader}
-              onChange={(e) => setFreezeHeader(e.target.checked)}
-              className="h-4 w-4 accent-[var(--accent)]"
-            />
-            {t.freezeHeader}
-          </label>
-          <div className="min-w-[8rem] flex-1">
+        <div className="space-y-2 border-b border-border px-2 py-2 sm:space-y-0">
+          <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
+            <span className="w-fit rounded-[8px] border border-border bg-background px-2 py-1.5 text-xs font-medium">
+              {selectionLabel}
+            </span>
             <KitInput
-              value={filterText}
-              onChange={(e) => setFilterText(e.target.value)}
-              placeholder={t.filterPlaceholder}
+              value={formula}
+              onChange={(e) => {
+                setFormula(e.target.value);
+                setEditing(true);
+              }}
+              onFocus={() => setEditing(true)}
+              onBlur={commitFormula}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  commitFormula();
+                }
+              }}
+              placeholder={t.formulaPlaceholder}
+              className={`${fieldClass} min-w-0 w-full flex-1 sm:min-w-[12rem]`}
             />
           </div>
-          <span className="text-xs text-muted">
-            {savedAt
-              ? t.savedAt.replace(
-                  "{time}",
-                  new Date(savedAt).toLocaleTimeString(),
-                )
-              : t.unsaved}
-          </span>
+          <div className="kit-h-scroll w-full gap-2">
+            <label className="kit-touch-target inline-flex items-center gap-2 text-sm sm:min-h-0">
+              <input
+                type="checkbox"
+                checked={freezeHeader}
+                onChange={(e) => setFreezeHeader(e.target.checked)}
+                className="h-4 w-4 accent-[var(--accent)]"
+              />
+              {t.freezeHeader}
+            </label>
+            <div className="min-w-[10rem] flex-1">
+              <KitInput
+                value={filterText}
+                onChange={(e) => setFilterText(e.target.value)}
+                placeholder={t.filterPlaceholder}
+              />
+            </div>
+            <span className="shrink-0 text-xs text-muted">
+              {savedAt
+                ? t.savedAt.replace(
+                    "{time}",
+                    new Date(savedAt).toLocaleTimeString(),
+                  )
+                : t.unsaved}
+            </span>
+          </div>
         </div>
 
         <div

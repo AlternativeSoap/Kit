@@ -80,7 +80,7 @@ export function KilometerpengeTool({ prefill }: { prefill?: ToolPrefill }) {
             onClick={() => setMode("simple")}
             className={`kit-touch-target rounded-[8px] px-3 py-1.5 text-sm transition-colors sm:min-h-0 ${
               mode === "simple"
-                ? "bg-accent text-white"
+                ? "bg-accent text-on-accent"
                 : "text-muted hover:text-foreground"
             }`}
           >
@@ -91,7 +91,7 @@ export function KilometerpengeTool({ prefill }: { prefill?: ToolPrefill }) {
             onClick={() => setMode("threshold")}
             className={`kit-touch-target rounded-[8px] px-3 py-1.5 text-sm transition-colors sm:min-h-0 ${
               mode === "threshold"
-                ? "bg-accent text-white"
+                ? "bg-accent text-on-accent"
                 : "text-muted hover:text-foreground"
             }`}
           >

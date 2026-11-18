@@ -10,13 +10,13 @@ import type {
 } from "./PapersFormatBar";
 
 const selectClass =
-  "h-9 min-w-[6.5rem] max-w-[8rem] rounded-[7px] border border-border bg-white px-2 text-sm font-medium text-[#141414] outline-none";
+  "h-9 min-w-[6.5rem] max-w-[8rem] rounded-[7px] border border-border bg-surface px-2 text-sm font-medium text-foreground outline-none";
 
 const fontClass =
-  "h-9 min-w-[7rem] max-w-[9.5rem] rounded-[7px] border border-border bg-white px-2 text-sm font-medium text-[#141414] outline-none";
+  "h-9 min-w-[7rem] max-w-[9.5rem] rounded-[7px] border border-border bg-surface px-2 text-sm font-medium text-foreground outline-none";
 
 const sizeClass =
-  "h-9 w-[3.5rem] rounded-[7px] border border-border bg-white px-1.5 text-sm font-medium text-[#141414] outline-none";
+  "h-9 w-[3.5rem] rounded-[7px] border border-border bg-surface px-1.5 text-sm font-medium text-foreground outline-none";
 
 function BubbleBtn({
   active,
@@ -37,8 +37,8 @@ function BubbleBtn({
       onClick={onClick}
       className={`kit-touch-target inline-flex h-9 min-w-9 items-center justify-center rounded-[8px] px-2 text-sm font-semibold transition-colors sm:min-h-0 ${
         active
-          ? "bg-accent text-white"
-          : "text-foreground hover:bg-black/5"
+          ? "bg-accent text-on-accent"
+          : "text-foreground hover:bg-overlay"
       }`}
     >
       {children}
@@ -156,7 +156,7 @@ export function SkrivSelectionBubble({
       />
 
       <label
-        className="inline-flex h-9 items-center gap-1 rounded-[7px] px-1.5 text-sm text-foreground hover:bg-black/5"
+        className="inline-flex h-9 items-center gap-1 rounded-[7px] px-1.5 text-sm text-foreground hover:bg-overlay"
         title={labels.textColor}
       >
         <span className="font-bold">A</span>

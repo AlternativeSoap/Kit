@@ -456,7 +456,7 @@ export function AdvancedCalculator({ prefill }: AdvancedCalculatorProps) {
             onClick={key.action}
             className={`kit-touch-target rounded-[12px] border border-border px-3 py-3.5 text-lg font-medium transition-colors sm:min-h-0 ${
               key.tone === "accent"
-                ? "bg-accent text-white hover:opacity-90"
+                ? "bg-accent text-on-accent hover:opacity-90"
                 : key.tone === "muted"
                   ? "bg-background text-foreground hover:bg-accent-soft"
                   : "bg-surface hover:bg-background"

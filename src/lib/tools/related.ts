@@ -278,6 +278,7 @@ const TOPIC_SITE_FALLBACKS: Array<{
       mentions(
         t,
         "bmi",
+        "idealweight",
         "calorie",
         "sleep",
         "water",

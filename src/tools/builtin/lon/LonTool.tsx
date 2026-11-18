@@ -149,7 +149,7 @@ export function LonTool({ prefill }: { prefill?: ToolPrefill }) {
             onClick={() => setMode("monthly")}
             className={`kit-touch-target rounded-[8px] px-3 py-1.5 text-sm transition-colors sm:min-h-0 ${
               mode === "monthly"
-                ? "bg-accent text-white"
+                ? "bg-accent text-on-accent"
                 : "text-muted hover:text-foreground"
             }`}
           >
@@ -160,7 +160,7 @@ export function LonTool({ prefill }: { prefill?: ToolPrefill }) {
             onClick={() => setMode("hourly")}
             className={`kit-touch-target rounded-[8px] px-3 py-1.5 text-sm transition-colors sm:min-h-0 ${
               mode === "hourly"
-                ? "bg-accent text-white"
+                ? "bg-accent text-on-accent"
                 : "text-muted hover:text-foreground"
             }`}
           >

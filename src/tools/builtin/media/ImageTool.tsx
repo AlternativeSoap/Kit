@@ -580,7 +580,7 @@ export function ImageTool({ mode: modeProp, allowModeSwitch }: Props) {
                   type="button"
                   className={`kit-touch-target rounded-[10px] border px-3 py-2 text-sm sm:min-h-0 ${
                     degrees === d
-                      ? "border-accent bg-accent text-white"
+                      ? "border-accent bg-accent text-on-accent"
                       : "border-border bg-surface text-muted hover:text-foreground"
                   }`}
                   onClick={() => {
@@ -679,7 +679,7 @@ export function ImageTool({ mode: modeProp, allowModeSwitch }: Props) {
       </div>
 
       <div className="order-first space-y-4 lg:order-none">
-        <div className="min-h-48 overflow-hidden rounded-[12px] border border-border bg-black/5 p-3">
+        <div className="min-h-48 overflow-hidden rounded-[12px] border border-border bg-overlay p-3">
           {mode === "crop" && showSource && img ? (
             <CropStage
               src={sourceUrl!}
@@ -714,7 +714,7 @@ export function ImageTool({ mode: modeProp, allowModeSwitch }: Props) {
         </div>
 
         {mode === "crop" && showResult ? (
-          <div className="overflow-hidden rounded-[12px] border border-border bg-black/5 p-3">
+          <div className="overflow-hidden rounded-[12px] border border-border bg-overlay p-3">
             <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted">
               {t.ready}
             </p>
@@ -930,7 +930,7 @@ function CropStage({
   const height = (crop.h / naturalH) * 100;
 
   const handleClass =
-    "pointer-events-none absolute h-3 w-3 border border-black/40 bg-white";
+    "pointer-events-none absolute h-3 w-3 border border-foreground/40 bg-surface";
 
   return (
     <div

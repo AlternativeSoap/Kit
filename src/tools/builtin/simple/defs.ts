@@ -1,5 +1,7 @@
 /** Compact definitions for high-demand utility builtins. */
 
+import { EXTRA_SIMPLE_TOOL_DEFS } from "./defs-extra";
+
 export type SimpleField = {
   key: string;
   labelEn: string;
@@ -8,7 +10,7 @@ export type SimpleField = {
   hintDa?: string;
   defaultValue?: string;
   multiline?: boolean;
-  kind?: "number" | "text" | "select";
+  kind?: "number" | "text" | "select" | "password";
   options?: { value: string; labelEn: string; labelDa: string }[];
 };
 
@@ -23,6 +25,8 @@ export type SimpleResultRow = {
    * this by default; decimals are always formatted.
    */
   numeric?: boolean;
+  /** Exclude this row from “Copy all” (e.g. secrets). */
+  omitFromCopyAll?: boolean;
 };
 
 export type SimpleToolDef = {
@@ -1928,8 +1932,10 @@ export const SIMPLE_TOOL_DEFS: SimpleToolDef[] = [
     id: "dice",
     nameEn: "Dice roller",
     nameDa: "Terning",
-    descriptionEn: "Roll one or more dice with a chosen number of sides.",
-    descriptionDa: "Kast en eller flere terninger med valgt antal sider.",
+    descriptionEn:
+      "Roll real 3D dice with animation, or other dice with more sides.",
+    descriptionDa:
+      "Kast rigtige 3D-terninger med animation, eller andre terninger med flere sider.",
     aliases: ["dice", "roll dice", "terning", "coin flip", "mønt"],
     intents: ["dice", "random", "game"],
     tags: ["everyday"],
@@ -1942,6 +1948,7 @@ export const SIMPLE_TOOL_DEFS: SimpleToolDef[] = [
       { key: "sides", labelEn: "Sides", labelDa: "Sider", defaultValue: "6" },
     ],
     compute: (v) => {
+      // Kept for registry metadata; the dedicated DiceTool handles the UI.
       const count = Math.min(20, Math.max(1, Math.floor(num(v.count) ?? 1)));
       const sides = Math.min(1000, Math.max(2, Math.floor(num(v.sides) ?? 6)));
       const rolls: number[] = [];
@@ -3447,6 +3454,7 @@ export const SIMPLE_TOOL_DEFS: SimpleToolDef[] = [
       ];
     },
   },
+  ...EXTRA_SIMPLE_TOOL_DEFS,
 ];
 
 export const SIMPLE_TOOL_IDS = SIMPLE_TOOL_DEFS.map((d) => d.id);

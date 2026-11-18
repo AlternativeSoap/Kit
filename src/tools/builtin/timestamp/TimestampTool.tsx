@@ -53,7 +53,7 @@ export function TimestampTool({ prefill }: { prefill?: ToolPrefill }) {
             onClick={() => setUnit(id)}
             className={`kit-touch-target rounded-[10px] border px-3 py-2 text-sm sm:min-h-0 ${
               unit === id
-                ? "border-accent bg-accent text-white"
+                ? "border-accent bg-accent text-on-accent"
                 : "border-border bg-surface text-muted hover:text-foreground"
             }`}
           >

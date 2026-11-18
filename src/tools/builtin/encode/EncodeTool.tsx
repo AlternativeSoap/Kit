@@ -44,7 +44,7 @@ export function EncodeTool({ prefill }: { prefill?: ToolPrefill }) {
               onClick={() => setMode(item)}
               className={`kit-touch-target rounded-[8px] px-3 py-1.5 text-sm transition-colors sm:min-h-0 ${
                 mode === item
-                  ? "bg-accent text-white"
+                  ? "bg-accent text-on-accent"
                   : "text-muted hover:text-foreground"
               }`}
             >
@@ -61,7 +61,7 @@ export function EncodeTool({ prefill }: { prefill?: ToolPrefill }) {
               onClick={() => setAction(item)}
               className={`kit-touch-target rounded-[8px] px-3 py-1.5 text-sm transition-colors sm:min-h-0 ${
                 action === item
-                  ? "bg-accent text-white"
+                  ? "bg-accent text-on-accent"
                   : "text-muted hover:text-foreground"
               }`}
             >

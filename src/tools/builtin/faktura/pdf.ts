@@ -28,14 +28,26 @@ export type InvoicePdfInput = {
   da: boolean;
   locale: string;
   sellerName: string;
-  sellerDetails: string;
+  sellerAddress: string;
+  sellerCvr: string;
+  sellerEmail: string;
+  sellerPhone: string;
   buyerName: string;
-  buyerDetails: string;
+  buyerAddress: string;
+  buyerCvr: string;
   invoiceNo: string;
   issueDate: string;
   dueDate: string;
+  deliveryDate: string;
   currency: string;
   vatPct: number;
+  discountPct: number;
+  reverseCharge: boolean;
+  poReference: string;
+  bankName: string;
+  bankAccount: string;
+  paymentReference: string;
+  paymentTerms: string;
   notes: string;
   lines: InvoiceLine[];
 };
@@ -49,6 +61,17 @@ function money(n: number, locale: string) {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(n);
+}
+
+function formatDate(iso: string, locale: string) {
+  if (!iso.trim()) return "";
+  const d = new Date(`${iso}T12:00:00`);
+  if (Number.isNaN(d.getTime())) return iso;
+  return new Intl.DateTimeFormat(locale === "da" ? "da-DK" : "en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  }).format(d);
 }
 
 function wrapText(
@@ -76,7 +99,6 @@ function wrapText(
         if (font.widthOfTextAtSize(word, size) <= maxWidth) {
           current = word;
         } else {
-          // Hard-split very long tokens.
           let chunk = "";
           for (const ch of word) {
             const tryChunk = chunk + ch;
@@ -130,6 +152,41 @@ function drawLines(
   return y;
 }
 
+function partyBlock(
+  da: boolean,
+  name: string,
+  address: string,
+  cvr: string,
+  email: string,
+  phone: string,
+): string {
+  const rows = [name.trim()];
+  if (address.trim()) rows.push(address.trim());
+  if (cvr.trim()) {
+    rows.push(da ? `CVR ${cvr.trim()}` : `VAT ${cvr.trim()}`);
+  }
+  if (email.trim()) rows.push(email.trim());
+  if (phone.trim()) rows.push(phone.trim());
+  return rows.filter(Boolean).join("\n");
+}
+
+export function computeInvoiceTotals(input: {
+  lines: InvoiceLine[];
+  discountPct: number;
+  vatPct: number;
+  reverseCharge: boolean;
+}) {
+  const subtotal = input.lines.reduce(
+    (sum, line) => sum + line.qty * line.price,
+    0,
+  );
+  const discount = Math.max(0, subtotal * (input.discountPct / 100));
+  const net = Math.max(0, subtotal - discount);
+  const vatPct = input.reverseCharge ? 0 : input.vatPct;
+  const vatAmount = net * (vatPct / 100);
+  return { subtotal, discount, net, vatPct, vatAmount, gross: net + vatAmount };
+}
+
 export async function buildInvoicePdf(
   input: InvoicePdfInput,
 ): Promise<Uint8Array> {
@@ -137,11 +194,8 @@ export async function buildInvoicePdf(
   const font = await doc.embedFont(StandardFonts.Helvetica);
   const bold = await doc.embedFont(StandardFonts.HelveticaBold);
   const da = input.da;
-  const currency = input.currency.trim() || (da ? "DKK" : "USD");
-
-  const net = input.lines.reduce((sum, line) => sum + line.qty * line.price, 0);
-  const vatAmount = net * (input.vatPct / 100);
-  const gross = net + vatAmount;
+  const currency = input.currency.trim() || (da ? "DKK" : "EUR");
+  const totals = computeInvoiceTotals(input);
 
   let page = doc.addPage([PAGE_W, PAGE_H]);
   let y = PAGE_H - MARGIN;
@@ -159,7 +213,6 @@ export async function buildInvoicePdf(
     });
   };
 
-  // Accent bar
   page.drawRectangle({
     x: 0,
     y: PAGE_H - 6,
@@ -168,7 +221,6 @@ export async function buildInvoicePdf(
     color: ACCENT,
   });
 
-  // Title + meta
   page.drawText(safe(da ? "Faktura" : "Invoice"), {
     x: MARGIN,
     y: y - 8,
@@ -180,15 +232,28 @@ export async function buildInvoicePdf(
   const metaX = PAGE_W - MARGIN;
   const metaRows: Array<[string, string]> = [
     [da ? "Nr." : "No.", input.invoiceNo || "—"],
-    [da ? "Dato" : "Date", input.issueDate || "—"],
+    [da ? "Dato" : "Date", formatDate(input.issueDate, input.locale) || "—"],
   ];
-  if (input.dueDate.trim()) {
-    metaRows.push([da ? "Forfald" : "Due", input.dueDate]);
+  if (input.deliveryDate.trim()) {
+    metaRows.push([
+      da ? "Levering" : "Delivery",
+      formatDate(input.deliveryDate, input.locale),
+    ]);
   }
+  if (input.dueDate.trim()) {
+    metaRows.push([
+      da ? "Forfald" : "Due",
+      formatDate(input.dueDate, input.locale),
+    ]);
+  }
+  if (input.poReference.trim()) {
+    metaRows.push([da ? "Ref." : "Ref.", input.poReference.trim()]);
+  }
+
   let metaY = y - 4;
   for (const [label, value] of metaRows) {
     page.drawText(safe(label), {
-      x: metaX - 150,
+      x: metaX - 160,
       y: metaY,
       size: 9,
       font,
@@ -200,7 +265,6 @@ export async function buildInvoicePdf(
 
   y = Math.min(y - 44, metaY - 12);
 
-  // Parties
   const colW = (PAGE_W - MARGIN * 2 - 24) / 2;
   const leftX = MARGIN;
   const rightX = MARGIN + colW + 24;
@@ -221,15 +285,44 @@ export async function buildInvoicePdf(
   });
   y -= 16;
 
-  const sellerName = wrapText(input.sellerName || "—", bold, 11, colW);
-  const buyerName = wrapText(input.buyerName || "—", bold, 11, colW);
-  const sellerDetails = wrapText(input.sellerDetails, font, 9.5, colW);
-  const buyerDetails = wrapText(input.buyerDetails, font, 9.5, colW);
+  const sellerText = partyBlock(
+    da,
+    input.sellerName,
+    input.sellerAddress,
+    input.sellerCvr,
+    input.sellerEmail,
+    input.sellerPhone,
+  );
+  const buyerText = partyBlock(
+    da,
+    input.buyerName,
+    input.buyerAddress,
+    input.buyerCvr,
+    "",
+    "",
+  );
+
+  const sellerParts = sellerText.split("\n");
+  const buyerParts = buyerText.split("\n");
+  const sellerNameLines = wrapText(sellerParts[0] || "—", bold, 11, colW);
+  const buyerNameLines = wrapText(buyerParts[0] || "—", bold, 11, colW);
+  const sellerDetailLines = wrapText(
+    sellerParts.slice(1).join("\n"),
+    font,
+    9.5,
+    colW,
+  );
+  const buyerDetailLines = wrapText(
+    buyerParts.slice(1).join("\n"),
+    font,
+    9.5,
+    colW,
+  );
 
   const nameStart = y;
   const sellerY = drawLines(
     page,
-    sellerName,
+    sellerNameLines,
     leftX,
     nameStart,
     11,
@@ -239,7 +332,7 @@ export async function buildInvoicePdf(
   );
   const buyerY = drawLines(
     page,
-    buyerName,
+    buyerNameLines,
     rightX,
     nameStart,
     11,
@@ -252,7 +345,7 @@ export async function buildInvoicePdf(
   const detailStart = y;
   const sellerDetailY = drawLines(
     page,
-    sellerDetails,
+    sellerDetailLines,
     leftX,
     detailStart,
     9.5,
@@ -262,7 +355,7 @@ export async function buildInvoicePdf(
   );
   const buyerDetailY = drawLines(
     page,
-    buyerDetails,
+    buyerDetailLines,
     rightX,
     detailStart,
     9.5,
@@ -272,7 +365,19 @@ export async function buildInvoicePdf(
   );
   y = Math.min(sellerDetailY, buyerDetailY) - 22;
 
-  // Table header
+  if (input.reverseCharge) {
+    ensureSpace(20);
+    page.drawText(
+      safe(
+        da
+          ? "Moms: omvendt betalingspligt (reverse charge)."
+          : "VAT: reverse charge.",
+      ),
+      { x: MARGIN, y, size: 9, font: bold, color: ACCENT },
+    );
+    y -= 18;
+  }
+
   const tableLeft = MARGIN;
   const tableRight = PAGE_W - MARGIN;
   const colDesc = tableLeft + 8;
@@ -306,7 +411,15 @@ export async function buildInvoicePdf(
       font: bold,
       color: MUTED,
     });
-    drawRight(page, da ? "Pris" : "Price", colPrice + 28, hy, 9, bold, MUTED);
+    drawRight(
+      page,
+      da ? "Pris ekskl." : "Price excl.",
+      colPrice + 28,
+      hy,
+      9,
+      bold,
+      MUTED,
+    );
     drawRight(page, da ? "Beløb" : "Amount", colSum, hy, 9, bold, MUTED);
     y -= 28;
   };
@@ -370,12 +483,13 @@ export async function buildInvoicePdf(
     });
   }
 
-  // Totals
-  ensureSpace(110);
+  const showDiscount = totals.discount > 0.005;
+  const totalRows = 2 + (showDiscount ? 1 : 0) + 1;
+  const boxH = 18 + totalRows * 16;
+  ensureSpace(boxH + 30);
   y -= 10;
-  const boxW = 210;
+  const boxW = 220;
   const boxX = tableRight - boxW;
-  const boxH = 78;
   page.drawRectangle({
     x: boxX,
     y: y - boxH + 14,
@@ -392,7 +506,7 @@ export async function buildInvoicePdf(
   });
 
   let ty = y;
-  page.drawText(safe(da ? "Netto" : "Net"), {
+  page.drawText(safe(da ? "Subtotal" : "Subtotal"), {
     x: boxX + 14,
     y: ty,
     size: 10,
@@ -401,32 +515,52 @@ export async function buildInvoicePdf(
   });
   drawRight(
     page,
-    `${money(net, input.locale)} ${currency}`,
+    `${money(totals.subtotal, input.locale)} ${currency}`,
     tableRight - 12,
     ty,
     10,
     font,
   );
   ty -= 16;
-  page.drawText(
-    safe(`${da ? "Moms" : "VAT"} (${money(input.vatPct, input.locale)}%)`),
-    {
-      x: boxX + 14,
-      y: ty,
-      size: 10,
+
+  if (showDiscount) {
+    page.drawText(
+      safe(
+        `${da ? "Rabat" : "Discount"} (${money(input.discountPct, input.locale)}%)`,
+      ),
+      { x: boxX + 14, y: ty, size: 10, font, color: MUTED },
+    );
+    drawRight(
+      page,
+      `−${money(totals.discount, input.locale)} ${currency}`,
+      tableRight - 12,
+      ty,
+      10,
       font,
-      color: MUTED,
-    },
+    );
+    ty -= 16;
+  }
+
+  page.drawText(
+    safe(
+      input.reverseCharge
+        ? da
+          ? "Moms (0%, omvendt)"
+          : "VAT (0%, reverse)"
+        : `${da ? "Moms" : "VAT"} (${money(totals.vatPct, input.locale)}%)`,
+    ),
+    { x: boxX + 14, y: ty, size: 10, font, color: MUTED },
   );
   drawRight(
     page,
-    `${money(vatAmount, input.locale)} ${currency}`,
+    `${money(totals.vatAmount, input.locale)} ${currency}`,
     tableRight - 12,
     ty,
     10,
     font,
   );
-  ty -= 20;
+  ty -= 18;
+
   page.drawText(safe(da ? "Total" : "Total"), {
     x: boxX + 14,
     y: ty,
@@ -436,7 +570,7 @@ export async function buildInvoicePdf(
   });
   drawRight(
     page,
-    `${money(gross, input.locale)} ${currency}`,
+    `${money(totals.gross, input.locale)} ${currency}`,
     tableRight - 12,
     ty,
     12,
@@ -444,23 +578,71 @@ export async function buildInvoicePdf(
     ACCENT,
   );
 
-  y = y - boxH - 8;
+  y = y - boxH - 12;
 
-  if (input.notes.trim()) {
-    ensureSpace(80);
-    page.drawText(safe(da ? "Bemærkning" : "Notes"), {
-      x: MARGIN,
-      y,
-      size: 9,
-      font: bold,
-      color: MUTED,
-    });
-    y -= 14;
-    const noteLines = wrapText(input.notes, font, 9.5, PAGE_W - MARGIN * 2);
-    y = drawLines(page, noteLines, MARGIN, y, 9.5, font, INK, 12);
+  const paymentBits: string[] = [];
+  if (input.paymentTerms.trim()) {
+    paymentBits.push(
+      `${da ? "Betalingsbetingelser" : "Payment terms"}: ${input.paymentTerms.trim()}`,
+    );
+  }
+  if (input.bankName.trim() || input.bankAccount.trim()) {
+    const bank = [input.bankName.trim(), input.bankAccount.trim()]
+      .filter(Boolean)
+      .join(" · ");
+    paymentBits.push(`${da ? "Betaling til" : "Pay to"}: ${bank}`);
+  }
+  if (input.paymentReference.trim()) {
+    paymentBits.push(
+      `${da ? "Angiv reference" : "Payment reference"}: ${input.paymentReference.trim()}`,
+    );
   }
 
-  // Footer on last page
+  if (paymentBits.length || input.notes.trim()) {
+    ensureSpace(90);
+    if (paymentBits.length) {
+      page.drawText(safe(da ? "Betaling" : "Payment"), {
+        x: MARGIN,
+        y,
+        size: 9,
+        font: bold,
+        color: MUTED,
+      });
+      y -= 14;
+      y = drawLines(
+        page,
+        wrapText(paymentBits.join("\n"), font, 9.5, PAGE_W - MARGIN * 2),
+        MARGIN,
+        y,
+        9.5,
+        font,
+        INK,
+        12,
+      );
+      y -= 8;
+    }
+    if (input.notes.trim()) {
+      page.drawText(safe(da ? "Bemærkning" : "Notes"), {
+        x: MARGIN,
+        y,
+        size: 9,
+        font: bold,
+        color: MUTED,
+      });
+      y -= 14;
+      y = drawLines(
+        page,
+        wrapText(input.notes, font, 9.5, PAGE_W - MARGIN * 2),
+        MARGIN,
+        y,
+        9.5,
+        font,
+        INK,
+        12,
+      );
+    }
+  }
+
   page.drawLine({
     start: { x: MARGIN, y: 40 },
     end: { x: PAGE_W - MARGIN, y: 40 },
@@ -473,13 +655,7 @@ export async function buildInvoicePdf(
         ? "Oprettet lokalt i Kit. Ikke en bogføringsløsning."
         : "Created locally in Kit. Not accounting software.",
     ),
-    {
-      x: MARGIN,
-      y: 26,
-      size: 8,
-      font,
-      color: MUTED,
-    },
+    { x: MARGIN, y: 26, size: 8, font, color: MUTED },
   );
 
   return doc.save();

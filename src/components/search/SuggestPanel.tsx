@@ -187,7 +187,7 @@ export function SuggestPanel({
                                   ? dictionary.search.unpin
                                   : dictionary.search.removeRecent
                               }
-                              className="absolute right-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-md text-[#9a9a94] opacity-100 transition-opacity hover:bg-black/[0.04] hover:text-[#6b6b66] sm:h-6 sm:w-6 sm:opacity-0 sm:group-hover/row:opacity-100 sm:focus-visible:opacity-100"
+                              className="absolute right-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-md text-muted opacity-100 transition-opacity hover:bg-overlay hover:text-foreground sm:h-6 sm:w-6 sm:opacity-0 sm:group-hover/row:opacity-100 sm:focus-visible:opacity-100"
                               onPointerDown={(event) => {
                                 event.preventDefault();
                                 event.stopPropagation();

@@ -361,7 +361,7 @@ export function BgRemoveTool() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <div className="overflow-hidden rounded-[12px] border border-border bg-black/5 p-3">
+        <div className="overflow-hidden rounded-[12px] border border-border bg-overlay p-3">
           <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted">
             {t.original}
           </p>
@@ -384,7 +384,7 @@ export function BgRemoveTool() {
         >
           <p
             className={`mb-2 text-xs font-medium uppercase tracking-wide ${
-              previewBg === "black" ? "text-white/70" : "text-muted"
+              previewBg === "black" ? "text-on-accent/70" : "text-muted"
             }`}
           >
             {t.result}

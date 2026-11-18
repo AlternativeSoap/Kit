@@ -50,7 +50,7 @@ export function UuidTool({ prefill }: { prefill?: ToolPrefill }) {
       <button
         type="button"
         onClick={regenerate}
-        className="rounded-[10px] bg-accent px-4 py-2.5 text-sm font-medium text-white hover:opacity-90"
+        className="rounded-[10px] bg-accent px-4 py-2.5 text-sm font-medium text-on-accent hover:opacity-90"
       >
         {t.generate}
       </button>

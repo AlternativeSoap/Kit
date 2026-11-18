@@ -41,13 +41,13 @@ export type PapersFormatLabels = {
 
 /** Compact field styles for ribbon controls (never w-full). */
 const ribbonFontClass =
-  "h-10 min-w-0 flex-1 rounded-[8px] border border-border bg-white px-2.5 text-base font-medium text-[#141414] outline-none focus:border-accent sm:h-9 sm:text-sm";
+  "h-10 min-w-0 flex-1 rounded-[8px] border border-border bg-surface px-2.5 text-base font-medium text-foreground outline-none focus:border-accent sm:h-9 sm:text-sm";
 
 const ribbonSizeClass =
-  "h-10 w-[4.25rem] shrink-0 rounded-[8px] border border-border bg-white px-2 text-base font-medium text-[#141414] outline-none focus:border-accent sm:h-9 sm:w-[3.75rem] sm:text-sm";
+  "h-10 w-[4.25rem] shrink-0 rounded-[8px] border border-border bg-surface px-2 text-base font-medium text-foreground outline-none focus:border-accent sm:h-9 sm:w-[3.75rem] sm:text-sm";
 
 const styleSelectClass =
-  "h-10 w-[7.5rem] shrink-0 rounded-[8px] border border-border bg-white px-2 text-base font-medium text-[#141414] outline-none focus:border-accent sm:h-9 sm:w-[7rem] sm:text-sm";
+  "h-10 w-[7.5rem] shrink-0 rounded-[8px] border border-border bg-surface px-2 text-base font-medium text-foreground outline-none focus:border-accent sm:h-9 sm:w-[7rem] sm:text-sm";
 
 function ToolBtn({
   active,
@@ -67,8 +67,8 @@ function ToolBtn({
       onClick={onClick}
       className={`kit-touch-target inline-flex h-10 min-w-10 shrink-0 items-center justify-center rounded-[8px] border px-2.5 text-sm font-semibold sm:h-9 sm:min-h-0 sm:min-w-9 sm:text-xs ${
         active
-          ? "border-accent bg-accent text-white"
-          : "border-border bg-white text-foreground hover:bg-accent-soft"
+          ? "border-accent bg-accent text-on-accent"
+          : "border-border bg-surface text-foreground hover:bg-accent-soft"
       }`}
     >
       {children}
@@ -189,7 +189,7 @@ export function PapersFormatBar({
       <span className="mx-0.5 h-5 w-px shrink-0 bg-border" aria-hidden />
 
       <label
-        className="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-[8px] border border-border bg-white px-2 sm:h-9"
+        className="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-[8px] border border-border bg-surface px-2 sm:h-9"
         title={labels.textColor}
       >
         <span className="text-sm font-bold text-foreground">A</span>
@@ -202,7 +202,7 @@ export function PapersFormatBar({
       </label>
 
       <label
-        className="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-[8px] border border-border bg-white px-2 sm:h-9"
+        className="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-[8px] border border-border bg-surface px-2 sm:h-9"
         title={labels.fillColor}
       >
         <span className="inline-block h-3.5 w-3.5 rounded-[3px] border border-border bg-amber-200" />
@@ -217,7 +217,7 @@ export function PapersFormatBar({
   );
 
   const typeRow = (
-    <div className="flex w-full items-center gap-2">
+    <div className="kit-h-scroll w-full gap-2">
       {hasBlockLabels(labels) ? (
         <BlockStyleSelect
           value={value.block ?? "p"}

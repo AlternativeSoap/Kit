@@ -20,6 +20,7 @@ export const en: Dictionary = {
     empty: "No tools matched. Try a different word.",
     externalBadge: "External site",
     shortcutBadge: "Shortcut",
+    tryThis: "Try this",
   },
   intent: {
     calculateVat: "Calculate VAT.",
@@ -58,8 +59,14 @@ export const en: Dictionary = {
     open: "Settings",
     title: "Settings",
     description:
-      "Pin tools, hide them from search, add shortcuts, and clear local Kit data on this device.",
+      "Choose appearance, pin tools, hide them from search, add shortcuts, and clear local Kit data on this device.",
     close: "Close",
+    appearanceTitle: "Appearance",
+    appearanceHelp:
+      "Choose a light or dark theme for all of Kit, or follow your device setting.",
+    themeLight: "Light",
+    themeDark: "Dark",
+    themeSystem: "System",
     pinsTitle: "Pinned tools",
     pinsHelp: "Pinned tools appear at the top of the empty search list.",
     pinTool: "Pin a tool",
@@ -442,7 +449,12 @@ export const en: Dictionary = {
     bmi: {
       name: "BMI calculator",
       description:
-        "Body mass index, weight category, and a healthy weight range for your height.",
+        "Body mass index, weight category, and a healthy weight range. Also switch to ideal weight, body fat, calories, water, and pace.",
+    },
+    idealweight: {
+      name: "Ideal weight",
+      description:
+        "Devine and Robinson ideal body weight estimates from height. Part of the health suite with BMI and more.",
     },
     tip: {
       name: "Tip calculator",
@@ -621,7 +633,8 @@ export const en: Dictionary = {
     },
     "dice": {
       name: "Dice roller",
-      description: "Roll one or more dice with a chosen number of sides.",
+      description:
+        "Toss dice onto a table from above with animation, or use dice with more sides.",
     },
     "promille": {
       name: "BAC calculator",
@@ -695,7 +708,7 @@ export const en: Dictionary = {
     faktura: {
       name: "Invoice",
       description:
-        "Fill in seller, buyer, lines, and VAT, preview the layout, and download a PDF. Local only.",
+        "Make an invoice with parties, tax ID, lines, and VAT. More settings for payment and delivery. PDF stays local.",
     },
     underskrift: {
       name: "Signature",
@@ -734,6 +747,30 @@ export const en: Dictionary = {
       name: "Rent vs buy",
       description:
         "Compare renting and buying over time with loan, ownership costs, and appreciation. Estimate only.",
+    },
+    periodesystem: {
+      name: "Periodic table",
+      description:
+        "Explore all 118 elements in a full periodic table. Open any element to learn what it is, where it is used, and read more in depth.",
+    },
+    metronome: {
+      name: "Metronome",
+      description:
+        "Stable click metronome with time signature, tap tempo, and volume. Timing follows the audio clock.",
+    },
+    gangetabel: {
+      name: "Times table",
+      description:
+        "Interactive times table with pinned cells and a quick quiz mode.",
+    },
+    ocr: {
+      name: "Image to text (OCR)",
+      description:
+        "Extract text from a photo or screenshot. The image is prepared locally and stays on your device; the OCR engine loads from a CDN.",
+    },
+    coinflip: {
+      name: "Coin flip",
+      description: "Flip a fair 3D coin. It spins and lands on heads or tails.",
     },
     "palette": {
       name: "Color palette",
@@ -1895,6 +1932,71 @@ export const en: Dictionary = {
     modeTetradic: "Tetradic",
     modeMono: "Monochrome",
     modeShades: "Shades",
+  },
+  periodesystemTool: {
+    intro:
+      "The periodic table orders elements by atomic number. Columns are groups with similar chemistry. Rows are periods. Tap any element to learn more.",
+    search: "Search elements",
+    searchPlaceholder: "Name, symbol, or atomic number",
+    clearSearch: "Clear search",
+    legend: "Categories",
+    filterAll: "All",
+    group: "Group",
+    period: "Period",
+    atomicNumber: "Atomic number",
+    atomicWeight: "Atomic weight",
+    category: "Category",
+    phase: "Phase (STP)",
+    electronConfig: "Electron configuration",
+    alsoKnownAs: "Also known as",
+    about: "About",
+    uses: "What it is used for",
+    readMore: "Read more",
+    readLess: "Show less",
+    close: "Close",
+    previous: "Previous element",
+    next: "Next element",
+    lanthanides: "Lanthanides",
+    actinides: "Actinides",
+    noMatch: "No element matches that search.",
+    selectHint: "Select an element in the table to read about it.",
+    phaseSolid: "Solid",
+    phaseLiquid: "Liquid",
+    phaseGas: "Gas",
+    phaseUnknown: "Unknown",
+    catAlkali: "Alkali metal",
+    catAlkalineEarth: "Alkaline earth metal",
+    catTransition: "Transition metal",
+    catPostTransition: "Post-transition metal",
+    catMetalloid: "Metalloid",
+    catNonmetal: "Nonmetal",
+    catHalogen: "Halogen",
+    catNobleGas: "Noble gas",
+    catLanthanide: "Lanthanide",
+    catActinide: "Actinide",
+    catUnknown: "Unknown properties",
+    weightNote:
+      "Weights follow IUPAC 2021. Values in brackets are the mass number of the longest-lived isotope when no standard atomic weight exists.",
+    modeExplore: "Explore",
+    modeCombine: "Combine",
+    combineIntro:
+      "Pick up to four elements to see known compounds and look up more in PubChem.",
+    combineHint: "Tap elements in the table to add them to the combination.",
+    combineTray: "Selected elements",
+    combineAdd: "Add to combination",
+    combineRemove: "Remove",
+    combineClear: "Clear selection",
+    combineFind: "Find compounds",
+    combineSearching: "Searching PubChem…",
+    combineCurated: "Known examples",
+    combinePubChem: "From PubChem",
+    combineNone: "No common compounds found for this combination.",
+    combineError: "Could not reach PubChem right now. Try again in a moment.",
+    combineMax: "You can select at most four elements at a time.",
+    combineOpen: "Open in PubChem",
+    combineSource: "External lookup uses PubChem's open database.",
+    combineFormula: "Formula",
+    combineWeight: "Molar mass",
   },
   imgbase64Tool: {
     privacy: "Encoding stays in your browser. Nothing is uploaded.",

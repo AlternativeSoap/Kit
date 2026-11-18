@@ -20,6 +20,7 @@ export const da: Dictionary = {
     empty: "Ingen værktøjer matchede. Prøv et andet ord.",
     externalBadge: "Andet site",
     shortcutBadge: "Genvej",
+    tryThis: "Prøv dette",
   },
   intent: {
     calculateVat: "Beregn moms.",
@@ -58,8 +59,14 @@ export const da: Dictionary = {
     open: "Indstillinger",
     title: "Indstillinger",
     description:
-      "Fastgør værktøjer, skjul dem fra søgning, lav genveje, og ryd lokale Kit-data på denne enhed.",
+      "Vælg udseende, fastgør værktøjer, skjul dem fra søgning, lav genveje, og ryd lokale Kit-data på denne enhed.",
     close: "Luk",
+    appearanceTitle: "Udseende",
+    appearanceHelp:
+      "Vælg lyst eller mørkt tema for hele Kit, eller følg enhedens indstilling.",
+    themeLight: "Lyst",
+    themeDark: "Mørkt",
+    themeSystem: "System",
     pinsTitle: "Fastgjorte værktøjer",
     pinsHelp: "Fastgjorte værktøjer vises øverst i den tomme søgeliste.",
     pinTool: "Fastgør et værktøj",
@@ -431,7 +438,12 @@ export const da: Dictionary = {
     bmi: {
       name: "BMI-beregner",
       description:
-        "Body mass index, vægtkategori og sundt vægtspænd for din højde.",
+        "Body mass index, vægtkategori og sundt vægtspænd. Skift også til idealvægt, fedtprocent, kalorier, vand og tempo.",
+    },
+    idealweight: {
+      name: "Idealvægt",
+      description:
+        "Devine- og Robinson-estimater for idealvægt ud fra højde. Del af sundhedssuiten med BMI og mere.",
     },
     tip: {
       name: "Drikkepengeberegner",
@@ -616,7 +628,8 @@ export const da: Dictionary = {
     },
     "dice": {
       name: "Terning",
-      description: "Kast en eller flere terninger med valgt antal sider.",
+      description:
+        "Kast terninger på et bord set ovenfra med animation, eller brug terninger med flere sider.",
     },
     "promille": {
       name: "Promilleberegner",
@@ -690,7 +703,7 @@ export const da: Dictionary = {
     faktura: {
       name: "Faktura",
       description:
-        "Udfyld sælger, kunde, linjer og moms, se forhåndsvisning, og download en PDF. Kun lokalt.",
+        "Lav en faktura med parter, CVR, linjer og moms. Flere indstillinger til betaling og levering. PDF lokalt.",
     },
     underskrift: {
       name: "Underskrift",
@@ -729,6 +742,30 @@ export const da: Dictionary = {
       name: "Leje vs køb",
       description:
         "Sammenlign leje og køb over tid med lån, ejerudgifter og værdistigning. Kun estimat.",
+    },
+    periodesystem: {
+      name: "Periodesystemet",
+      description:
+        "Udforsk alle 118 grundstoffer i et fuldt periodesystem. Åbn et grundstof for at læse, hvad det er, hvad det bruges til, og gå i dybden.",
+    },
+    metronome: {
+      name: "Metronom",
+      description:
+        "Stabil klik-metronom med taktart, tap tempo og lydstyrke. Timing følger lyduret.",
+    },
+    gangetabel: {
+      name: "Gangetabel",
+      description:
+        "Interaktiv gangetabel med fastholdelse af celler og en hurtig quiz-tilstand.",
+    },
+    ocr: {
+      name: "Billede til tekst (OCR)",
+      description:
+        "Læs tekst ud af foto eller screenshot. Billedet forberedes lokalt og bliver på din enhed; OCR-motoren hentes fra et CDN.",
+    },
+    coinflip: {
+      name: "Plat eller krone",
+      description: "Kast en fair 3D-mønt. Den snurrer rundt og lander på plat eller krone.",
     },
     "palette": {
       name: "Farvepalette",
@@ -2193,6 +2230,71 @@ export const da: Dictionary = {
     modeTetradic: "Tetrade",
     modeMono: "Monokrom",
     modeShades: "Nuancer",
+  },
+  periodesystemTool: {
+    intro:
+      "Periodesystemet ordner grundstofferne efter atomnummer. Søjlerne er grupper med lignende kemi. Rækkerne er perioder. Tryk på et grundstof for at læse mere.",
+    search: "Søg efter grundstoffer",
+    searchPlaceholder: "Navn, symbol eller atomnummer",
+    clearSearch: "Ryd søgning",
+    legend: "Kategorier",
+    filterAll: "Alle",
+    group: "Gruppe",
+    period: "Periode",
+    atomicNumber: "Atomnummer",
+    atomicWeight: "Atomvægt",
+    category: "Kategori",
+    phase: "Tilstandsform (STP)",
+    electronConfig: "Elektronkonfiguration",
+    alsoKnownAs: "Også kendt som",
+    about: "Om grundstoffet",
+    uses: "Hvad det bruges til",
+    readMore: "Læs mere",
+    readLess: "Vis mindre",
+    close: "Luk",
+    previous: "Forrige grundstof",
+    next: "Næste grundstof",
+    lanthanides: "Lanthanider",
+    actinides: "Actinider",
+    noMatch: "Ingen grundstoffer matcher søgningen.",
+    selectHint: "Vælg et grundstof i tabellen for at læse om det.",
+    phaseSolid: "Fast",
+    phaseLiquid: "Væske",
+    phaseGas: "Gas",
+    phaseUnknown: "Ukendt",
+    catAlkali: "Alkalimetal",
+    catAlkalineEarth: "Jordalkalimetal",
+    catTransition: "Overgangsmetal",
+    catPostTransition: "Post-overgangsmetal",
+    catMetalloid: "Halvmetal",
+    catNonmetal: "Ikkemetal",
+    catHalogen: "Halogen",
+    catNobleGas: "Ædelgas",
+    catLanthanide: "Lanthanid",
+    catActinide: "Actinid",
+    catUnknown: "Ukendte egenskaber",
+    weightNote:
+      "Atomvægte følger IUPAC 2021. Tal i kantede parenteser er massetallet for den længstlevende isotop, når der ikke findes en standardatomvægt.",
+    modeExplore: "Læs",
+    modeCombine: "Kombinér",
+    combineIntro:
+      "Vælg op til fire grundstoffer for at se kendte forbindelser og slå flere op i PubChem.",
+    combineHint: "Tryk på grundstoffer i tabellen for at lægge dem i kombinationen.",
+    combineTray: "Valgte grundstoffer",
+    combineAdd: "Tilføj til kombination",
+    combineRemove: "Fjern",
+    combineClear: "Ryd valg",
+    combineFind: "Find forbindelser",
+    combineSearching: "Søger i PubChem…",
+    combineCurated: "Kendte eksempler",
+    combinePubChem: "Fra PubChem",
+    combineNone: "Ingen almindelige forbindelser fundet for denne kombination.",
+    combineError: "Kunne ikke hente data fra PubChem lige nu. Prøv igen om lidt.",
+    combineMax: "Du kan højst vælge fire grundstoffer ad gangen.",
+    combineOpen: "Åbn i PubChem",
+    combineSource: "Ekstern opslag bruger PubChems åbne database.",
+    combineFormula: "Formel",
+    combineWeight: "Molmasse",
   },
   imgbase64Tool: {
     privacy: "Kodning sker i din browser. Intet uploades.",

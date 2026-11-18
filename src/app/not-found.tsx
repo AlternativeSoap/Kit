@@ -15,7 +15,7 @@ export default function NotFound() {
       <p className="mt-2 text-center text-sm text-muted">{dictionary.notFound.body}</p>
       <Link
         href="/"
-        className="kit-touch-target mt-6 inline-flex items-center justify-center rounded-[10px] bg-accent px-4 py-2.5 text-sm font-medium text-white"
+        className="kit-touch-target mt-6 inline-flex items-center justify-center rounded-[10px] bg-accent px-4 py-2.5 text-sm font-medium text-on-accent"
       >
         {dictionary.notFound.back}
       </Link>

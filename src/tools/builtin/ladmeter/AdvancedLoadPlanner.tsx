@@ -245,7 +245,7 @@ export function AdvancedLoadPlanner() {
                   setPresetId("custom");
                   setter(event.target.value);
                 }}
-                className="w-[4.5rem] rounded-[8px] border border-border bg-surface px-2 py-1.5 text-sm tabular-nums outline-none focus:border-accent"
+                className="kit-field w-[5.25rem] rounded-[8px] border border-border bg-surface px-2 py-2 text-sm tabular-nums outline-none focus:border-accent sm:w-[4.5rem] sm:py-1.5"
               />
             </label>
           ))}

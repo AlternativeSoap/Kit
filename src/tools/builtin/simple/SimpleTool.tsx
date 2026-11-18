@@ -226,7 +226,8 @@ export function SimpleTool({
 
   const copyAllValue =
     computed.rows
-      ?.map((row) => {
+      ?.filter((row) => !row.omitFromCopyAll)
+      .map((row) => {
         const raw = da && row.valueDa !== undefined ? row.valueDa : row.value;
         const label = da ? row.labelDa : row.labelEn;
         return `${label}: ${formatDisplay(
@@ -256,7 +257,7 @@ export function SimpleTool({
                   onClick={() => setField(field.key, opt.value)}
                   className={`kit-touch-target rounded-[10px] border px-3 py-2 text-sm transition-colors sm:min-h-0 ${
                     active
-                      ? "border-accent bg-accent text-white"
+                      ? "border-accent bg-accent text-on-accent"
                       : "border-border bg-background text-muted hover:text-foreground"
                   }`}
                 >
@@ -304,12 +305,12 @@ export function SimpleTool({
           </div>
         ) : (
           <input
-            type={isNumericField(field) ? "text" : "text"}
+            type={field.kind === "password" ? "password" : "text"}
             inputMode={isNumericField(field) ? "decimal" : undefined}
             value={value}
             onChange={(e) => setField(field.key, e.target.value)}
             className={fieldClass}
-            autoComplete="off"
+            autoComplete={field.kind === "password" ? "new-password" : "off"}
             spellCheck={false}
           />
         )}
@@ -401,10 +402,14 @@ export function SimpleTool({
                 );
                 const primary = index === 0;
                 const multiline = display.includes("\n") || display.length > 80;
+                const primaryLarge =
+                  primary &&
+                  !display.includes("\n") &&
+                  display.length <= 28;
                 return (
                   <div
                     key={`${row.labelEn}-${index}`}
-                    className={`rounded-[12px] border border-border/80 bg-background/70 p-3 ${
+                    className={`simple-tool-result-row rounded-[12px] border border-border/80 bg-background/70 p-3 ${
                       primary ? "simple-tool-primary" : ""
                     }`}
                   >
@@ -415,11 +420,13 @@ export function SimpleTool({
                         </dt>
                         <dd
                           className={`mt-1 break-words text-foreground ${
-                            primary
+                            primaryLarge
                               ? "text-2xl font-semibold tracking-tight sm:text-3xl"
                               : multiline
                                 ? "whitespace-pre-wrap font-mono text-sm leading-relaxed"
-                                : "font-mono text-sm"
+                                : primary
+                                  ? "font-mono text-base font-semibold leading-relaxed"
+                                  : "font-mono text-sm"
                           }`}
                         >
                           {display}

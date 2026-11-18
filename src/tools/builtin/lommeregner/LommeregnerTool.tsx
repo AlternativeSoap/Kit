@@ -80,7 +80,7 @@ export function LommeregnerTool({ prefill }: { prefill?: ToolPrefill }) {
           onClick={() => changeMode("simple")}
           className={`kit-touch-target rounded-[8px] px-3 py-1.5 text-xs font-medium transition-colors sm:min-h-0 ${
             active === "simple"
-              ? "bg-accent text-white"
+              ? "bg-accent text-on-accent"
               : "text-muted hover:bg-accent-soft hover:text-foreground"
           }`}
         >
@@ -92,7 +92,7 @@ export function LommeregnerTool({ prefill }: { prefill?: ToolPrefill }) {
           onClick={() => changeMode("advanced")}
           className={`kit-touch-target rounded-[8px] px-3 py-1.5 text-xs font-medium transition-colors sm:min-h-0 ${
             active === "advanced"
-              ? "bg-accent text-white"
+              ? "bg-accent text-on-accent"
               : "text-muted hover:bg-accent-soft hover:text-foreground"
           }`}
         >

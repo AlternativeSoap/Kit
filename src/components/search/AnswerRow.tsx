@@ -99,7 +99,7 @@ export function AnswerRow({
           <span
             className={`inline-flex min-h-11 items-center justify-center rounded-[8px] border px-3 py-2 text-xs font-medium transition-colors sm:mt-1 sm:min-h-0 sm:shrink-0 sm:py-1 ${
               copied
-                ? "border-accent bg-accent text-white"
+                ? "border-accent bg-accent text-on-accent"
                 : "border-border bg-surface text-muted"
             }`}
           >

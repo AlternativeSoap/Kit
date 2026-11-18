@@ -13,7 +13,7 @@ const THEMES = {
 type ThemeId = keyof typeof THEMES;
 
 const primaryBtn =
-  "kit-touch-target rounded-[10px] bg-accent px-4 py-2.5 text-sm font-medium text-white disabled:opacity-40 sm:min-h-0";
+  "kit-touch-target rounded-[10px] bg-accent px-4 py-2.5 text-sm font-medium text-on-accent disabled:opacity-40 sm:min-h-0";
 const secondaryBtn =
   "kit-touch-target rounded-[10px] border border-border bg-surface px-4 py-2.5 text-sm font-medium text-foreground disabled:opacity-40 sm:min-h-0";
 
@@ -167,7 +167,7 @@ export function CodeShotTool({ prefill }: { prefill?: ToolPrefill }) {
                   onClick={() => setTheme(id)}
                   className={`kit-touch-target rounded-[10px] border px-3 py-2 text-left text-sm sm:min-h-0 ${
                     theme === id
-                      ? "border-accent bg-accent text-white"
+                      ? "border-accent bg-accent text-on-accent"
                       : "border-border bg-surface text-muted hover:text-foreground"
                   }`}
                 >
@@ -183,7 +183,7 @@ export function CodeShotTool({ prefill }: { prefill?: ToolPrefill }) {
         </div>
       </div>
 
-      <div className="overflow-auto rounded-[12px] border border-border bg-black/5 p-3">
+      <div className="overflow-auto rounded-[12px] border border-border bg-overlay p-3">
         <canvas ref={canvasRef} className="mx-auto max-w-full" />
       </div>
 

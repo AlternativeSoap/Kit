@@ -103,7 +103,7 @@ export function StopurTool() {
           <button
             type="button"
             onClick={start}
-            className="kit-touch-target inline-flex min-w-[7rem] items-center justify-center rounded-[10px] bg-accent px-4 py-2.5 text-sm font-medium text-white sm:min-h-0"
+            className="kit-touch-target inline-flex min-w-[7rem] items-center justify-center rounded-[10px] bg-accent px-4 py-2.5 text-sm font-medium text-on-accent sm:min-h-0"
           >
             {t.start}
           </button>
@@ -130,7 +130,7 @@ export function StopurTool() {
           <button
             type="button"
             onClick={resume}
-            className="kit-touch-target inline-flex min-w-[7rem] items-center justify-center rounded-[10px] bg-accent px-4 py-2.5 text-sm font-medium text-white sm:min-h-0"
+            className="kit-touch-target inline-flex min-w-[7rem] items-center justify-center rounded-[10px] bg-accent px-4 py-2.5 text-sm font-medium text-on-accent sm:min-h-0"
           >
             {t.resume}
           </button>

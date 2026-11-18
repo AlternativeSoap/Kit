@@ -129,7 +129,7 @@ export function QrTool({ prefill }: { prefill?: ToolPrefill }) {
       <div className="flex flex-col items-center gap-3 rounded-[12px] border border-border bg-surface px-4 py-6">
         <canvas
           ref={canvasRef}
-          className="max-w-full rounded-[8px] border border-border bg-white"
+          className="max-w-full rounded-[8px] border border-border bg-paper"
           aria-label={t.preview}
         />
         {!ready ? (
@@ -148,7 +148,7 @@ export function QrTool({ prefill }: { prefill?: ToolPrefill }) {
           type="button"
           onClick={downloadPng}
           disabled={!ready}
-          className="kit-touch-target rounded-[10px] bg-accent px-4 py-2.5 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50 sm:min-h-0"
+          className="kit-touch-target rounded-[10px] bg-accent px-4 py-2.5 text-sm font-medium text-on-accent hover:opacity-90 disabled:opacity-50 sm:min-h-0"
         >
           {t.download}
         </button>

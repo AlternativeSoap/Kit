@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
+import { ThemeProvider } from "@/components/ThemeProvider";
 import { LanguageProvider } from "@/i18n/LanguageProvider";
 import "./globals.css";
 
@@ -44,10 +45,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <script
           dangerouslySetInnerHTML={{
             __html:
-              "try{var l=localStorage.getItem('kit:locale');if(l==='da'||l==='en'){document.cookie='kit-locale='+l+'; Path=/; Max-Age=31536000; SameSite=Lax';document.documentElement.lang=l}}catch(e){}",
+              "try{var l=localStorage.getItem('kit:locale');if(l==='da'||l==='en'){document.cookie='kit-locale='+l+'; Path=/; Max-Age=31536000; SameSite=Lax';document.documentElement.lang=l}var t=localStorage.getItem('kit:theme');var d=t==='dark'||(t!=='light'&&window.matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.dataset.theme=d?'dark':'light';document.documentElement.style.colorScheme=d?'dark':'light'}catch(e){}",
           }}
         />
-        <LanguageProvider>{children}</LanguageProvider>
+        <ThemeProvider>
+          <LanguageProvider>{children}</LanguageProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

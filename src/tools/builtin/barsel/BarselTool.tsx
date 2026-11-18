@@ -92,7 +92,7 @@ export function BarselTool({ prefill }: { prefill?: ToolPrefill }) {
                 onClick={() => setWeeks(String(preset))}
                 className={`kit-touch-target rounded-[8px] border px-2.5 py-1.5 text-xs sm:min-h-0 ${
                   weekCount === preset
-                    ? "border-accent bg-accent text-white"
+                    ? "border-accent bg-accent text-on-accent"
                     : "border-border text-muted hover:text-foreground"
                 }`}
               >
@@ -203,7 +203,7 @@ export function BarselTool({ prefill }: { prefill?: ToolPrefill }) {
                                   !cell.inMonth
                                     ? "text-muted/40"
                                     : isStart || isEnd
-                                      ? "bg-accent font-semibold text-white"
+                                      ? "bg-accent font-semibold text-on-accent"
                                       : inRange
                                         ? "bg-accent-soft text-foreground"
                                         : "text-foreground"
