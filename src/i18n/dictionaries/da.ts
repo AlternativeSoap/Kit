@@ -763,6 +763,162 @@ export const da: Dictionary = {
       description:
         "Læs tekst ud af foto eller screenshot. Billedet forberedes lokalt og bliver på din enhed; OCR-motoren hentes fra et CDN.",
     },
+    molekyle: {
+      name: "Molekyle-viewer",
+      description: "Udforsk almindelige molekyler i 2D og drej en enkel 3D ball-and-stick-model. Lavet som følgesvend til periodesystemet.",
+    },
+    solsystem: {
+      name: "Solsystemet",
+      description: "Udforsk Solen og planeterne med baner, fakta og en vægt-på-planet-beregner.",
+    },
+    anatomi: {
+      name: "Anatomi-atlas",
+      description: "Gennemse kroppens hovedsystemer og organer. Skift lag og åbn en del for at læse, hvad den gør.",
+    },
+    farvelab: {
+      name: "Farvelab",
+      description: "Tjek kontrast, simulér farveblindhed og konvertér mellem HEX, RGB, HSL og LAB.",
+    },
+    synth: {
+      name: "Synth og sequencer",
+      description: "Spil en enkel synthesizer med bølgeform, envelope og en 16-trins sequencer i browseren.",
+    },
+    geometri: {
+      name: "Geometri-lab",
+      description: "Tegn figurer, justér mål og se areal, omkreds og vinkler opdatere live.",
+    },
+    formellab: {
+      name: "Formel- og enhedslab",
+      description: "Kæd enhedsomregninger og kør almindelige fysik- og matematikformler ét sted.",
+    },
+    tidslinje: {
+      name: "Historisk tidslinje",
+      description: "Zoom en udvalgt tidslinje over verdensbegivenheder inden for videnskab, kultur og konflikt.",
+    },
+    sprogtrae: {
+      name: "Sprogtræ og IPA",
+      description: "Udforsk sprogfamilier og øv IPA-symboler med eksempelord og oplæsning.",
+    },
+    logik: {
+      name: "Logik-gates",
+      description: "Forbind AND-, OR-, NOT- og XOR-gates og se sandhedstabellen opdatere, når input ændres.",
+    },
+    kredslob: {
+      name: "Kredsløbs-lab",
+      description: "Byg enkle jævnstrømskredsløb med batteri, modstand og LED. Se strøm og spænding live.",
+    },
+    regexlab: {
+      name: "Regex-lab",
+      description: "Test regulære udtryk med live markering, grupper og en suite af flere cases.",
+    },
+    partikler: {
+      name: "Partikel-legeplads",
+      description: "Leg med tyngdekraft, attractors og partikelantal. Pause, nulstil og eksporter et snapshot.",
+    },
+    boligokonomi: {
+      name: "Boligøkonomi",
+      description: "Sammenlign leje og køb over op til 30 år med lån, udgifter og friværdi-scenarier.",
+    },
+    klima: {
+      name: "Klimaregnskab",
+      description: "Estimer et personligt CO₂e-aftryk fra transport, mad og bolig med synlige antagelser.",
+    },
+    postnr: {
+      name: "Danske postnumre",
+      description: "Slå danske postnumre og kommuner op, gennemse et enkelt kort og sammenlign nærliggende steder.",
+    },
+    havekalender: {
+      name: "Havekalender",
+      description: "Planlæg såning og høst for almindelige planter i en sæsonkalender til danske forhold.",
+    },
+    typografi: {
+      name: "Typografi-lab",
+      description: "Juster skriftstørrelse, vægt, tracking og linjehøjde, og tjek tekstkontrast på en prøve.",
+    },
+    opfindelser: {
+      name: "Opfindelses-graf",
+      description: "Følg hvordan opfindelser bygger på tidligere gennembrud i en interaktiv graf.",
+    },
+    stjernekort: {
+      name: "Stjernekort",
+      description: "Udforsk stjernebilleder og klare stjerner på et nattehimmel-kort. Søg, filtrér og åbn et objekt for fakta.",
+    },
+    tektonik: {
+      name: "Jord og tektonik",
+      description: "Se Jordens lag og tektoniske plader. Åbn zoner for at læse om jordskælv, vulkaner og bjergdannelse.",
+    },
+    biomer: {
+      name: "Biomer",
+      description: "Gennemse verdens biomer efter klima og liv. Åbn et biom for planter, dyr og forhold.",
+    },
+    verdensatlas: {
+      name: "Verdensatlas",
+      description: "Udforsk lande med hovedstad, region, valuta og tidszone på et enkelt verdenskort.",
+    },
+    ernaring: {
+      name: "Ernærings-lab",
+      description: "Søg almindelige fødevarer, se makroer og byg et enkelt måltid med summer.",
+    },
+    smagshjul: {
+      name: "Smagshjul",
+      description: "Udforsk smagshjul for kaffe, vin eller øl og se, hvilke noter der ligger tæt på hinanden.",
+    },
+    kokkenkemi: {
+      name: "Køkkenkemi",
+      description: "Lær køkkenreaktioner som Maillard, emulsioner, geleer og røgpunkter med interaktive forklaringer.",
+    },
+    akkorder: {
+      name: "Akkorder og kvintcirkel",
+      description: "Udforsk kvintcirklen, byg akkorder fra en grundtone og hør dem i browseren.",
+    },
+    modular: {
+      name: "Modulær synth",
+      description: "Patch en lille modulær synth med oscillatorer, filter, envelope og delay via Web Audio.",
+    },
+    sqlplay: {
+      name: "SQL-legeplads",
+      description: "Kør SQL mod en lille database i browseren og se resultattabeller med det samme.",
+    },
+    funkplot: {
+      name: "Funktionplotter",
+      description: "Plot én eller flere matematiske funktioner, pan/zoom grafen og aflæs værdier under markøren.",
+    },
+    fraktal: {
+      name: "Fraktal-explorer",
+      description: "Zoom Mandelbrot- og Julia-mængderne med farvekort og bogmærkbare views.",
+    },
+    csslab: {
+      name: "CSS layout-lab",
+      description: "Eksperimentér med Flexbox og Grid live, og kopiér CSS'en til dit layout.",
+    },
+    dkinfra: {
+      name: "DK infrastruktur",
+      description: "Gennemse store danske broer, havne, energianlæg og transportforbindelser på et enkelt kort.",
+    },
+    ferieplan: {
+      name: "Ferieplanlægger",
+      description: "Planlæg fri omkring danske helligdage, brodage og et enkelt rejsebudget.",
+    },
+    affald: {
+      name: "Affaldssortering",
+      description: "Slå op, hvordan almindeligt husholdningsaffald sorteres, med forklaring af fraktioner i dansk stil.",
+    },
+    skriftatlas: {
+      name: "Skriftsystem-atlas",
+      description: "Udforsk verdens skriftsystemer fra latin og runer til hangul og arabisk, med tegnprøver og noter.",
+    },
+    optik: {
+      name: "Optik-lab",
+      description: "Følg stråler gennem linser og spejle. Justér brændvidde og genstandsafstand for at se billedet.",
+    },
+    statistik: {
+      name: "Statistik-lab",
+      description: "Udforsk fordelinger, stikprøver, middelværdi og spredning med interaktive grafer og klare forklaringer.",
+    },
+    skak: {
+      name: "Skakbræt",
+      description: "Spil træk på et skakbræt, udforsk et par åbninger, og nulstil eller vend brættet.",
+    },
     coinflip: {
       name: "Plat eller krone",
       description: "Kast en fair 3D-mønt. Den snurrer rundt og lander på plat eller krone.",

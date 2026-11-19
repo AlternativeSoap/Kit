@@ -224,6 +224,201 @@ const GangetabelTool = lazyPlain(() =>
 const OcrTool = lazyPlain(() =>
   import("./ocr/OcrTool").then((m) => ({ default: m.OcrTool })),
 );
+const MolekyleTool = lazyPlain(() =>
+  import("./molekyle/MolekyleTool").then((m) => ({
+    default: m.MolekyleTool,
+  })),
+);
+const SolsystemTool = lazyPlain(() =>
+  import("./solsystem/SolsystemTool").then((m) => ({
+    default: m.SolsystemTool,
+  })),
+);
+const AnatomiTool = lazyPlain(() =>
+  import("./anatomi/AnatomiTool").then((m) => ({
+    default: m.AnatomiTool,
+  })),
+);
+const FarvelabTool = lazyPlain(() =>
+  import("./farvelab/FarvelabTool").then((m) => ({
+    default: m.FarvelabTool,
+  })),
+);
+const SynthTool = lazyPlain(() =>
+  import("./synth/SynthTool").then((m) => ({
+    default: m.SynthTool,
+  })),
+);
+const GeometriTool = lazyPlain(() =>
+  import("./geometri/GeometriTool").then((m) => ({
+    default: m.GeometriTool,
+  })),
+);
+const FormellabTool = lazyPlain(() =>
+  import("./formellab/FormellabTool").then((m) => ({
+    default: m.FormellabTool,
+  })),
+);
+const TidslinjeTool = lazyPlain(() =>
+  import("./tidslinje/TidslinjeTool").then((m) => ({
+    default: m.TidslinjeTool,
+  })),
+);
+const SprogtraeTool = lazyPlain(() =>
+  import("./sprogtrae/SprogtraeTool").then((m) => ({
+    default: m.SprogtraeTool,
+  })),
+);
+const LogikTool = lazyPlain(() =>
+  import("./logik/LogikTool").then((m) => ({
+    default: m.LogikTool,
+  })),
+);
+const KredslobTool = lazyPlain(() =>
+  import("./kredslob/KredslobTool").then((m) => ({
+    default: m.KredslobTool,
+  })),
+);
+const RegexlabTool = lazyPlain(() =>
+  import("./regexlab/RegexlabTool").then((m) => ({
+    default: m.RegexlabTool,
+  })),
+);
+const PartiklerTool = lazyPlain(() =>
+  import("./partikler/PartiklerTool").then((m) => ({
+    default: m.PartiklerTool,
+  })),
+);
+const BoligokonomiTool = lazyPlain(() =>
+  import("./boligokonomi/BoligokonomiTool").then((m) => ({
+    default: m.BoligokonomiTool,
+  })),
+);
+const KlimaTool = lazyPlain(() =>
+  import("./klima/KlimaTool").then((m) => ({
+    default: m.KlimaTool,
+  })),
+);
+const PostnrTool = lazyPlain(() =>
+  import("./postnr/PostnrTool").then((m) => ({
+    default: m.PostnrTool,
+  })),
+);
+const HavekalenderTool = lazyPlain(() =>
+  import("./havekalender/HavekalenderTool").then((m) => ({
+    default: m.HavekalenderTool,
+  })),
+);
+const TypografiTool = lazyPlain(() =>
+  import("./typografi/TypografiTool").then((m) => ({
+    default: m.TypografiTool,
+  })),
+);
+const OpfindelserTool = lazyPlain(() =>
+  import("./opfindelser/OpfindelserTool").then((m) => ({
+    default: m.OpfindelserTool,
+  })),
+);
+const StjernekortTool = lazyPlain(() =>
+  import("./stjernekort/StjernekortTool").then((m) => ({
+    default: m.StjernekortTool,
+  })),
+);
+const TektonikTool = lazyPlain(() =>
+  import("./tektonik/TektonikTool").then((m) => ({
+    default: m.TektonikTool,
+  })),
+);
+const BiomerTool = lazyPlain(() =>
+  import("./biomer/BiomerTool").then((m) => ({
+    default: m.BiomerTool,
+  })),
+);
+const VerdensatlasTool = lazyPlain(() =>
+  import("./verdensatlas/VerdensatlasTool").then((m) => ({
+    default: m.VerdensatlasTool,
+  })),
+);
+const ErnaringTool = lazyPlain(() =>
+  import("./ernaring/ErnaringTool").then((m) => ({
+    default: m.ErnaringTool,
+  })),
+);
+const SmagshjulTool = lazyPlain(() =>
+  import("./smagshjul/SmagshjulTool").then((m) => ({
+    default: m.SmagshjulTool,
+  })),
+);
+const KokkenkemiTool = lazyPlain(() =>
+  import("./kokkenkemi/KokkenkemiTool").then((m) => ({
+    default: m.KokkenkemiTool,
+  })),
+);
+const AkkorderTool = lazyPlain(() =>
+  import("./akkorder/AkkorderTool").then((m) => ({
+    default: m.AkkorderTool,
+  })),
+);
+const ModularTool = lazyPlain(() =>
+  import("./modular/ModularTool").then((m) => ({
+    default: m.ModularTool,
+  })),
+);
+const SqlplayTool = lazyPlain(() =>
+  import("./sqlplay/SqlplayTool").then((m) => ({
+    default: m.SqlplayTool,
+  })),
+);
+const FunkplotTool = lazyPlain(() =>
+  import("./funkplot/FunkplotTool").then((m) => ({
+    default: m.FunkplotTool,
+  })),
+);
+const FraktalTool = lazyPlain(() =>
+  import("./fraktal/FraktalTool").then((m) => ({
+    default: m.FraktalTool,
+  })),
+);
+const CsslabTool = lazyPlain(() =>
+  import("./csslab/CsslabTool").then((m) => ({
+    default: m.CsslabTool,
+  })),
+);
+const DkinfraTool = lazyPlain(() =>
+  import("./dkinfra/DkinfraTool").then((m) => ({
+    default: m.DkinfraTool,
+  })),
+);
+const FerieplanTool = lazyPlain(() =>
+  import("./ferieplan/FerieplanTool").then((m) => ({
+    default: m.FerieplanTool,
+  })),
+);
+const AffaldTool = lazyPlain(() =>
+  import("./affald/AffaldTool").then((m) => ({
+    default: m.AffaldTool,
+  })),
+);
+const SkriftatlasTool = lazyPlain(() =>
+  import("./skriftatlas/SkriftatlasTool").then((m) => ({
+    default: m.SkriftatlasTool,
+  })),
+);
+const OptikTool = lazyPlain(() =>
+  import("./optik/OptikTool").then((m) => ({
+    default: m.OptikTool,
+  })),
+);
+const StatistikTool = lazyPlain(() =>
+  import("./statistik/StatistikTool").then((m) => ({
+    default: m.StatistikTool,
+  })),
+);
+const SkakTool = lazyPlain(() =>
+  import("./skak/SkakTool").then((m) => ({
+    default: m.SkakTool,
+  })),
+);
 const DocToPdfTool = lazyPlain(() =>
   import("./doctopdf/DocToPdfTool").then((m) => ({ default: m.DocToPdfTool })),
 );
@@ -593,6 +788,84 @@ export function BuiltinToolView({
       return <GangetabelTool />;
     case "ocr":
       return <OcrTool />;
+    case "molekyle":
+      return <MolekyleTool />;
+    case "solsystem":
+      return <SolsystemTool />;
+    case "anatomi":
+      return <AnatomiTool />;
+    case "farvelab":
+      return <FarvelabTool />;
+    case "synth":
+      return <SynthTool />;
+    case "geometri":
+      return <GeometriTool />;
+    case "formellab":
+      return <FormellabTool />;
+    case "tidslinje":
+      return <TidslinjeTool />;
+    case "sprogtrae":
+      return <SprogtraeTool />;
+    case "logik":
+      return <LogikTool />;
+    case "kredslob":
+      return <KredslobTool />;
+    case "regexlab":
+      return <RegexlabTool />;
+    case "partikler":
+      return <PartiklerTool />;
+    case "boligokonomi":
+      return <BoligokonomiTool />;
+    case "klima":
+      return <KlimaTool />;
+    case "postnr":
+      return <PostnrTool />;
+    case "havekalender":
+      return <HavekalenderTool />;
+    case "typografi":
+      return <TypografiTool />;
+    case "opfindelser":
+      return <OpfindelserTool />;
+    case "stjernekort":
+      return <StjernekortTool />;
+    case "tektonik":
+      return <TektonikTool />;
+    case "biomer":
+      return <BiomerTool />;
+    case "verdensatlas":
+      return <VerdensatlasTool />;
+    case "ernaring":
+      return <ErnaringTool />;
+    case "smagshjul":
+      return <SmagshjulTool />;
+    case "kokkenkemi":
+      return <KokkenkemiTool />;
+    case "akkorder":
+      return <AkkorderTool />;
+    case "modular":
+      return <ModularTool />;
+    case "sqlplay":
+      return <SqlplayTool />;
+    case "funkplot":
+      return <FunkplotTool />;
+    case "fraktal":
+      return <FraktalTool />;
+    case "csslab":
+      return <CsslabTool />;
+    case "dkinfra":
+      return <DkinfraTool />;
+    case "ferieplan":
+      return <FerieplanTool />;
+    case "affald":
+      return <AffaldTool />;
+    case "skriftatlas":
+      return <SkriftatlasTool />;
+    case "optik":
+      return <OptikTool />;
+    case "statistik":
+      return <StatistikTool />;
+    case "skak":
+      return <SkakTool />;
     case "wordcount":
       return <TextTool prefill={prefill} />;
     case "doctopdf":

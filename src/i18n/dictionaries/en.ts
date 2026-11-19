@@ -768,6 +768,162 @@ export const en: Dictionary = {
       description:
         "Extract text from a photo or screenshot. The image is prepared locally and stays on your device; the OCR engine loads from a CDN.",
     },
+    molekyle: {
+      name: "Molecule viewer",
+      description: "Explore common molecules in 2D and rotate a simple 3D ball-and-stick model. Built as a companion to the periodic table.",
+    },
+    solsystem: {
+      name: "Solar system",
+      description: "Explore the Sun and planets with orbits, facts, and a weight-on-planet calculator.",
+    },
+    anatomi: {
+      name: "Anatomy atlas",
+      description: "Browse major body systems and organs. Switch layers and open any part to learn what it does.",
+    },
+    farvelab: {
+      name: "Color science lab",
+      description: "Inspect contrast, simulate color blindness, and convert between HEX, RGB, HSL, and LAB.",
+    },
+    synth: {
+      name: "Synth sequencer",
+      description: "Play a simple synthesizer with waveform, envelope, and a 16-step sequencer in the browser.",
+    },
+    geometri: {
+      name: "Geometry lab",
+      description: "Draw shapes, adjust dimensions, and see area, perimeter, and angles update live.",
+    },
+    formellab: {
+      name: "Formula and units lab",
+      description: "Chain unit conversions and run common physics and math formulas in one place.",
+    },
+    tidslinje: {
+      name: "History timeline",
+      description: "Zoom a curated timeline of world events across science, culture, and conflict.",
+    },
+    sprogtrae: {
+      name: "Language tree and IPA",
+      description: "Explore language families and practice IPA symbols with example words and speech.",
+    },
+    logik: {
+      name: "Logic gates lab",
+      description: "Wire AND, OR, NOT, and XOR gates, then watch the truth table update as inputs change.",
+    },
+    kredslob: {
+      name: "Circuit lab",
+      description: "Build simple DC circuits with battery, resistor, and LED. See current and voltage live.",
+    },
+    regexlab: {
+      name: "Regex lab",
+      description: "Test regular expressions with live highlights, match groups, and a multi-case suite.",
+    },
+    partikler: {
+      name: "Particle playground",
+      description: "Play with gravity, attractors, and particle counts. Pause, reset, and export a snapshot.",
+    },
+    boligokonomi: {
+      name: "Housing economics",
+      description: "Compare renting and buying over up to 30 years with loan, costs, and equity scenarios.",
+    },
+    klima: {
+      name: "Climate footprint",
+      description: "Estimate a personal CO₂e footprint from transport, food, and home with visible assumptions.",
+    },
+    postnr: {
+      name: "Danish postcodes",
+      description: "Look up Danish postcodes and municipalities, browse a simple map, and compare nearby places.",
+    },
+    havekalender: {
+      name: "Garden calendar",
+      description: "Plan sowing and harvest for common plants in a Danish-style seasonal calendar.",
+    },
+    typografi: {
+      name: "Typography lab",
+      description: "Tune font size, weight, tracking, and line height, then check text contrast on a sample.",
+    },
+    opfindelser: {
+      name: "Invention graph",
+      description: "Trace how inventions depend on earlier breakthroughs in an interactive graph.",
+    },
+    stjernekort: {
+      name: "Star chart",
+      description: "Explore constellations and bright stars on a night-sky chart. Search, filter, and open any object for facts.",
+    },
+    tektonik: {
+      name: "Earth and tectonics",
+      description: "Inspect Earth's layers and tectonic plates. Open zones to learn about quakes, volcanoes, and mountain building.",
+    },
+    biomer: {
+      name: "Biomes atlas",
+      description: "Browse world biomes by climate and life. Open a biome for plants, animals, and conditions.",
+    },
+    verdensatlas: {
+      name: "World atlas",
+      description: "Explore countries with capital, region, currency, and time zone facts on a simple world map.",
+    },
+    ernaring: {
+      name: "Nutrition lab",
+      description: "Search common foods, inspect macros, and build a simple meal totals panel.",
+    },
+    smagshjul: {
+      name: "Flavor wheel",
+      description: "Explore coffee, wine, or beer flavor wheels and see which notes sit close together.",
+    },
+    kokkenkemi: {
+      name: "Kitchen chemistry",
+      description: "Learn kitchen reactions like Maillard, emulsions, gels, and smoke points with interactive explainers.",
+    },
+    akkorder: {
+      name: "Chords and circle of fifths",
+      description: "Explore the circle of fifths, build chords from a root, and hear them in the browser.",
+    },
+    modular: {
+      name: "Modular synth patch",
+      description: "Patch a tiny modular synth with oscillators, filter, envelope, and delay using Web Audio.",
+    },
+    sqlplay: {
+      name: "SQL playground",
+      description: "Run SQL against a small in-browser sample database and inspect result tables instantly.",
+    },
+    funkplot: {
+      name: "Function plotter",
+      description: "Plot one or more math functions, pan and zoom the graph, and read values under the cursor.",
+    },
+    fraktal: {
+      name: "Fractal explorer",
+      description: "Zoom the Mandelbrot and Julia sets with color maps and bookmarkable views.",
+    },
+    csslab: {
+      name: "CSS layout lab",
+      description: "Experiment with Flexbox and Grid live, then copy the CSS for your layout.",
+    },
+    dkinfra: {
+      name: "Denmark infrastructure map",
+      description: "Browse major Danish bridges, ports, energy sites, and transport links on a simple map.",
+    },
+    ferieplan: {
+      name: "Holiday planner DK",
+      description: "Plan Danish time off around public holidays, bridge days, and a simple trip budget.",
+    },
+    affald: {
+      name: "Waste sorting guide",
+      description: "Look up how common household items should be sorted, with fraction explainers for Denmark-style systems.",
+    },
+    skriftatlas: {
+      name: "Writing systems atlas",
+      description: "Explore world scripts from Latin and runes to Hangul and Arabic, with sample characters and notes.",
+    },
+    optik: {
+      name: "Optics lab",
+      description: "Trace rays through lenses and mirrors. Adjust focal length and object distance to see the image.",
+    },
+    statistik: {
+      name: "Statistics lab",
+      description: "Explore distributions, sampling, mean and spread with interactive charts and plain explanations.",
+    },
+    skak: {
+      name: "Chess board",
+      description: "Play through moves on a chess board, explore a few openings, and reset or flip the view.",
+    },
     coinflip: {
       name: "Coin flip",
       description: "Flip a fair 3D coin. It spins and lands on heads or tails.",
