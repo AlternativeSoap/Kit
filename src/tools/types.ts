@@ -228,7 +228,21 @@ export type BuiltinToolId =
   | "skriftatlas"
   | "optik"
   | "statistik"
-  | "skak";
+  | "skak"
+  | "unnr"
+  | "matematik"
+  | "formelsamling"
+  | "fractionops"
+  | "powerroot"
+  | "roundnum"
+  | "factorize"
+  | "lineareq"
+  | "quadraticeq"
+  | "circlemath"
+  | "angleconvert"
+  | "trigsolve"
+  | "coordgeom"
+  | "combinatorics";
 
 /** kit = first-party tools and closely related utilities; web = popular destinations */
 export type ToolSurface = "kit" | "web";

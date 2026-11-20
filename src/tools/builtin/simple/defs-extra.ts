@@ -1878,4 +1878,580 @@ export const EXTRA_SIMPLE_TOOL_DEFS: SimpleToolDef[] = [
       return rows;
     },
   },
+  {
+    id: "fractionops",
+    nameEn: "Fraction arithmetic",
+    nameDa: "Brøkregning",
+    descriptionEn: "Add, subtract, multiply, or divide two fractions.",
+    descriptionDa: "Plus, minus, gange eller dividér to brøker.",
+    aliases: [
+      "fraction add",
+      "brøkregning",
+      "add fractions",
+      "multiply fractions",
+    ],
+    intents: ["math", "fraction", "school"],
+    tags: ["education", "math"],
+    popularity: 90,
+    fields: [
+      { key: "a", labelEn: "Numerator A", labelDa: "Tæller A", defaultValue: "1" },
+      { key: "b", labelEn: "Denominator A", labelDa: "Nævner A", defaultValue: "2" },
+      { key: "op", labelEn: "Operation", labelDa: "Regneart", defaultValue: "+", kind: "select", options: [
+        { value: "+", labelEn: "Add (+)", labelDa: "Plus (+)" },
+        { value: "-", labelEn: "Subtract (−)", labelDa: "Minus (−)" },
+        { value: "*", labelEn: "Multiply (×)", labelDa: "Gange (×)" },
+        { value: "/", labelEn: "Divide (÷)", labelDa: "Dividér (÷)" },
+      ]},
+      { key: "c", labelEn: "Numerator B", labelDa: "Tæller B", defaultValue: "1" },
+      { key: "d", labelEn: "Denominator B", labelDa: "Nævner B", defaultValue: "3" },
+    ],
+    compute: (v) => {
+      const a = num(v.a);
+      const b = num(v.b);
+      const c = num(v.c);
+      const d = num(v.d);
+      const op = (v.op ?? "+").trim();
+      if (
+        a === undefined ||
+        b === undefined ||
+        c === undefined ||
+        d === undefined ||
+        b === 0 ||
+        d === 0
+      ) {
+        return null;
+      }
+      let n = 0;
+      let den = 1;
+      if (op === "+") {
+        n = a * d + c * b;
+        den = b * d;
+      } else if (op === "-") {
+        n = a * d - c * b;
+        den = b * d;
+      } else if (op === "*") {
+        n = a * c;
+        den = b * d;
+      } else if (op === "/") {
+        if (c === 0) return null;
+        n = a * d;
+        den = b * c;
+      } else {
+        return null;
+      }
+      if (den === 0) return null;
+      const sign = n < 0 !== den < 0 ? -1 : 1;
+      const g = gcd(n, den);
+      const nn = (sign * Math.abs(n)) / g;
+      const dd = Math.abs(den) / g;
+      return [
+        { labelEn: "Result", labelDa: "Resultat", value: `${nn}/${dd}` },
+        {
+          labelEn: "Decimal",
+          labelDa: "Decimal",
+          value: round(nn / dd, 8),
+          numeric: true,
+        },
+      ];
+    },
+  },
+  {
+    id: "powerroot",
+    nameEn: "Powers and roots",
+    nameDa: "Potens og rod",
+    descriptionEn: "Compute a power or an nth root.",
+    descriptionDa: "Beregn en potens eller en n’te rod.",
+    aliases: ["power", "root", "potens", "kvadratrod", "nth root"],
+    intents: ["math", "school"],
+    tags: ["education", "math"],
+    popularity: 88,
+    fields: [
+      { key: "mode", labelEn: "Mode", labelDa: "Tilstand", defaultValue: "power", kind: "select", options: [
+        { value: "power", labelEn: "Power a^n", labelDa: "Potens a^n" },
+        { value: "root", labelEn: "Root ⁿ√a", labelDa: "Rod ⁿ√a" },
+      ]},
+      { key: "a", labelEn: "Base a", labelDa: "Grundtal a", defaultValue: "2" },
+      { key: "n", labelEn: "n", labelDa: "n", defaultValue: "8" },
+    ],
+    compute: (v) => {
+      const a = num(v.a);
+      const n = num(v.n);
+      if (a === undefined || n === undefined) return null;
+      if ((v.mode ?? "power") === "root") {
+        if (n === 0) return null;
+        if (a < 0 && Math.abs(n) % 2 === 0) return null;
+        const value = Math.sign(a) * Math.abs(a) ** (1 / n);
+        return [
+          {
+            labelEn: "Root",
+            labelDa: "Rod",
+            value: round(value, 8),
+            numeric: true,
+          },
+        ];
+      }
+      return [
+        {
+          labelEn: "Power",
+          labelDa: "Potens",
+          value: round(a ** n, 8),
+          numeric: true,
+        },
+      ];
+    },
+  },
+  {
+    id: "roundnum",
+    nameEn: "Rounding",
+    nameDa: "Afrunding",
+    descriptionEn: "Round a number to decimals or significant figures.",
+    descriptionDa: "Afrund et tal til decimaler eller betydende cifre.",
+    aliases: ["round", "afrunding", "significant figures", "betydende cifre"],
+    intents: ["math", "school"],
+    tags: ["education", "math"],
+    popularity: 82,
+    fields: [
+      { key: "x", labelEn: "Number", labelDa: "Tal", defaultValue: "12.3456" },
+      { key: "mode", labelEn: "Mode", labelDa: "Tilstand", defaultValue: "decimals", kind: "select", options: [
+        { value: "decimals", labelEn: "Decimal places", labelDa: "Decimaler" },
+        { value: "sig", labelEn: "Significant figures", labelDa: "Betydende cifre" },
+        { value: "int", labelEn: "Nearest integer", labelDa: "Nærmeste heltal" },
+      ]},
+      { key: "n", labelEn: "Places / figures", labelDa: "Antal", defaultValue: "2" },
+    ],
+    compute: (v) => {
+      const x = num(v.x);
+      if (x === undefined) return null;
+      const mode = v.mode ?? "decimals";
+      if (mode === "int") {
+        return [
+          {
+            labelEn: "Rounded",
+            labelDa: "Afrundet",
+            value: String(Math.round(x)),
+            numeric: true,
+          },
+        ];
+      }
+      const n = Math.max(0, Math.floor(num(v.n) ?? 0));
+      if (mode === "decimals") {
+        const f = 10 ** n;
+        return [
+          {
+            labelEn: "Rounded",
+            labelDa: "Afrundet",
+            value: String(Math.round(x * f) / f),
+            numeric: true,
+          },
+        ];
+      }
+      if (x === 0) {
+        return [{ labelEn: "Rounded", labelDa: "Afrundet", value: "0", numeric: true }];
+      }
+      const d = Math.ceil(Math.log10(Math.abs(x)));
+      const f = 10 ** (n - d);
+      return [
+        {
+          labelEn: "Rounded",
+          labelDa: "Afrundet",
+          value: String(Math.round(x * f) / f),
+          numeric: true,
+        },
+      ];
+    },
+  },
+  {
+    id: "factorize",
+    nameEn: "Prime factorization",
+    nameDa: "Primfaktorisering",
+    descriptionEn: "Factor an integer into primes.",
+    descriptionDa: "Opdel et heltal i primfaktorer.",
+    aliases: ["factorize", "prime factors", "faktorisering", "primfaktorer"],
+    intents: ["math", "school"],
+    tags: ["education", "math"],
+    popularity: 85,
+    fields: [
+      { key: "n", labelEn: "Integer", labelDa: "Heltal", defaultValue: "360" },
+    ],
+    compute: (v) => {
+      let n = Math.floor(Math.abs(num(v.n) ?? NaN));
+      if (!Number.isFinite(n) || n < 2) return null;
+      const factors: number[] = [];
+      for (let p = 2; p * p <= n; p++) {
+        while (n % p === 0) {
+          factors.push(p);
+          n /= p;
+        }
+      }
+      if (n > 1) factors.push(n);
+      const counts = new Map<number, number>();
+      for (const f of factors) counts.set(f, (counts.get(f) ?? 0) + 1);
+      const pretty = [...counts.entries()]
+        .map(([p, e]) => (e === 1 ? String(p) : `${p}^${e}`))
+        .join(" · ");
+      return [
+        {
+          labelEn: "Factors",
+          labelDa: "Faktorer",
+          value: factors.join(" × "),
+        },
+        {
+          labelEn: "Product form",
+          labelDa: "Produktform",
+          value: pretty,
+        },
+      ];
+    },
+  },
+  {
+    id: "lineareq",
+    nameEn: "Linear equation",
+    nameDa: "Førstegradsligning",
+    descriptionEn: "Solve ax + b = c for x.",
+    descriptionDa: "Løs ax + b = c for x.",
+    aliases: ["linear equation", "førstegradsligning", "solve for x", "ax+b=c"],
+    intents: ["math", "algebra", "school"],
+    tags: ["education", "math"],
+    popularity: 91,
+    fields: [
+      { key: "a", labelEn: "a", labelDa: "a", defaultValue: "2" },
+      { key: "b", labelEn: "b", labelDa: "b", defaultValue: "3" },
+      { key: "c", labelEn: "c", labelDa: "c", defaultValue: "11" },
+    ],
+    compute: (v) => {
+      const a = num(v.a);
+      const b = num(v.b);
+      const c = num(v.c);
+      if (a === undefined || b === undefined || c === undefined) return null;
+      if (a === 0) {
+        return [
+          {
+            labelEn: "Result",
+            labelDa: "Resultat",
+            value: b === c ? "all x" : "no solution",
+            valueDa: b === c ? "alle x" : "ingen løsning",
+          },
+        ];
+      }
+      const x = (c - b) / a;
+      return [
+        { labelEn: "x", labelDa: "x", value: round(x, 8), numeric: true },
+        {
+          labelEn: "Steps",
+          labelDa: "Trin",
+          value: `ax + b = c → ax = c − b → x = (c − b)/a`,
+          valueDa: `ax + b = c → ax = c − b → x = (c − b)/a`,
+        },
+      ];
+    },
+  },
+  {
+    id: "quadraticeq",
+    nameEn: "Quadratic equation",
+    nameDa: "Andengradsligning",
+    descriptionEn: "Solve ax² + bx + c = 0 with discriminant and vertex.",
+    descriptionDa: "Løs ax² + bx + c = 0 med diskriminant og toppunkt.",
+    aliases: [
+      "quadratic",
+      "andengradsligning",
+      "discriminant",
+      "diskriminant",
+    ],
+    intents: ["math", "algebra", "school"],
+    tags: ["education", "math"],
+    popularity: 90,
+    fields: [
+      { key: "a", labelEn: "a", labelDa: "a", defaultValue: "1" },
+      { key: "b", labelEn: "b", labelDa: "b", defaultValue: "-5" },
+      { key: "c", labelEn: "c", labelDa: "c", defaultValue: "6" },
+    ],
+    compute: (v) => {
+      const a = num(v.a);
+      const b = num(v.b);
+      const c = num(v.c);
+      if (a === undefined || b === undefined || c === undefined || a === 0) {
+        return null;
+      }
+      const D = b * b - 4 * a * c;
+      const vx = -b / (2 * a);
+      const vy = a * vx * vx + b * vx + c;
+      const rows: SimpleResultRow[] = [
+        { labelEn: "Discriminant D", labelDa: "Diskriminant D", value: round(D, 8), numeric: true },
+        {
+          labelEn: "Vertex",
+          labelDa: "Toppunkt",
+          value: `(${round(vx, 6)}, ${round(vy, 6)})`,
+        },
+      ];
+      if (D < 0) {
+        rows.push({
+          labelEn: "Roots",
+          labelDa: "Rødder",
+          value: "no real roots",
+          valueDa: "ingen reelle rødder",
+        });
+      } else if (D === 0) {
+        rows.push({
+          labelEn: "Root",
+          labelDa: "Rod",
+          value: round(-b / (2 * a), 8),
+          numeric: true,
+        });
+      } else {
+        const s = Math.sqrt(D);
+        rows.push(
+          { labelEn: "x₁", labelDa: "x₁", value: round((-b + s) / (2 * a), 8), numeric: true },
+          { labelEn: "x₂", labelDa: "x₂", value: round((-b - s) / (2 * a), 8), numeric: true },
+        );
+      }
+      return rows;
+    },
+  },
+  {
+    id: "circlemath",
+    nameEn: "Circle",
+    nameDa: "Cirkel",
+    descriptionEn: "Radius, diameter, circumference, and area.",
+    descriptionDa: "Radius, diameter, omkreds og areal.",
+    aliases: ["circle", "cirkel", "circumference", "omkreds"],
+    intents: ["math", "geometry", "school"],
+    tags: ["education", "math"],
+    popularity: 87,
+    fields: [
+      { key: "known", labelEn: "Known", labelDa: "Givet", defaultValue: "r", kind: "select", options: [
+        { value: "r", labelEn: "Radius r", labelDa: "Radius r" },
+        { value: "d", labelEn: "Diameter d", labelDa: "Diameter d" },
+        { value: "C", labelEn: "Circumference C", labelDa: "Omkreds O" },
+        { value: "A", labelEn: "Area A", labelDa: "Areal A" },
+      ]},
+      { key: "value", labelEn: "Value", labelDa: "Værdi", defaultValue: "5" },
+    ],
+    compute: (v) => {
+      const value = num(v.value);
+      if (value === undefined || value <= 0) return null;
+      let r = value;
+      const known = v.known ?? "r";
+      if (known === "d") r = value / 2;
+      else if (known === "C") r = value / (2 * Math.PI);
+      else if (known === "A") r = Math.sqrt(value / Math.PI);
+      const d = 2 * r;
+      const C = 2 * Math.PI * r;
+      const A = Math.PI * r * r;
+      return [
+        { labelEn: "Radius r", labelDa: "Radius r", value: round(r, 6), numeric: true },
+        { labelEn: "Diameter d", labelDa: "Diameter d", value: round(d, 6), numeric: true },
+        { labelEn: "Circumference", labelDa: "Omkreds", value: round(C, 6), numeric: true },
+        { labelEn: "Area", labelDa: "Areal", value: round(A, 6), numeric: true },
+      ];
+    },
+  },
+  {
+    id: "angleconvert",
+    nameEn: "Angle convert",
+    nameDa: "Vinkler",
+    descriptionEn: "Convert between degrees and radians.",
+    descriptionDa: "Omregn mellem grader og radianer.",
+    aliases: ["radians", "degrees", "radianer", "grader", "vinkel"],
+    intents: ["math", "geometry", "school"],
+    tags: ["education", "math"],
+    popularity: 84,
+    fields: [
+      { key: "mode", labelEn: "Direction", labelDa: "Retning", defaultValue: "deg2rad", kind: "select", options: [
+        { value: "deg2rad", labelEn: "Degrees → radians", labelDa: "Grader → radianer" },
+        { value: "rad2deg", labelEn: "Radians → degrees", labelDa: "Radianer → grader" },
+      ]},
+      { key: "x", labelEn: "Value", labelDa: "Værdi", defaultValue: "180" },
+    ],
+    compute: (v) => {
+      const x = num(v.x);
+      if (x === undefined) return null;
+      if ((v.mode ?? "deg2rad") === "rad2deg") {
+        return [
+          {
+            labelEn: "Degrees",
+            labelDa: "Grader",
+            value: round((x * 180) / Math.PI, 8),
+            numeric: true,
+          },
+        ];
+      }
+      return [
+        {
+          labelEn: "Radians",
+          labelDa: "Radianer",
+          value: round((x * Math.PI) / 180, 8),
+          numeric: true,
+        },
+      ];
+    },
+  },
+  {
+    id: "trigsolve",
+    nameEn: "Trigonometry",
+    nameDa: "Trigonometri",
+    descriptionEn: "Right-triangle trig from an angle and one side.",
+    descriptionDa: "Retvinklet trig ud fra en vinkel og én side.",
+    aliases: ["trigonometry", "sin cos tan", "trigonometri", "sinus"],
+    intents: ["math", "trigonometry", "school"],
+    tags: ["education", "math"],
+    popularity: 89,
+    fields: [
+      { key: "angle", labelEn: "Angle (°)", labelDa: "Vinkel (°)", defaultValue: "30" },
+      { key: "side", labelEn: "Known side", labelDa: "Kendt side", defaultValue: "hyp", kind: "select", options: [
+        { value: "hyp", labelEn: "Hypotenuse", labelDa: "Hypotenuse" },
+        { value: "opp", labelEn: "Opposite", labelDa: "Modstående" },
+        { value: "adj", labelEn: "Adjacent", labelDa: "Hosliggende" },
+      ]},
+      { key: "len", labelEn: "Length", labelDa: "Længde", defaultValue: "10" },
+    ],
+    compute: (v) => {
+      const deg = num(v.angle);
+      const len = num(v.len);
+      if (deg === undefined || len === undefined || len <= 0) return null;
+      if (deg <= 0 || deg >= 90) return null;
+      const rad = (deg * Math.PI) / 180;
+      const s = Math.sin(rad);
+      const c = Math.cos(rad);
+      const t = Math.tan(rad);
+      let hyp = len;
+      let opp = len;
+      let adj = len;
+      const side = v.side ?? "hyp";
+      if (side === "hyp") {
+        hyp = len;
+        opp = len * s;
+        adj = len * c;
+      } else if (side === "opp") {
+        opp = len;
+        hyp = len / s;
+        adj = len / t;
+      } else {
+        adj = len;
+        hyp = len / c;
+        opp = len * t;
+      }
+      return [
+        { labelEn: "sin", labelDa: "sin", value: round(s, 6), numeric: true },
+        { labelEn: "cos", labelDa: "cos", value: round(c, 6), numeric: true },
+        { labelEn: "tan", labelDa: "tan", value: round(t, 6), numeric: true },
+        { labelEn: "Opposite", labelDa: "Modstående", value: round(opp, 6), numeric: true },
+        { labelEn: "Adjacent", labelDa: "Hosliggende", value: round(adj, 6), numeric: true },
+        { labelEn: "Hypotenuse", labelDa: "Hypotenuse", value: round(hyp, 6), numeric: true },
+      ];
+    },
+  },
+  {
+    id: "coordgeom",
+    nameEn: "Coordinate geometry",
+    nameDa: "Koordinatsystem",
+    descriptionEn: "Distance, midpoint, and slope between two points.",
+    descriptionDa: "Afstand, midtpunkt og hældning mellem to punkter.",
+    aliases: [
+      "coordinate geometry",
+      "koordinatsystem",
+      "midpoint",
+      "slope",
+      "hældning",
+    ],
+    intents: ["math", "geometry", "school"],
+    tags: ["education", "math"],
+    popularity: 86,
+    fields: [
+      { key: "x1", labelEn: "x₁", labelDa: "x₁", defaultValue: "0" },
+      { key: "y1", labelEn: "y₁", labelDa: "y₁", defaultValue: "0" },
+      { key: "x2", labelEn: "x₂", labelDa: "x₂", defaultValue: "3" },
+      { key: "y2", labelEn: "y₂", labelDa: "y₂", defaultValue: "4" },
+    ],
+    compute: (v) => {
+      const x1 = num(v.x1);
+      const y1 = num(v.y1);
+      const x2 = num(v.x2);
+      const y2 = num(v.y2);
+      if (
+        x1 === undefined ||
+        y1 === undefined ||
+        x2 === undefined ||
+        y2 === undefined
+      ) {
+        return null;
+      }
+      const dx = x2 - x1;
+      const dy = y2 - y1;
+      const dist = Math.hypot(dx, dy);
+      const rows: SimpleResultRow[] = [
+        {
+          labelEn: "Distance",
+          labelDa: "Afstand",
+          value: round(dist, 6),
+          numeric: true,
+        },
+        {
+          labelEn: "Midpoint",
+          labelDa: "Midtpunkt",
+          value: `(${round((x1 + x2) / 2, 6)}, ${round((y1 + y2) / 2, 6)})`,
+        },
+      ];
+      if (dx === 0) {
+        rows.push({
+          labelEn: "Slope",
+          labelDa: "Hældning",
+          value: "undefined (vertical)",
+          valueDa: "udefineret (lodret)",
+        });
+      } else {
+        rows.push({
+          labelEn: "Slope",
+          labelDa: "Hældning",
+          value: round(dy / dx, 6),
+          numeric: true,
+        });
+      }
+      return rows;
+    },
+  },
+  {
+    id: "combinatorics",
+    nameEn: "Combinatorics",
+    nameDa: "Kombinatorik",
+    descriptionEn: "Factorial, permutations P(n,k), and combinations C(n,k).",
+    descriptionDa: "Fakultet, permutationer P(n,k) og kombinationer C(n,k).",
+    aliases: [
+      "combinatorics",
+      "kombinatorik",
+      "factorial",
+      "nCr",
+      "nPr",
+      "fakultet",
+    ],
+    intents: ["math", "probability", "school"],
+    tags: ["education", "math"],
+    popularity: 85,
+    fields: [
+      { key: "n", labelEn: "n", labelDa: "n", defaultValue: "10" },
+      { key: "k", labelEn: "k", labelDa: "k", defaultValue: "3" },
+    ],
+    compute: (v) => {
+      const n = Math.floor(num(v.n) ?? NaN);
+      const k = Math.floor(num(v.k) ?? NaN);
+      if (!Number.isFinite(n) || !Number.isFinite(k) || n < 0 || k < 0 || k > n) {
+        return null;
+      }
+      if (n > 170) return null;
+      let factN = 1;
+      for (let i = 2; i <= n; i++) factN *= i;
+      let p = 1;
+      for (let i = 0; i < k; i++) p *= n - i;
+      const factK = (() => {
+        let f = 1;
+        for (let i = 2; i <= k; i++) f *= i;
+        return f;
+      })();
+      const c = p / factK;
+      return [
+        { labelEn: "n!", labelDa: "n!", value: String(factN), numeric: true },
+        { labelEn: "P(n,k)", labelDa: "P(n,k)", value: String(p), numeric: true },
+        { labelEn: "C(n,k)", labelDa: "C(n,k)", value: String(c), numeric: true },
+      ];
+    },
+  },
 ];

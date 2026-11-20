@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import type { ComponentType } from "react";
 import type { ToolPrefill } from "@/tools/prefill";
 import type { BuiltinToolId } from "@/tools/types";
+import { MATH_SUITE_IDS } from "./matematik/catalog";
 import { SIMPLE_TOOL_IDS } from "./simple/defs";
 
 type PrefillProps = { prefill?: ToolPrefill };
@@ -37,14 +38,6 @@ const LonTool = lazyPrefill(() =>
 );
 const LadmeterTool = lazyPrefill(() =>
   import("./ladmeter/LadmeterTool").then((m) => ({ default: m.LadmeterTool })),
-);
-const LommeregnerTool = lazyPrefill(() =>
-  import("./lommeregner/LommeregnerTool").then((m) => ({
-    default: m.LommeregnerTool,
-  })),
-);
-const ProcentTool = lazyPrefill(() =>
-  import("./procent/ProcentTool").then((m) => ({ default: m.ProcentTool })),
 );
 const PasswordTool = lazyPrefill(() =>
   import("./password/PasswordTool").then((m) => ({ default: m.PasswordTool })),
@@ -219,11 +212,6 @@ const MetronomeTool = lazyPlain(() =>
     default: m.MetronomeTool,
   })),
 );
-const GangetabelTool = lazyPlain(() =>
-  import("./gangetabel/GangetabelTool").then((m) => ({
-    default: m.GangetabelTool,
-  })),
-);
 const OcrTool = lazyPlain(() =>
   import("./ocr/OcrTool").then((m) => ({ default: m.OcrTool })),
 );
@@ -252,16 +240,6 @@ const SynthTool = lazyPlain(() =>
     default: m.SynthTool,
   })),
 );
-const GeometriTool = lazyPlain(() =>
-  import("./geometri/GeometriTool").then((m) => ({
-    default: m.GeometriTool,
-  })),
-);
-const FormellabTool = lazyPlain(() =>
-  import("./formellab/FormellabTool").then((m) => ({
-    default: m.FormellabTool,
-  })),
-);
 const TidslinjeTool = lazyPlain(() =>
   import("./tidslinje/TidslinjeTool").then((m) => ({
     default: m.TidslinjeTool,
@@ -270,11 +248,6 @@ const TidslinjeTool = lazyPlain(() =>
 const SprogtraeTool = lazyPlain(() =>
   import("./sprogtrae/SprogtraeTool").then((m) => ({
     default: m.SprogtraeTool,
-  })),
-);
-const LogikTool = lazyPlain(() =>
-  import("./logik/LogikTool").then((m) => ({
-    default: m.LogikTool,
   })),
 );
 const KredslobTool = lazyPlain(() =>
@@ -305,6 +278,11 @@ const KlimaTool = lazyPlain(() =>
 const PostnrTool = lazyPlain(() =>
   import("./postnr/PostnrTool").then((m) => ({
     default: m.PostnrTool,
+  })),
+);
+const UnnrTool = lazyPlain(() =>
+  import("./unnr/UnnrTool").then((m) => ({
+    default: m.UnnrTool,
   })),
 );
 const HavekalenderTool = lazyPlain(() =>
@@ -372,16 +350,6 @@ const SqlplayTool = lazyPlain(() =>
     default: m.SqlplayTool,
   })),
 );
-const FunkplotTool = lazyPlain(() =>
-  import("./funkplot/FunkplotTool").then((m) => ({
-    default: m.FunkplotTool,
-  })),
-);
-const FraktalTool = lazyPlain(() =>
-  import("./fraktal/FraktalTool").then((m) => ({
-    default: m.FraktalTool,
-  })),
-);
 const CsslabTool = lazyPlain(() =>
   import("./csslab/CsslabTool").then((m) => ({
     default: m.CsslabTool,
@@ -410,11 +378,6 @@ const SkriftatlasTool = lazyPlain(() =>
 const OptikTool = lazyPlain(() =>
   import("./optik/OptikTool").then((m) => ({
     default: m.OptikTool,
-  })),
-);
-const StatistikTool = lazyPlain(() =>
-  import("./statistik/StatistikTool").then((m) => ({
-    default: m.StatistikTool,
   })),
 );
 const SkakTool = lazyPlain(() =>
@@ -506,6 +469,15 @@ const SimpleTool = dynamic(
   () => import("./simple/SimpleTool").then((m) => ({ default: m.SimpleTool })),
   { loading: ToolLoading },
 ) as ComponentType<IdProps>;
+const MathSuiteTool = dynamic(
+  () =>
+    import("./matematik/MathSuiteTool").then((m) => ({
+      default: m.MathSuiteTool,
+    })),
+  // Client-only: avoids hydration mismatch with locale text and Cursor
+  // browser tooling that injects data-cursor-ref into the live DOM.
+  { loading: ToolLoading, ssr: false },
+) as ComponentType<SuiteProps>;
 
 export function BuiltinToolView({
   id,
@@ -514,13 +486,39 @@ export function BuiltinToolView({
   id: BuiltinToolId;
   prefill?: ToolPrefill;
 }) {
+  if (
+    id === "matematik" ||
+    id === "formelsamling" ||
+    MATH_SUITE_IDS.has(id) ||
+    id === "percentagechange" ||
+    id === "percentageof"
+  ) {
+    const initial =
+      id === "matematik"
+        ? "lommeregner"
+        : id === "percentagechange" || id === "percentageof"
+          ? "procent"
+          : id;
+    const suitePrefill =
+      id === "percentagechange" || id === "percentageof"
+        ? {
+            ...prefill,
+            mode:
+              id === "percentagechange"
+                ? "change"
+                : id === "percentageof"
+                  ? "of"
+                  : (prefill?.mode ?? "of"),
+          }
+        : prefill;
+    return <MathSuiteTool prefill={suitePrefill} initial={initial} />;
+  }
+
   switch (id) {
     case "lon":
       return <LonTool prefill={prefill} />;
     case "ladmeter":
       return <LadmeterTool prefill={prefill} />;
-    case "lommeregner":
-      return <LommeregnerTool prefill={prefill} />;
     case "countdown":
     case "stopur":
     case "pomodoro":
@@ -553,22 +551,6 @@ export function BuiltinToolView({
         <MomsSuiteTool
           prefill={prefill}
           initial={id === "vatmargin" ? "vatmargin" : "moms"}
-        />
-      );
-    case "procent":
-    case "percentagechange":
-    case "percentageof":
-      return (
-        <ProcentTool
-          prefill={{
-            ...prefill,
-            mode:
-              id === "percentagechange"
-                ? "change"
-                : id === "percentageof"
-                  ? "of"
-                  : (prefill?.mode ?? "of"),
-          }}
         />
       );
     case "password":
@@ -789,8 +771,6 @@ export function BuiltinToolView({
       return <PeriodesystemTool prefill={prefill} />;
     case "metronome":
       return <MetronomeTool />;
-    case "gangetabel":
-      return <GangetabelTool />;
     case "ocr":
       return <OcrTool />;
     case "molekyle":
@@ -803,16 +783,10 @@ export function BuiltinToolView({
       return <FarvelabTool />;
     case "synth":
       return <SynthTool />;
-    case "geometri":
-      return <GeometriTool />;
-    case "formellab":
-      return <FormellabTool />;
     case "tidslinje":
       return <TidslinjeTool />;
     case "sprogtrae":
       return <SprogtraeTool />;
-    case "logik":
-      return <LogikTool />;
     case "kredslob":
       return <KredslobTool />;
     case "regexlab":
@@ -825,6 +799,8 @@ export function BuiltinToolView({
       return <KlimaTool />;
     case "postnr":
       return <PostnrTool />;
+    case "unnr":
+      return <UnnrTool />;
     case "havekalender":
       return <HavekalenderTool />;
     case "typografi":
@@ -851,10 +827,6 @@ export function BuiltinToolView({
       return <ModularTool />;
     case "sqlplay":
       return <SqlplayTool />;
-    case "funkplot":
-      return <FunkplotTool />;
-    case "fraktal":
-      return <FraktalTool />;
     case "csslab":
       return <CsslabTool />;
     case "dkinfra":
@@ -867,8 +839,6 @@ export function BuiltinToolView({
       return <SkriftatlasTool />;
     case "optik":
       return <OptikTool />;
-    case "statistik":
-      return <StatistikTool />;
     case "skak":
       return <SkakTool />;
     case "wordcount":

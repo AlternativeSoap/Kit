@@ -833,6 +833,21 @@ export const en: Dictionary = {
       description:
         "Look up postcodes in Denmark, Norway, Sweden and more on OpenStreetMap with population and live lookup.",
     },
+    unnr: {
+      name: "UN dangerous goods",
+      description:
+        "Look up UN numbers for dangerous goods with class, free quantity, stacking rules, truck stowage, spill response, and handling notes.",
+    },
+    matematik: {
+      name: "School math pack",
+      description:
+        "School math tools in one pack: arithmetic, algebra, geometry, functions, statistics, and formula tables. Filter by simple or advanced.",
+    },
+    formelsamling: {
+      name: "Formula sheet",
+      description:
+        "Searchable school formula table for percent, fractions, geometry, algebra, trigonometry, and combinatorics.",
+    },
     havekalender: {
       name: "Garden calendar",
       description: "Plan sowing and harvest for common plants in a Danish-style seasonal calendar.",

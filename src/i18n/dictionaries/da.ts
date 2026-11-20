@@ -828,6 +828,21 @@ export const da: Dictionary = {
       description:
         "Slå postnumre op i Danmark, Norge, Sverige og flere lande på OpenStreetMap med indbyggertal og live-opslag.",
     },
+    unnr: {
+      name: "UN farligt gods",
+      description:
+        "Slå UN-numre op for farligt gods med klasse, frimængde, stakning, placering i lastbil, spild og håndtering.",
+    },
+    matematik: {
+      name: "Skolematematik",
+      description:
+        "Skolematematik samlet: regning, algebra, geometri, funktioner, statistik og formelsamling. Filtrer på simpelt eller avanceret.",
+    },
+    formelsamling: {
+      name: "Formelsamling",
+      description:
+        "Søgbar tabel med skoleformler for procent, brøk, geometri, algebra, trigonometri og kombinatorik.",
+    },
     havekalender: {
       name: "Havekalender",
       description: "Planlæg såning og høst for almindelige planter i en sæsonkalender til danske forhold.",
