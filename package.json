@@ -14,6 +14,7 @@
     "catalog:generate": "node scripts/data/build-described-sites.mjs"
   },
   "dependencies": {
+    "leaflet": "^1.9.4",
     "next": "16.4.6",
     "pdf-lib": "^1.17.1",
     "react": "19.3.0",
@@ -21,6 +22,7 @@
   },
   "devDependencies": {
     "@tailwindcss/turbopack": "4.3.3",
+    "@types/leaflet": "^1.9.22",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

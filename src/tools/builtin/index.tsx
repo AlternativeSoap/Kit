@@ -201,6 +201,9 @@ const DiceTool = lazyPrefill(() =>
 const CoinFlipTool = lazyPlain(() =>
   import("./coinflip/CoinFlipTool").then((m) => ({ default: m.CoinFlipTool })),
 );
+const BoxfitTool = lazyPlain(() =>
+  import("./boxfit/BoxfitTool").then((m) => ({ default: m.BoxfitTool })),
+);
 const CurrencyApproxTool = lazyPrefill(() =>
   import("./currencyapprox/CurrencyApproxTool").then((m) => ({
     default: m.CurrencyApproxTool,
@@ -778,6 +781,8 @@ export function BuiltinToolView({
       return <DiceTool prefill={prefill} />;
     case "coinflip":
       return <CoinFlipTool />;
+    case "boxfit":
+      return <BoxfitTool />;
     case "currencyapprox":
       return <CurrencyApproxTool prefill={prefill} />;
     case "periodesystem":

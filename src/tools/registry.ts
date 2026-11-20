@@ -3326,8 +3326,9 @@ const kitToolsManual: ToolDefinition[] = [
   {
     id: "postnr",
     slug: "postnr",
-    name: "Danish postcodes",
-    description: "Look up Danish postcodes and municipalities, browse a simple map, and compare nearby places.",
+    name: "Postcodes",
+    description:
+      "Look up postcodes in Denmark, Norway, Sweden and more on OpenStreetMap with population and live lookup.",
     aliases: [
       "postnummer",
       "postnr",
@@ -3335,6 +3336,11 @@ const kitToolsManual: ToolDefinition[] = [
       "kommune",
       "postal codes denmark",
       "danmark kort",
+      "norge",
+      "sverige",
+      "norway",
+      "sweden",
+      "postnummer norge",
     ],
     intents: ["learn", "explore"],
     popularity: 88,
@@ -3342,9 +3348,9 @@ const kitToolsManual: ToolDefinition[] = [
     surface: "kit",
     builtinId: "postnr",
     ...LOCAL_BUILTIN,
-    tags: ["denmark", "lookup"],
+    tags: ["denmark", "lookup", "nordic"],
     capabilities: ["learn", "lookup"],
-    relatedIds: ["cvrcheck", "helligdage"],
+    relatedIds: ["cvrcheck", "helligdage", "verdensatlas"],
   },
   {
     id: "havekalender",

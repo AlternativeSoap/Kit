@@ -824,8 +824,9 @@ export const da: Dictionary = {
       description: "Estimer et personligt CO₂e-aftryk fra transport, mad og bolig med synlige antagelser.",
     },
     postnr: {
-      name: "Danske postnumre",
-      description: "Slå danske postnumre og kommuner op, gennemse et enkelt kort og sammenlign nærliggende steder.",
+      name: "Postnumre",
+      description:
+        "Slå postnumre op i Danmark, Norge, Sverige og flere lande på OpenStreetMap med indbyggertal og live-opslag.",
     },
     havekalender: {
       name: "Havekalender",

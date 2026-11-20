@@ -1,13 +1,35 @@
-/** Curated Danish postcodes (sample covering cities and kommuner). */
+import type { CountryId } from "./countries";
+import { DK_PLACE_POP, SAMPLES } from "./samples";
+
+/** Curated + live-lookup postcode row. */
 export type PostnrRow = {
+  id: string;
+  country: CountryId;
   nr: string;
   name: string;
+  /** Municipality, county, state, or place region */
+  region: string;
+  /** @deprecated use region — kept for older call sites */
   kommune: string;
   lat: number;
   lon: number;
+  /** Approximate place/city population when known */
+  pop: number | null;
+  source: "local" | "api";
 };
 
 type Raw = [string, string, string, number, number];
+
+function dkPop(name: string, kommune: string): number | null {
+  const keys = [name, kommune].map((s) => s.toLowerCase());
+  for (const k of keys) {
+    if (DK_PLACE_POP[k] != null) return DK_PLACE_POP[k]!;
+  }
+  // Try first word of place name (e.g. "Aalborg Øst" → aalborg)
+  const first = name.split(/\s+/)[0]?.toLowerCase();
+  if (first && DK_PLACE_POP[first] != null) return DK_PLACE_POP[first]!;
+  return null;
+}
 
 const RAW: Raw[] = [
   ["1000","København K","København",55.678,12.582],
@@ -540,13 +562,61 @@ const RAW: Raw[] = [
   ["9990","Skagen","Frederikshavn",57.725,10.584]
 ];
 
-export const POSTNR: PostnrRow[] = RAW.map(([nr, name, kommune, lat, lon]) => ({
+const DK_ROWS: PostnrRow[] = RAW.map(([nr, name, kommune, lat, lon]) => ({
+  id: `DK-${nr}`,
+  country: "DK",
   nr,
   name,
+  region: kommune,
   kommune,
   lat,
   lon,
+  pop: dkPop(name, kommune),
+  source: "local",
 }));
+
+function fromSamples(country: Exclude<CountryId, "DK">): PostnrRow[] {
+  return SAMPLES[country].map(([nr, name, region, lat, lon, pop]) => ({
+    id: `${country}-${nr}`,
+    country,
+    nr,
+    name,
+    region,
+    kommune: region,
+    lat,
+    lon,
+    pop,
+    source: "local" as const,
+  }));
+}
+
+const BY_COUNTRY: Record<CountryId, PostnrRow[]> = {
+  DK: DK_ROWS,
+  NO: fromSamples("NO"),
+  SE: fromSamples("SE"),
+  FI: fromSamples("FI"),
+  IS: fromSamples("IS"),
+  DE: fromSamples("DE"),
+  FO: fromSamples("FO"),
+  GL: fromSamples("GL"),
+};
+
+/** @deprecated Prefer catalogFor(country) */
+export const POSTNR: PostnrRow[] = DK_ROWS;
+
+export function catalogFor(country: CountryId): PostnrRow[] {
+  return BY_COUNTRY[country] ?? [];
+}
+
+export function catalogCount(country: CountryId): number {
+  return catalogFor(country).length;
+}
+
+export function formatPop(n: number, locale: "da" | "en"): string {
+  const digits = Math.round(n).toString();
+  const sep = locale === "da" ? "." : ",";
+  return digits.replace(/\B(?=(\d{3})+(?!\d))/g, sep);
+}
 
 export function haversineKm(
   a: { lat: number; lon: number },
@@ -563,21 +633,26 @@ export function haversineKm(
   return 2 * R * Math.asin(Math.sqrt(h));
 }
 
-export function searchPostnr(query: string, limit = 40): PostnrRow[] {
+export function searchPostnr(
+  country: CountryId,
+  query: string,
+  limit = 40,
+): PostnrRow[] {
   const q = query.trim().toLowerCase();
   if (!q) return [];
   const digits = q.replace(/\D/g, "");
   const scored: { row: PostnrRow; score: number }[] = [];
-  for (const row of POSTNR) {
-    const nr = row.nr.toLowerCase();
+  for (const row of catalogFor(country)) {
+    const nr = row.nr.toLowerCase().replace(/\s+/g, "");
     const name = row.name.toLowerCase();
-    const kom = row.kommune.toLowerCase();
+    const region = row.region.toLowerCase();
     let score = -1;
-    if (digits && nr.startsWith(digits)) score = 100 - (nr.length - digits.length);
-    else if (name.startsWith(q)) score = 80;
+    if (digits && nr.replace(/\D/g, "").startsWith(digits)) {
+      score = 100 - Math.max(0, nr.replace(/\D/g, "").length - digits.length);
+    } else if (name.startsWith(q)) score = 80;
     else if (name.includes(q)) score = 60;
-    else if (kom.startsWith(q)) score = 50;
-    else if (kom.includes(q)) score = 40;
+    else if (region.startsWith(q)) score = 50;
+    else if (region.includes(q)) score = 40;
     else if (digits && nr.includes(digits)) score = 30;
     if (score >= 0) scored.push({ row, score });
   }
@@ -585,8 +660,14 @@ export function searchPostnr(query: string, limit = 40): PostnrRow[] {
   return scored.slice(0, limit).map((s) => s.row);
 }
 
-export function nearbyPostnr(center: PostnrRow, maxKm = 25, limit = 12): PostnrRow[] {
-  return POSTNR.filter((r) => r.nr !== center.nr)
+export function nearbyPostnr(
+  country: CountryId,
+  center: PostnrRow,
+  maxKm = 25,
+  limit = 12,
+): PostnrRow[] {
+  return catalogFor(country)
+    .filter((r) => r.id !== center.id)
     .map((r) => ({ r, d: haversineKm(center, r) }))
     .filter((x) => x.d <= maxKm)
     .sort((a, b) => a.d - b.d)

@@ -15,9 +15,14 @@ export type TectonicPlate = {
   id: string;
   nameDa: string;
   nameEn: string;
-  /** Approximate map position 0–100 */
+  /** Focus point on the 1000×500 world map */
   mx: number;
   my: number;
+  /**
+   * Schematic plate polygon in 1000×500 map space (space-separated x,y pairs).
+   * Oriented to the world outline; not a precise geologic boundary.
+   */
+  path: string;
   boundary: BoundaryType;
   boundaryDa: string;
   boundaryEn: string;
@@ -27,6 +32,21 @@ export type TectonicPlate = {
   factEn: string;
 };
 
+/** Fill colors for map regions by dominant boundary story. */
+export const BOUNDARY_FILL: Record<BoundaryType, string> = {
+  divergent: "#3d9b8f",
+  convergent: "#c45c3e",
+  transform: "#c9a227",
+  mixed: "#6b7fd7",
+};
+
+export const BOUNDARY_SOFT: Record<BoundaryType, string> = {
+  divergent: "rgba(61, 155, 143, 0.38)",
+  convergent: "rgba(196, 92, 62, 0.38)",
+  transform: "rgba(201, 162, 39, 0.40)",
+  mixed: "rgba(107, 127, 215, 0.38)",
+};
+
 /** Outer to inner for drawing (crust first). Thicknesses are approximate means. */
 export const LAYERS: EarthLayer[] = [
   {
@@ -34,7 +54,7 @@ export const LAYERS: EarthLayer[] = [
     nameDa: "Jordskorpe",
     nameEn: "Crust",
     thicknessKm: 40,
-    color: "#c4a574",
+    color: "#d2b48c",
     factDa:
       "Tynd yderste skal. Kontinentalskorpe er tykkere og lettere end oceanbund. Typisk 5 til 70 km.",
     factEn:
@@ -45,7 +65,7 @@ export const LAYERS: EarthLayer[] = [
     nameDa: "Kappe",
     nameEn: "Mantle",
     thicknessKm: 2900,
-    color: "#b85c38",
+    color: "#a84a2e",
     factDa:
       "Største volumen. Fast sten der flyder langsomt over millioner af år og driver pladerne.",
     factEn:
@@ -80,8 +100,9 @@ export const PLATES: TectonicPlate[] = [
     id: "pacific",
     nameDa: "Stillehavspladen",
     nameEn: "Pacific Plate",
-    mx: 18,
-    my: 48,
+    mx: 120,
+    my: 240,
+    path: "20,90 180,80 240,140 250,220 230,320 160,380 40,390 10,300 15,180",
     boundary: "convergent",
     boundaryDa: "Primært konvergent (subduktion) langs ildringen.",
     boundaryEn: "Mostly convergent (subduction) along the Ring of Fire.",
@@ -94,8 +115,9 @@ export const PLATES: TectonicPlate[] = [
     id: "north-america",
     nameDa: "Nordamerikanske plade",
     nameEn: "North American Plate",
-    mx: 28,
-    my: 32,
+    mx: 220,
+    my: 140,
+    path: "130,50 280,40 340,90 320,170 280,210 220,220 170,190 140,120",
     boundary: "mixed",
     boundaryDa: "Transform ved San Andreas, divergerende i Atlanterhavet.",
     boundaryEn: "Transform at San Andreas, divergent in the Atlantic.",
@@ -108,8 +130,9 @@ export const PLATES: TectonicPlate[] = [
     id: "south-america",
     nameDa: "Sydamerikanske plade",
     nameEn: "South American Plate",
-    mx: 36,
-    my: 62,
+    mx: 270,
+    my: 320,
+    path: "235,250 295,245 310,300 300,380 270,410 245,390 235,320",
     boundary: "convergent",
     boundaryDa: "Konvergent mod vest hvor Nazca synker under kontinentet.",
     boundaryEn: "Convergent on the west where Nazca sinks under the continent.",
@@ -122,8 +145,9 @@ export const PLATES: TectonicPlate[] = [
     id: "eurasian",
     nameDa: "Eurasiske plade",
     nameEn: "Eurasian Plate",
-    mx: 58,
-    my: 30,
+    mx: 620,
+    my: 120,
+    path: "470,50 760,40 820,90 800,160 720,180 600,185 520,170 470,120",
     boundary: "convergent",
     boundaryDa: "Konvergent mod Indien og Afrika; divergerende i Atlanterhavet.",
     boundaryEn: "Convergent with India and Africa; divergent in the Atlantic.",
@@ -136,8 +160,9 @@ export const PLATES: TectonicPlate[] = [
     id: "african",
     nameDa: "Afrikanske plade",
     nameEn: "African Plate",
-    mx: 52,
-    my: 55,
+    mx: 520,
+    my: 250,
+    path: "455,155 555,145 580,200 570,300 530,340 480,325 455,230",
     boundary: "mixed",
     boundaryDa: "Divergerende i Østafrika og Midtatlanten; konvergent i Middelhavet.",
     boundaryEn: "Divergent in East Africa and the Mid-Atlantic; convergent in the Mediterranean.",
@@ -150,8 +175,9 @@ export const PLATES: TectonicPlate[] = [
     id: "indo-australian",
     nameDa: "Indo-australske plade",
     nameEn: "Indo-Australian Plate",
-    mx: 72,
-    my: 58,
+    mx: 740,
+    my: 280,
+    path: "620,190 780,180 900,230 910,310 860,370 740,380 650,330 615,250",
     boundary: "convergent",
     boundaryDa: "Konvergent mod Eurasien (Himalaya) og langs Indonesien.",
     boundaryEn: "Convergent into Eurasia (Himalayas) and along Indonesia.",
@@ -164,8 +190,9 @@ export const PLATES: TectonicPlate[] = [
     id: "antarctic",
     nameDa: "Antarktiske plade",
     nameEn: "Antarctic Plate",
-    mx: 50,
-    my: 88,
+    mx: 500,
+    my: 460,
+    path: "160,430 400,415 640,415 860,435 820,490 500,498 180,490",
     boundary: "divergent",
     boundaryDa: "Omkringliggende midtoceanrygge (divergerende).",
     boundaryEn: "Surrounded by mid-ocean ridges (divergent).",
@@ -178,8 +205,9 @@ export const PLATES: TectonicPlate[] = [
     id: "nazca",
     nameDa: "Nazca-pladen",
     nameEn: "Nazca Plate",
-    mx: 30,
-    my: 58,
+    mx: 210,
+    my: 310,
+    path: "170,250 235,245 245,310 230,380 175,385 155,310",
     boundary: "convergent",
     boundaryDa: "Synker under Sydamerika (konvergent).",
     boundaryEn: "Subducts under South America (convergent).",
@@ -192,8 +220,9 @@ export const PLATES: TectonicPlate[] = [
     id: "cocos",
     nameDa: "Cocos-pladen",
     nameEn: "Cocos Plate",
-    mx: 26,
-    my: 48,
+    mx: 195,
+    my: 230,
+    path: "165,205 225,198 235,235 210,255 165,245",
     boundary: "convergent",
     boundaryDa: "Subduktion under Mellemamerika.",
     boundaryEn: "Subduction under Central America.",
@@ -206,8 +235,9 @@ export const PLATES: TectonicPlate[] = [
     id: "caribbean",
     nameDa: "Caribiske plade",
     nameEn: "Caribbean Plate",
-    mx: 32,
-    my: 46,
+    mx: 260,
+    my: 230,
+    path: "230,210 300,205 315,240 285,260 230,250",
     boundary: "transform",
     boundaryDa: "Transform og konvergente kanter omkring Caribien.",
     boundaryEn: "Transform and convergent edges around the Caribbean.",
@@ -220,8 +250,9 @@ export const PLATES: TectonicPlate[] = [
     id: "arabian",
     nameDa: "Arabiske plade",
     nameEn: "Arabian Plate",
-    mx: 58,
-    my: 44,
+    mx: 570,
+    my: 195,
+    path: "545,165 595,158 610,200 585,225 545,215",
     boundary: "divergent",
     boundaryDa: "Divergerende i Det Røde Hav; konvergent i Zagros.",
     boundaryEn: "Divergent in the Red Sea; convergent in the Zagros.",
@@ -234,8 +265,9 @@ export const PLATES: TectonicPlate[] = [
     id: "philippine",
     nameDa: "Filippinske plade",
     nameEn: "Philippine Sea Plate",
-    mx: 78,
-    my: 42,
+    mx: 820,
+    my: 200,
+    path: "780,145 870,135 900,190 870,245 790,250 760,185",
     boundary: "convergent",
     boundaryDa: "Kompleks subduktion rundt om Filippinerne og Japan.",
     boundaryEn: "Complex subduction around the Philippines and Japan.",

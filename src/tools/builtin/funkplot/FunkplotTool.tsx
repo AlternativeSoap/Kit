@@ -7,7 +7,6 @@ import {
   useRef,
   useState,
   type PointerEvent as ReactPointerEvent,
-  type WheelEvent as ReactWheelEvent,
 } from "react";
 import {
   ErrorBanner,
@@ -437,18 +436,31 @@ export function FunkplotTool() {
     dragRef.current = null;
   }
 
-  function onWheel(e: ReactWheelEvent<HTMLCanvasElement>) {
-    e.preventDefault();
-    const world = clientToWorld(e.clientX, e.clientY);
-    if (!world) return;
-    const v = viewRef.current;
-    const factor = e.deltaY > 0 ? 1.12 : 1 / 1.12;
-    const nxMin = world.x - (world.x - v.xMin) * factor;
-    const nxMax = world.x + (v.xMax - world.x) * factor;
-    const nyMin = world.y - (world.y - v.yMin) * factor;
-    const nyMax = world.y + (v.yMax - world.y) * factor;
-    setView({ xMin: nxMin, xMax: nxMax, yMin: nyMin, yMax: nyMax });
-  }
+  // Native non-passive wheel listener: React's onWheel is passive in browsers,
+  // so preventDefault() there does not stop page zoom/scroll.
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const rect = canvas.getBoundingClientRect();
+      const px = e.clientX - rect.left;
+      const py = e.clientY - rect.top;
+      const v = viewRef.current;
+      const x = v.xMin + (px / rect.width) * (v.xMax - v.xMin);
+      const y = v.yMax - (py / rect.height) * (v.yMax - v.yMin);
+      const factor = e.deltaY > 0 ? 1.12 : 1 / 1.12;
+      setView({
+        xMin: x - (x - v.xMin) * factor,
+        xMax: x + (v.xMax - x) * factor,
+        yMin: y - (y - v.yMin) * factor,
+        yMax: y + (v.yMax - y) * factor,
+      });
+    };
+    canvas.addEventListener("wheel", onWheel, { passive: false });
+    return () => canvas.removeEventListener("wheel", onWheel);
+  }, []);
 
   function fmt(n: number) {
     if (Math.abs(n) >= 1000 || (Math.abs(n) > 0 && Math.abs(n) < 0.001)) return n.toExponential(2);
@@ -515,7 +527,6 @@ export function FunkplotTool() {
               onPointerUp();
               setCursor(null);
             }}
-            onWheel={onWheel}
           />
         </div>
         <div className="border-t border-border px-4 py-2 text-xs text-muted">

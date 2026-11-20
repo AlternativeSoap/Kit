@@ -1,23 +1,47 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useMemo, useRef, useState } from "react";
 import {
   Field,
   KitInput,
   Segmented,
-  secondaryBtnClass,
 } from "@/components/tools/ui";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import {
+  BOUNDARY_FILL,
   LAYERS,
   PLATES,
   boundaryLabel,
   matchesPlate,
+  type BoundaryType,
   type EarthLayer,
-  type TectonicPlate,
 } from "./earth";
 
+const PlateWorldMap = dynamic(
+  () => import("./PlateWorldMap").then((m) => ({ default: m.PlateWorldMap })),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex h-[320px] items-center justify-center rounded-[14px] border border-border bg-muted/20 text-sm text-muted sm:h-[420px]">
+        OpenStreetMap…
+      </div>
+    ),
+  },
+);
+
 type Mode = "layers" | "plates";
+
+const BOUNDARY_ORDER: BoundaryType[] = [
+  "divergent",
+  "convergent",
+  "transform",
+  "mixed",
+];
+
+function layerGradientId(id: string) {
+  return `tek-layer-${id}`;
+}
 
 function CrossSection({
   selectedId,
@@ -28,131 +52,233 @@ function CrossSection({
   onSelect: (id: string) => void;
   da: boolean;
 }) {
-  const size = 360;
-  const cx = size / 2;
-  const cy = size / 2;
-  const maxR = 160;
-  // Ring widths enlarged so crust stays visible (not true scale)
-  const thicknessVisual = [18, 70, 48, 36];
+  const cx = 210;
+  const cy = 210;
+  const maxR = 168;
+  const thicknessVisual = [20, 78, 52, 40];
   let r = maxR;
-  const bandRadii: { layer: EarthLayer; outer: number }[] = [];
+  const bands: { layer: EarthLayer; outer: number; inner: number }[] = [];
   for (let i = 0; i < LAYERS.length; i++) {
     const outer = r;
     const inner = i === LAYERS.length - 1 ? 0 : r - thicknessVisual[i]!;
-    bandRadii.push({ layer: LAYERS[i]!, outer });
+    bands.push({ layer: LAYERS[i]!, outer, inner: Math.max(0, inner) });
     r = Math.max(0, inner);
   }
 
+  const selected =
+    bands.find((b) => b.layer.id === selectedId) ?? bands[0]!;
+
   return (
-    <svg
-      viewBox={`0 0 ${size} ${size}`}
-      className="mx-auto h-auto w-full max-w-md touch-manipulation"
-      role="img"
-      aria-label={da ? "Jordens lag i tværsnit" : "Earth layers cross-section"}
-    >
-      <circle cx={cx} cy={cy} r={maxR + 8} className="fill-muted/20" />
-      {[...bandRadii].reverse().map(({ layer, outer }) => {
-        const selected = layer.id === selectedId;
-        return (
+    <div className="grid gap-4 lg:grid-cols-[minmax(0,1.15fr)_minmax(220px,0.85fr)] lg:items-stretch">
+      <svg
+        viewBox="0 0 420 420"
+        className="h-auto w-full touch-manipulation rounded-[14px]"
+        role="img"
+        aria-label={da ? "Jordens lag i tværsnit" : "Earth layers cross-section"}
+      >
+        <defs>
+          <radialGradient id="tek-space" cx="50%" cy="40%" r="70%">
+            <stop offset="0%" stopColor="#1a2744" />
+            <stop offset="100%" stopColor="#0b1220" />
+          </radialGradient>
+          <radialGradient id="tek-atmosphere" cx="50%" cy="50%" r="50%">
+            <stop offset="78%" stopColor="rgba(120,180,255,0)" />
+            <stop offset="92%" stopColor="rgba(120,180,255,0.22)" />
+            <stop offset="100%" stopColor="rgba(120,180,255,0)" />
+          </radialGradient>
+          <radialGradient id={layerGradientId("crust")} cx="40%" cy="35%" r="65%">
+            <stop offset="0%" stopColor="#e8d4b0" />
+            <stop offset="100%" stopColor="#b8956a" />
+          </radialGradient>
+          <radialGradient id={layerGradientId("mantle")} cx="45%" cy="40%" r="70%">
+            <stop offset="0%" stopColor="#d07045" />
+            <stop offset="100%" stopColor="#7a3018" />
+          </radialGradient>
+          <radialGradient id={layerGradientId("outer-core")} cx="45%" cy="40%" r="70%">
+            <stop offset="0%" stopColor="#ffc14a" />
+            <stop offset="100%" stopColor="#c87510" />
+          </radialGradient>
+          <radialGradient id={layerGradientId("inner-core")} cx="40%" cy="35%" r="70%">
+            <stop offset="0%" stopColor="#fff1a8" />
+            <stop offset="100%" stopColor="#e0a820" />
+          </radialGradient>
+          <filter id="tek-glow" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="2.5" result="b" />
+            <feMerge>
+              <feMergeNode in="b" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+          <clipPath id="tek-half">
+            <rect x={cx} y={cy - maxR - 20} width={maxR + 40} height={(maxR + 20) * 2} />
+          </clipPath>
+        </defs>
+
+        <rect width={420} height={420} fill="url(#tek-space)" />
+
+        {[
+          [36, 40],
+          [60, 70],
+          [380, 50],
+          [400, 90],
+          [50, 380],
+          [390, 370],
+        ].map(([x, y], i) => (
           <circle
-            key={layer.id}
-            cx={cx}
-            cy={cy}
-            r={outer}
-            fill={layer.color}
-            stroke={selected ? "var(--accent, #5b8def)" : "rgba(0,0,0,0.25)"}
-            strokeWidth={selected ? 3 : 1}
-            className="cursor-pointer"
-            role="button"
-            tabIndex={0}
-            aria-label={da ? layer.nameDa : layer.nameEn}
-            onClick={() => onSelect(layer.id)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                onSelect(layer.id);
-              }
-            }}
+            key={i}
+            cx={x}
+            cy={y}
+            r={i % 2 === 0 ? 1.1 : 0.7}
+            fill="rgba(255,255,255,0.55)"
           />
-        );
-      })}
-      <path
-        d={`M ${cx} ${cy} L ${cx} ${cy - maxR - 4} A ${maxR + 4} ${maxR + 4} 0 0 1 ${cx + (maxR + 4) * 0.55} ${cy - (maxR + 4) * 0.84} Z`}
-        fill="var(--background, #0b0d12)"
-        fillOpacity={0.35}
-        pointerEvents="none"
-      />
-    </svg>
-  );
-}
+        ))}
 
-function PlateMap({
-  plates,
-  selectedId,
-  onSelect,
-  da,
-}: {
-  plates: TectonicPlate[];
-  selectedId: string;
-  onSelect: (id: string) => void;
-  da: boolean;
-}) {
-  return (
-    <svg
-      viewBox="0 0 100 100"
-      className="mx-auto h-auto w-full max-w-lg touch-manipulation"
-      role="img"
-      aria-label={da ? "Tektoniske plader" : "Tectonic plates"}
-    >
-      <rect width="100" height="100" rx="2" className="fill-muted/15" />
-      {/* Rough continents */}
-      <ellipse cx="28" cy="35" rx="14" ry="12" className="fill-muted/25" />
-      <ellipse cx="36" cy="62" rx="10" ry="16" className="fill-muted/25" />
-      <ellipse cx="55" cy="38" rx="18" ry="12" className="fill-muted/25" />
-      <ellipse cx="55" cy="58" rx="12" ry="14" className="fill-muted/25" />
-      <ellipse cx="75" cy="55" rx="12" ry="10" className="fill-muted/25" />
-      <ellipse cx="50" cy="88" rx="22" ry="8" className="fill-muted/20" />
+        <circle cx={cx} cy={cy} r={maxR + 18} fill="url(#tek-atmosphere)" />
 
-      {PLATES.map((p) => {
-        const active = p.id === selectedId;
-        const dimmed = plates.length > 0 && !plates.some((x) => x.id === p.id);
-        return (
-          <g key={p.id} opacity={dimmed ? 0.25 : 1}>
+        {/* Full globe rings */}
+        {[...bands].reverse().map(({ layer, outer }) => {
+          const isSelected = layer.id === selectedId;
+          return (
             <circle
-              cx={p.mx}
-              cy={p.my}
-              r={active ? 4.5 : 3.2}
-              fill={active ? "var(--accent, #5b8def)" : "#d97757"}
-              stroke="var(--background, #fff)"
-              strokeWidth={0.6}
+              key={layer.id}
+              cx={cx}
+              cy={cy}
+              r={outer}
+              fill={`url(#${layerGradientId(layer.id)})`}
+              stroke={isSelected ? "#fff8e7" : "rgba(0,0,0,0.28)"}
+              strokeWidth={isSelected ? 3.5 : 1}
+              filter={isSelected ? "url(#tek-glow)" : undefined}
               className="cursor-pointer"
               role="button"
               tabIndex={0}
-              aria-label={da ? p.nameDa : p.nameEn}
-              onClick={() => onSelect(p.id)}
+              aria-label={da ? layer.nameDa : layer.nameEn}
+              onClick={() => onSelect(layer.id)}
               onKeyDown={(e) => {
                 if (e.key === "Enter" || e.key === " ") {
                   e.preventDefault();
-                  onSelect(p.id);
+                  onSelect(layer.id);
                 }
               }}
             />
-            {active ? (
-              <text
-                x={p.mx}
-                y={p.my - 6}
-                textAnchor="middle"
-                style={{ fontSize: 3.2 }}
-                className="fill-foreground"
-                pointerEvents="none"
-              >
-                {da ? p.nameDa : p.nameEn}
-              </text>
-            ) : null}
-          </g>
-        );
-      })}
-    </svg>
+          );
+        })}
+
+        {/* Right half: cutaway faces filled with the same layers */}
+        <g clipPath="url(#tek-half)" pointerEvents="none">
+          <rect
+            x={cx}
+            y={cy - maxR - 20}
+            width={maxR + 40}
+            height={(maxR + 20) * 2}
+            fill="url(#tek-space)"
+          />
+          {[...bands].reverse().map(({ layer, outer, inner }) => {
+            const d =
+              inner <= 0.5
+                ? `M ${cx} ${cy - outer}
+                   A ${outer} ${outer} 0 0 1 ${cx} ${cy + outer}
+                   Z`
+                : `M ${cx} ${cy - outer}
+                   A ${outer} ${outer} 0 0 1 ${cx} ${cy + outer}
+                   L ${cx} ${cy + inner}
+                   A ${inner} ${inner} 0 0 0 ${cx} ${cy - inner}
+                   Z`;
+            return (
+              <path
+                key={`face-${layer.id}`}
+                d={d}
+                fill={`url(#${layerGradientId(layer.id)})`}
+                stroke="rgba(0,0,0,0.2)"
+                strokeWidth={0.8}
+                opacity={layer.id === selectedId ? 1 : 0.92}
+              />
+            );
+          })}
+          <line
+            x1={cx}
+            y1={cy - maxR}
+            x2={cx}
+            y2={cy + maxR}
+            stroke="rgba(255,248,231,0.55)"
+            strokeWidth={2}
+          />
+        </g>
+
+        <text
+          x={24}
+          y={32}
+          fill="rgba(255,255,255,0.7)"
+          style={{ fontSize: 13, fontWeight: 600 }}
+        >
+          {da ? "Tværsnit" : "Cutaway"}
+        </text>
+      </svg>
+
+      <div className="flex flex-col justify-center gap-2 rounded-[14px] border border-border bg-surface p-3 sm:p-4">
+        <p className="text-xs font-medium uppercase tracking-wide text-muted">
+          {da ? "Lag (klik for at vælge)" : "Layers (click to select)"}
+        </p>
+        {bands.map(({ layer, outer, inner }) => {
+          const active = layer.id === selectedId;
+          const depthMid = Math.round(
+            ((maxR - (outer + inner) / 2) / maxR) * 6371,
+          );
+          return (
+            <button
+              key={layer.id}
+              type="button"
+              onClick={() => onSelect(layer.id)}
+              className={`kit-touch-target flex w-full items-start gap-3 rounded-[10px] border px-3 py-2.5 text-left transition-colors sm:min-h-0 ${
+                active
+                  ? "border-accent bg-accent-soft"
+                  : "border-border bg-background hover:bg-overlay"
+              }`}
+            >
+              <span
+                className="mt-0.5 inline-block h-8 w-8 shrink-0 rounded-full border border-black/10"
+                style={{
+                  background: `radial-gradient(circle at 35% 30%, #fff6, transparent 45%), ${layer.color}`,
+                }}
+                aria-hidden
+              />
+              <span className="min-w-0 flex-1">
+                <span className="block text-sm font-medium text-foreground">
+                  {da ? layer.nameDa : layer.nameEn}
+                </span>
+                <span className="mt-0.5 block text-xs text-muted">
+                  ≈ {layer.thicknessKm.toLocaleString(da ? "da-DK" : "en-US")} km
+                  {da ? " tyk" : " thick"}
+                  {" · "}
+                  {da ? "ca. dybde" : "about"} {depthMid.toLocaleString(da ? "da-DK" : "en-US")} km
+                </span>
+              </span>
+            </button>
+          );
+        })}
+        <p className="pt-1 text-xs text-muted">
+          {da
+            ? "Højre halvdel viser snitfladen. Skorpen er forstørret, så den kan ses."
+            : "The right half shows the cut face. The crust is enlarged so it stays visible."}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function BoundaryLegend({ da }: { da: boolean }) {
+  return (
+    <ul className="flex flex-wrap gap-x-4 gap-y-2 text-xs text-muted">
+      {BOUNDARY_ORDER.map((id) => (
+        <li key={id} className="inline-flex items-center gap-1.5">
+          <span
+            className="inline-block h-2.5 w-2.5 rounded-[3px] border border-border"
+            style={{ background: BOUNDARY_FILL[id] }}
+            aria-hidden
+          />
+          {boundaryLabel(id, da)}
+        </li>
+      ))}
+    </ul>
   );
 }
 
@@ -195,8 +321,8 @@ export function TektonikTool() {
     <div className="kit-tool mx-auto max-w-4xl space-y-5">
       <p className="text-sm leading-relaxed text-muted">
         {da
-          ? "Se Jordens lag i et skematisk tværsnit, eller udforsk større tektoniske plader med grænsetyper og eksempler på skælv og vulkaner."
-          : "View Earth’s layers in a schematic cross-section, or explore major tectonic plates with boundary types and quake or volcano examples."}
+          ? "Se Jordens lag i et skåret tværsnit, eller find pladerne på et verdenskort farvet efter grænsetype."
+          : "See Earth's layers in a cutaway section, or find plates on a world map colored by boundary type."}
       </p>
 
       <div className="flex flex-wrap items-end justify-between gap-3">
@@ -223,66 +349,65 @@ export function TektonikTool() {
 
       {mode === "layers" ? (
         <>
-          <section className="kit-tool-panel space-y-3 p-3 sm:p-5">
+          <section className="kit-tool-panel p-3 sm:p-4">
             <CrossSection
               selectedId={selectedLayer.id}
               onSelect={selectLayer}
               da={da}
             />
-            <p className="text-xs text-muted">
-              {da
-                ? "Ringene er ikke i sand skala. Skorpen er forstørret, så den kan ses."
-                : "Rings are not true scale. The crust is enlarged so it stays visible."}
-            </p>
-            <div className="kit-h-scroll gap-2">
-              {LAYERS.map((l) => (
-                <button
-                  key={l.id}
-                  type="button"
-                  onClick={() => selectLayer(l.id)}
-                  className={`kit-touch-target shrink-0 rounded-[8px] border px-2.5 py-1.5 text-xs sm:min-h-0 ${
-                    l.id === selectedLayer.id
-                      ? "border-accent bg-accent-soft text-foreground"
-                      : "border-border bg-background text-muted hover:text-foreground"
-                  }`}
-                >
-                  <span
-                    className="mr-1.5 inline-block h-2 w-2 rounded-full"
-                    style={{ background: l.color }}
-                    aria-hidden
-                  />
-                  {da ? l.nameDa : l.nameEn}
-                </button>
-              ))}
-            </div>
           </section>
 
           <section ref={detailRef} className="kit-tool-panel space-y-4 p-4 sm:p-5">
             <div className="flex items-center gap-3">
               <span
-                className="inline-block h-8 w-8 shrink-0 rounded-full border border-border"
-                style={{ background: selectedLayer.color }}
+                className="inline-block h-10 w-10 shrink-0 rounded-full border border-border shadow-inner"
+                style={{
+                  background: `radial-gradient(circle at 35% 30%, #fff6, transparent 45%), ${selectedLayer.color}`,
+                }}
                 aria-hidden
               />
-              <h2 className="text-lg font-semibold text-foreground">
-                {da ? selectedLayer.nameDa : selectedLayer.nameEn}
-              </h2>
+              <div>
+                <h2 className="text-lg font-semibold text-foreground">
+                  {da ? selectedLayer.nameDa : selectedLayer.nameEn}
+                </h2>
+                <p className="text-xs text-muted">
+                  {da ? "Klik en ring i snittet for at skifte lag." : "Click a ring in the cutaway to change layer."}
+                </p>
+              </div>
             </div>
             <dl className="grid gap-3 sm:grid-cols-2">
-              <div>
+              <div className="rounded-[10px] border border-border bg-background/60 px-3 py-2.5">
                 <dt className="text-xs font-medium uppercase tracking-wide text-muted">
                   {da ? "Tykkelse (ca.)" : "Thickness (approx.)"}
                 </dt>
-                <dd className="mt-0.5 text-sm tabular-nums text-foreground">
+                <dd className="mt-1 text-base tabular-nums text-foreground">
                   {selectedLayer.thicknessKm.toLocaleString(da ? "da-DK" : "en-US")}{" "}
                   km
+                </dd>
+              </div>
+              <div className="rounded-[10px] border border-border bg-background/60 px-3 py-2.5 sm:col-span-1">
+                <dt className="text-xs font-medium uppercase tracking-wide text-muted">
+                  {da ? "Placering" : "Position"}
+                </dt>
+                <dd className="mt-1 text-sm text-foreground">
+                  {selectedLayer.id === "crust"
+                    ? da
+                      ? "Yderst"
+                      : "Outermost"
+                    : selectedLayer.id === "inner-core"
+                      ? da
+                        ? "Inderst"
+                        : "Innermost"
+                      : da
+                        ? "Mellem lag"
+                        : "Middle layer"}
                 </dd>
               </div>
               <div className="sm:col-span-2">
                 <dt className="text-xs font-medium uppercase tracking-wide text-muted">
                   {da ? "Fakta" : "Fact"}
                 </dt>
-                <dd className="mt-0.5 text-sm leading-relaxed text-foreground">
+                <dd className="mt-1 text-sm leading-relaxed text-foreground">
                   {da ? selectedLayer.factDa : selectedLayer.factEn}
                 </dd>
               </div>
@@ -291,19 +416,22 @@ export function TektonikTool() {
         </>
       ) : (
         <>
-          <section className="kit-tool-panel space-y-3 p-3 sm:p-5">
-            <PlateMap
+          <section className="kit-tool-panel space-y-3 p-3 sm:p-4">
+            <PlateWorldMap
               plates={filteredPlates}
               selectedId={selectedPlate.id}
               onSelect={selectPlate}
               da={da}
             />
-            <p className="text-xs text-muted">
-              {da
-                ? "Punkterne er skematiske midtpunkter, ikke præcise pladegrænser."
-                : "Dots are schematic centers, not precise plate boundaries."}
-            </p>
-            <div className="kit-h-scroll gap-2">
+            <div className="space-y-2">
+              <BoundaryLegend da={da} />
+              <p className="text-xs text-muted">
+                {da
+                  ? "Baggrundskortet er OpenStreetMap. Farvede flader er skematiske plader til undervisning. Grænserne er ikke præcise geologiske kort."
+                  : "The base map is OpenStreetMap. Colored regions are schematic teaching plates. Boundaries are not precise geologic maps."}
+              </p>
+            </div>
+            <div className="kit-h-scroll gap-2 px-1">
               {(filteredPlates.length ? filteredPlates : PLATES).map((p) => (
                 <button
                   key={p.id}
@@ -315,6 +443,11 @@ export function TektonikTool() {
                       : "border-border bg-background text-muted hover:text-foreground"
                   }`}
                 >
+                  <span
+                    className="mr-1.5 inline-block h-2.5 w-2.5 rounded-[3px]"
+                    style={{ background: BOUNDARY_FILL[p.boundary] }}
+                    aria-hidden
+                  />
                   {da ? p.nameDa : p.nameEn}
                 </button>
               ))}
@@ -322,61 +455,47 @@ export function TektonikTool() {
           </section>
 
           <section ref={detailRef} className="kit-tool-panel space-y-4 p-4 sm:p-5">
-            <div>
-              <h2 className="text-lg font-semibold text-foreground">
-                {da ? selectedPlate.nameDa : selectedPlate.nameEn}
-              </h2>
-              <p className="text-xs text-muted">
-                {boundaryLabel(selectedPlate.boundary, da)}
-              </p>
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <h2 className="text-lg font-semibold text-foreground">
+                  {da ? selectedPlate.nameDa : selectedPlate.nameEn}
+                </h2>
+                <p className="mt-1 inline-flex items-center gap-1.5 text-xs text-muted">
+                  <span
+                    className="inline-block h-2.5 w-2.5 rounded-[3px]"
+                    style={{ background: BOUNDARY_FILL[selectedPlate.boundary] }}
+                    aria-hidden
+                  />
+                  {boundaryLabel(selectedPlate.boundary, da)}
+                </p>
+              </div>
             </div>
             <dl className="grid gap-3">
-              <div>
+              <div className="rounded-[10px] border border-border bg-background/60 px-3 py-2.5">
                 <dt className="text-xs font-medium uppercase tracking-wide text-muted">
                   {da ? "Grænser" : "Boundaries"}
                 </dt>
-                <dd className="mt-0.5 text-sm leading-relaxed text-foreground">
+                <dd className="mt-1 text-sm leading-relaxed text-foreground">
                   {da ? selectedPlate.boundaryDa : selectedPlate.boundaryEn}
                 </dd>
               </div>
-              <div>
+              <div className="rounded-[10px] border border-border bg-background/60 px-3 py-2.5">
                 <dt className="text-xs font-medium uppercase tracking-wide text-muted">
                   {da ? "Eksempler" : "Examples"}
                 </dt>
-                <dd className="mt-0.5 text-sm leading-relaxed text-foreground">
+                <dd className="mt-1 text-sm leading-relaxed text-foreground">
                   {da ? selectedPlate.exampleDa : selectedPlate.exampleEn}
                 </dd>
               </div>
-              <div>
+              <div className="rounded-[10px] border border-border bg-background/60 px-3 py-2.5">
                 <dt className="text-xs font-medium uppercase tracking-wide text-muted">
                   {da ? "Fakta" : "Fact"}
                 </dt>
-                <dd className="mt-0.5 text-sm leading-relaxed text-foreground">
+                <dd className="mt-1 text-sm leading-relaxed text-foreground">
                   {da ? selectedPlate.factDa : selectedPlate.factEn}
                 </dd>
               </div>
             </dl>
-            <div className="kit-h-scroll gap-2">
-              {(
-                [
-                  ["divergent", da ? "Divergerende" : "Divergent"],
-                  ["convergent", da ? "Konvergent" : "Convergent"],
-                  ["transform", "Transform"],
-                  ["mixed", da ? "Blandet" : "Mixed"],
-                ] as const
-              ).map(([id, label]) => (
-                <span
-                  key={id}
-                  className={`${secondaryBtnClass} pointer-events-none opacity-80 ${
-                    selectedPlate.boundary === id
-                      ? "border-accent bg-accent-soft"
-                      : ""
-                  }`}
-                >
-                  {label}
-                </span>
-              ))}
-            </div>
           </section>
         </>
       )}

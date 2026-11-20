@@ -1778,68 +1778,29 @@ export const EXTRA_SIMPLE_TOOL_DEFS: SimpleToolDef[] = [
     id: "boxfit",
     nameEn: "Box fit",
     nameDa: "Kassepasning",
-    descriptionEn: "Check whether an item fits in a box (axis-aligned, any rotation of sides).",
+    descriptionEn:
+      "See if items fit in a box, how many of each fit, and pack several different items together.",
     descriptionDa:
-      "Tjek om en genstand passer i en kasse (akseret, alle sideombytninger).",
-    aliases: ["box fit", "fits in box", "kasse", "pakning", "dimensions fit"],
+      "Se om genstande passer i en kasse, hvor mange der er plads til, og pak flere forskellige emner sammen.",
+    aliases: [
+      "box fit",
+      "fits in box",
+      "kasse",
+      "pakning",
+      "dimensions fit",
+      "packing",
+      "kassepasning",
+    ],
     intents: ["shipping", "pack", "fit"],
     tags: ["everyday", "freight"],
     popularity: 82,
+    // Dedicated BoxfitTool UI; fields/compute kept only for registry/search metadata.
     fields: [
-      { key: "iw", labelEn: "Item W", labelDa: "Genstand B", defaultValue: "30" },
-      { key: "ih", labelEn: "Item H", labelDa: "Genstand H", defaultValue: "20" },
-      { key: "id", labelEn: "Item D", labelDa: "Genstand D", defaultValue: "10" },
-      { key: "bw", labelEn: "Box W", labelDa: "Kasse B", defaultValue: "40" },
+      { key: "bw", labelEn: "Box W", labelDa: "Kasse B", defaultValue: "65" },
       { key: "bh", labelEn: "Box H", labelDa: "Kasse H", defaultValue: "30" },
       { key: "bd", labelEn: "Box D", labelDa: "Kasse D", defaultValue: "25" },
     ],
-    compute: (v) => {
-      const item = [num(v.iw), num(v.ih), num(v.id)];
-      const box = [num(v.bw), num(v.bh), num(v.bd)];
-      if (item.some((x) => x === undefined || x <= 0)) return null;
-      if (box.some((x) => x === undefined || x <= 0)) return null;
-      const a = [...(item as number[])].sort((x, y) => x - y);
-      const b = [...(box as number[])].sort((x, y) => x - y);
-      const fits = a[0]! <= b[0]! && a[1]! <= b[1]! && a[2]! <= b[2]!;
-      const itemVol = a[0]! * a[1]! * a[2]!;
-      const boxVol = b[0]! * b[1]! * b[2]!;
-      return [
-        {
-          labelEn: "Fits",
-          labelDa: "Passer",
-          value: fits ? "Yes" : "No",
-          valueDa: fits ? "Ja" : "Nej",
-        },
-        {
-          labelEn: "Orientation",
-          labelDa: "Orientering",
-          value: fits
-            ? `Sort item ${a.map((x) => round(x, 2)).join("×")} into box ${b.map((x) => round(x, 2)).join("×")}`
-            : "No axis mapping fits after sorting sides",
-          valueDa: fits
-            ? `Sortér genstand ${a.map((x) => round(x, 2)).join("×")} ind i kasse ${b.map((x) => round(x, 2)).join("×")}`
-            : "Ingen sideombytning får genstanden til at passe",
-        },
-        {
-          labelEn: "Spare volume",
-          labelDa: "Ledig volumen",
-          value: fits ? round(boxVol - itemVol, 2) : "—",
-          numeric: fits,
-        },
-        {
-          labelEn: "Item volume",
-          labelDa: "Genstandsvolumen",
-          value: round(itemVol, 2),
-          numeric: true,
-        },
-        {
-          labelEn: "Box volume",
-          labelDa: "Kassevolumen",
-          value: round(boxVol, 2),
-          numeric: true,
-        },
-      ];
-    },
+    compute: () => null,
   },
   {
     id: "ruleof70",

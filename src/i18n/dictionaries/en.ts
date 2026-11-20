@@ -829,8 +829,9 @@ export const en: Dictionary = {
       description: "Estimate a personal CO₂e footprint from transport, food, and home with visible assumptions.",
     },
     postnr: {
-      name: "Danish postcodes",
-      description: "Look up Danish postcodes and municipalities, browse a simple map, and compare nearby places.",
+      name: "Postcodes",
+      description:
+        "Look up postcodes in Denmark, Norway, Sweden and more on OpenStreetMap with population and live lookup.",
     },
     havekalender: {
       name: "Garden calendar",
