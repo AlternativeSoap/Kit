@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Field, KitInput, Segmented } from "@/components/tools/ui";
 import { useLanguage } from "@/i18n/LanguageProvider";
+import type { ToolPrefill } from "@/tools/prefill";
 import {
   FRACTIONS,
   ITEMS,
@@ -14,15 +15,47 @@ import {
 
 type Mode = "search" | "fractions";
 
-export function AffaldTool() {
+function seedFromPrefill(
+  prefill: ToolPrefill | undefined,
+  da: boolean,
+): {
+  query: string;
+  item: WasteItem | null;
+} {
+  const itemId = prefill?.item?.trim();
+  if (itemId) {
+    const byId = ITEMS.find((i) => i.id === itemId) ?? null;
+    if (byId) {
+      return { query: da ? byId.nameDa : byId.nameEn, item: byId };
+    }
+  }
+  const raw = (prefill?.q ?? "").trim();
+  if (!raw) return { query: "", item: null };
+  const hits = searchItems(raw);
+  return { query: raw, item: hits[0] ?? null };
+}
+
+export function AffaldTool({ prefill }: { prefill?: ToolPrefill } = {}) {
   const { locale } = useLanguage();
   const da = locale === "da";
+  const seeded = useMemo(() => seedFromPrefill(prefill, da), [prefill, da]);
   const [mode, setMode] = useState<Mode>("search");
-  const [query, setQuery] = useState("");
-  const [selectedItem, setSelectedItem] = useState<WasteItem | null>(null);
-  const [selectedFraction, setSelectedFraction] = useState<FractionId | null>(
-    null,
+  const [query, setQuery] = useState(seeded.query);
+  const [selectedItem, setSelectedItem] = useState<WasteItem | null>(
+    seeded.item,
   );
+  const [selectedFraction, setSelectedFraction] = useState<FractionId | null>(
+    seeded.item?.fraction ?? null,
+  );
+
+  useEffect(() => {
+    const next = seedFromPrefill(prefill, da);
+    if (!next.query && !next.item) return;
+    setMode("search");
+    setQuery(next.query);
+    setSelectedItem(next.item);
+    setSelectedFraction(next.item?.fraction ?? null);
+  }, [prefill, da]);
 
   const results = useMemo(() => searchItems(query), [query]);
   const activeFraction = selectedFraction

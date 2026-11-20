@@ -3,11 +3,14 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Field, KitInput } from "@/components/tools/ui";
 import { useLanguage } from "@/i18n/LanguageProvider";
+import type { ToolPrefill } from "@/tools/prefill";
 import {
   STACK_POLICY_LABEL,
   STACK_SYSTEM_DA,
   STACK_SYSTEM_EN,
   UN_ENTRIES,
+  formatUn,
+  getUn,
   searchUn,
   type UnEntry,
 } from "./data";
@@ -41,15 +44,37 @@ function freeQuantityLabel(row: UnEntry, da: boolean): string {
     : `Up to ${row.exemptionLimit} L or kg`;
 }
 
-export function UnnrTool() {
+function initialFromPrefill(prefill?: ToolPrefill): {
+  query: string;
+  selected: UnEntry | null;
+} {
+  const raw = (prefill?.un ?? prefill?.q ?? "").trim();
+  if (!raw) return { query: "", selected: null };
+  const id = formatUn(raw);
+  const row = getUn(id) ?? searchUn(raw, 1)[0] ?? null;
+  return {
+    query: row?.un ?? id,
+    selected: row && formatUn(row.un) === id ? row : null,
+  };
+}
+
+export function UnnrTool({ prefill }: { prefill?: ToolPrefill } = {}) {
   const { locale } = useLanguage();
   const da = locale === "da";
-  const [query, setQuery] = useState("");
-  const [selected, setSelected] = useState<UnEntry | null>(null);
+  const seeded = useMemo(() => initialFromPrefill(prefill), [prefill]);
+  const [query, setQuery] = useState(seeded.query);
+  const [selected, setSelected] = useState<UnEntry | null>(seeded.selected);
   const detailRef = useRef<HTMLElement>(null);
 
   const results = useMemo(() => searchUn(query, 30), [query]);
   const list = query.trim() ? results : UN_ENTRIES.slice(0, 10);
+
+  useEffect(() => {
+    const next = initialFromPrefill(prefill);
+    if (!next.query) return;
+    setQuery(next.query);
+    setSelected(next.selected);
+  }, [prefill]);
 
   useEffect(() => {
     if (!selected) return;

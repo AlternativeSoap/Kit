@@ -137,3 +137,42 @@ export function matchesCountry(c: Country, query: string): boolean {
     c.id.toLowerCase() === q
   );
 }
+
+/** Ranked country lookup for search Opslag. */
+export function searchCountries(query: string, limit = 5): Country[] {
+  const q = query.trim().toLowerCase();
+  if (!q) return [];
+  if (q.length < 2) return [];
+
+  const scored: { country: Country; score: number }[] = [];
+  for (const c of COUNTRIES) {
+    const nameDa = c.nameDa.toLowerCase();
+    const nameEn = c.nameEn.toLowerCase();
+    const capitalDa = c.capitalDa.toLowerCase();
+    const capitalEn = c.capitalEn.toLowerCase();
+    const currency = c.currency.toLowerCase();
+    const id = c.id.toLowerCase();
+    let score = -1;
+    if (id === q) score = 100;
+    else if (nameDa === q || nameEn === q) score = 98;
+    else if (capitalDa === q || capitalEn === q) score = 92;
+    else if (nameDa.startsWith(q) || nameEn.startsWith(q)) score = 85;
+    else if (capitalDa.startsWith(q) || capitalEn.startsWith(q)) score = 78;
+    else if (currency === q) score = 70;
+    else if (q.length >= 4 && (nameDa.includes(q) || nameEn.includes(q))) {
+      score = 60;
+    } else if (
+      q.length >= 4 &&
+      (capitalDa.includes(q) || capitalEn.includes(q))
+    ) {
+      score = 55;
+    }
+    if (score >= 0) scored.push({ country: c, score });
+  }
+
+  scored.sort(
+    (a, b) =>
+      b.score - a.score || a.country.nameEn.localeCompare(b.country.nameEn),
+  );
+  return scored.slice(0, limit).map((s) => s.country);
+}

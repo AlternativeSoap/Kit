@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { useDictionary } from "@/i18n/LanguageProvider";
+import { useDictionary, useLanguage } from "@/i18n/LanguageProvider";
 import { getToolCopy } from "@/i18n/tools";
 import type { AnswerView } from "@/lib/answers/present";
+import type { ContentHit } from "@/lib/search/content";
 import type { ToolDefinition } from "@/tools/types";
 import { AnswerRow, type CopyState } from "./AnswerRow";
 import { HighlightMatch } from "./highlight";
@@ -23,7 +24,7 @@ export type QuerySuggestion = {
 type SuggestPanelProps = {
   groups: SuggestGroup[];
   query: string;
-  /** Position in the keyboard order: the answer first, then every tool. */
+  /** Keyboard order: answer, then content hits, then every tool. */
   activeIndex: number;
   flatTools: ToolDefinition[];
   open: boolean;
@@ -32,6 +33,9 @@ type SuggestPanelProps = {
   onRemoveRecent?: (tool: ToolDefinition, mode?: "recent" | "pin") => void;
   /** Result of a calculation typed as the query. Takes the first position. */
   answer?: AnswerView | null;
+  /** Deep catalog lookups (ADR, postnr, affald, …). */
+  contentHits?: ContentHit[];
+  onSelectContent?: (hit: ContentHit) => void;
   copyState?: CopyState;
   onAnswerCopy?: () => void;
   onAnswerOpenPrefill?: () => void;
@@ -54,6 +58,8 @@ export function SuggestPanel({
   onHover,
   onRemoveRecent,
   answer = null,
+  contentHits = [],
+  onSelectContent,
   copyState = "idle",
   onAnswerCopy,
   onAnswerOpenPrefill,
@@ -63,6 +69,8 @@ export function SuggestPanel({
   onPickSuggestion,
 }: SuggestPanelProps) {
   const dictionary = useDictionary();
+  const { locale } = useLanguage();
+  const da = locale === "da";
   const panelRef = useRef<HTMLDivElement>(null);
   const scrollTimer = useRef(0);
 
@@ -95,8 +103,10 @@ export function SuggestPanel({
 
   if (!open) return null;
 
-  const hasResults = flatTools.length > 0 || answer !== null;
-  const indexOffset = answer ? 1 : 0;
+  const hasResults =
+    flatTools.length > 0 || answer !== null || contentHits.length > 0;
+  const answerOffset = answer ? 1 : 0;
+  const toolOffset = answerOffset + contentHits.length;
   const compact = variant === "compact";
 
   return (
@@ -145,6 +155,57 @@ export function SuggestPanel({
               onHover={() => onHover(0)}
             />
           ) : null}
+
+          {contentHits.length > 0 ? (
+            <div className="mb-0.5 last:mb-0">
+              <p className="px-3.5 pb-1 pt-2 text-[11px] font-medium uppercase tracking-[0.06em] text-muted sm:px-4">
+                {dictionary.search.contentGroup}
+              </p>
+              <ul>
+                {contentHits.map((hit, hitIndex) => {
+                  const index = answerOffset + hitIndex;
+                  const active = index === activeIndex;
+                  const title = da ? hit.titleDa : hit.titleEn;
+                  const subtitle = da ? hit.subtitleDa : hit.subtitleEn;
+                  const badge = da ? hit.badgeDa : hit.badgeEn;
+                  return (
+                    <li key={hit.id}>
+                      <button
+                        type="button"
+                        role="option"
+                        aria-selected={active}
+                        className={`flex w-full items-start gap-3 px-3.5 py-2.5 text-left transition-colors sm:px-4 sm:py-2.5 ${
+                          active ? "bg-accent-soft" : "hover:bg-background"
+                        }`}
+                        onPointerEnter={() => onHover(index)}
+                        onPointerDown={(event) => {
+                          event.preventDefault();
+                          onSelectContent?.(hit);
+                        }}
+                      >
+                        <span
+                          className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-accent sm:mt-0.5 sm:h-2 sm:w-2"
+                          aria-hidden
+                        />
+                        <span className="min-w-0 flex-1">
+                          <span className="block text-[15px] font-medium leading-snug text-foreground">
+                            <HighlightMatch text={title} query={query} />
+                            <span className="ml-2 text-[12px] font-normal text-muted">
+                              {badge}
+                            </span>
+                          </span>
+                          <span className="mt-0.5 block line-clamp-2 text-[13px] leading-snug text-muted sm:truncate sm:leading-normal">
+                            {subtitle}
+                          </span>
+                        </span>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          ) : null}
+
           {groups.map((group) => {
             if (group.tools.length === 0) return null;
             return (
@@ -155,7 +216,7 @@ export function SuggestPanel({
                 <ul>
                   {group.tools.map((tool) => {
                     const index =
-                      indexOffset +
+                      toolOffset +
                       flatTools.findIndex((t) => t.id === tool.id);
                     const active = index === activeIndex;
                     const copy = getToolCopy(dictionary, tool.id);

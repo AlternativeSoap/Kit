@@ -55,7 +55,7 @@ function ToolBody({
     case "logik":
       return <LogikTool />;
     case "formelsamling":
-      return <FormelsamlingTool />;
+      return <FormelsamlingTool prefill={prefill} />;
     default:
       return <SimpleTool id={id} prefill={prefill} />;
   }

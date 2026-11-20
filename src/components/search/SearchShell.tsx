@@ -23,6 +23,10 @@ import {
   togglePin,
 } from "@/lib/personal";
 import { diagnoseSearch } from "@/lib/search/diagnostics";
+import {
+  searchContent,
+  type ContentHit,
+} from "@/lib/search/content";
 import { suggestQueries } from "@/lib/search/suggestions";
 import {
   getRecentSlugs,
@@ -206,6 +210,14 @@ export function SearchShell({
     [trimmed, libraryBrowse, dictionary],
   );
 
+  const contentHits = useMemo(
+    () =>
+      trimmed && !libraryBrowse
+        ? searchContent(trimmed, dictionary, locale, 8)
+        : [],
+    [trimmed, libraryBrowse, dictionary, locale],
+  );
+
   const debugInfo = useMemo(() => {
     if (!kitDebug || !trimmed) return null;
     return diagnoseSearch(trimmed, dictionary, locale);
@@ -307,9 +319,11 @@ export function SearchShell({
     [groups],
   );
 
-  // Keyboard order: the answer (when there is one), then every tool.
+  // Keyboard order: answer, content lookups, then tools.
   const answerOffset = answer ? 1 : 0;
-  const itemCount = answerOffset + flatTools.length;
+  const contentOffset = answerOffset;
+  const toolOffset = answerOffset + contentHits.length;
+  const itemCount = toolOffset + flatTools.length;
 
   const closePanel = useCallback(() => {
     setOpen(false);
@@ -401,6 +415,32 @@ export function SearchShell({
       router.push(href);
     },
     [answer, hits, onNavigated, router, trimmed, updateQuery],
+  );
+
+  const selectContent = useCallback(
+    (hit: ContentHit) => {
+      window.clearTimeout(blurTimer.current);
+      const tool = getToolById(hit.toolId);
+      if (tool) {
+        const next = pushRecentSlug(tool.slug);
+        setRecentSlugs(next);
+        bumpUsage(tool.id);
+        setLastOpenedToolId(tool.id);
+        setLastOpenedId(tool.id);
+        setUsageCounts(getUsageCounts());
+        setLastSearchMatch({
+          toolId: tool.id,
+          query: trimmed,
+          matchedOn: "content",
+          at: Date.now(),
+        });
+      }
+      updateQuery("");
+      setOpen(false);
+      onNavigated?.();
+      router.push(hit.href);
+    },
+    [onNavigated, router, trimmed, updateQuery],
   );
 
   const openAnswerPrefill = useCallback(() => {
@@ -503,7 +543,13 @@ export function SearchShell({
         void activateAnswer();
         return;
       }
-      const tool = flatTools[activeIndex - answerOffset];
+      const contentIndex = activeIndex - contentOffset;
+      if (contentIndex >= 0 && contentIndex < contentHits.length) {
+        const hit = contentHits[contentIndex];
+        if (hit) selectContent(hit);
+        return;
+      }
+      const tool = flatTools[activeIndex - toolOffset];
       if (tool) selectTool(tool);
       return;
     }
@@ -523,7 +569,8 @@ export function SearchShell({
     (libraryBrowse ||
       variant === "home" ||
       query.length > 0 ||
-      flatTools.length > 0);
+      flatTools.length > 0 ||
+      contentHits.length > 0);
 
   const panelSuggestions =
     querySuggestions.length > 0 && trimmed && !answer
@@ -642,6 +689,8 @@ export function SearchShell({
           onHover={setActiveIndex}
           onRemoveRecent={removeFromGroup}
           answer={answer}
+          contentHits={contentHits}
+          onSelectContent={selectContent}
           copyState={copyState}
           onAnswerCopy={() => void activateAnswer()}
           onAnswerOpenPrefill={openAnswerPrefill}

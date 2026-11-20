@@ -1,14 +1,20 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Field, KitInput } from "@/components/tools/ui";
 import { useLanguage } from "@/i18n/LanguageProvider";
+import type { ToolPrefill } from "@/tools/prefill";
 import { SHEET_FORMULAS } from "./formulas";
 
-export function FormelsamlingTool() {
+export function FormelsamlingTool({ prefill }: { prefill?: ToolPrefill } = {}) {
   const { locale } = useLanguage();
   const da = locale === "da";
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState(() => (prefill?.q ?? "").trim());
+
+  useEffect(() => {
+    const next = (prefill?.q ?? "").trim();
+    if (next) setQuery(next);
+  }, [prefill]);
 
   const rows = useMemo(() => {
     const q = query.trim().toLowerCase();

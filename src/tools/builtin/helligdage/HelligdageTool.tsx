@@ -1,15 +1,30 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Field, KitInput } from "@/components/tools/ui";
 import { useLanguage } from "@/i18n/LanguageProvider";
+import { prefillNumber, type ToolPrefill } from "@/tools/prefill";
 import { danishHolidays, nextHoliday } from "./calc";
 
-export function HelligdageTool() {
+function yearFromPrefill(prefill?: ToolPrefill, fallback = new Date().getFullYear()): string {
+  const fromYear = prefillNumber(prefill, "year", {
+    min: 1970,
+    max: 2100,
+    integer: true,
+  });
+  return fromYear ?? String(fallback);
+}
+
+export function HelligdageTool({ prefill }: { prefill?: ToolPrefill } = {}) {
   const { locale } = useLanguage();
   const da = locale === "da";
   const thisYear = new Date().getFullYear();
-  const [year, setYear] = useState(String(thisYear));
+  const [year, setYear] = useState(() => yearFromPrefill(prefill, thisYear));
+  const highlight = (prefill?.q ?? "").trim().toLowerCase();
+
+  useEffect(() => {
+    setYear(yearFromPrefill(prefill, thisYear));
+  }, [prefill, thisYear]);
 
   const yearN = Number(year);
   const holidays = useMemo(() => {
@@ -45,15 +60,23 @@ export function HelligdageTool() {
       </Field>
 
       <ul className="divide-y divide-border rounded-[12px] border border-border bg-surface">
-        {holidays.map((h) => (
-          <li
-            key={h.date + h.nameEn}
-            className="flex items-center justify-between gap-3 px-4 py-2.5 text-sm"
-          >
-            <span className="font-medium">{da ? h.nameDa : h.nameEn}</span>
-            <span className="shrink-0 text-muted">{h.date}</span>
-          </li>
-        ))}
+        {holidays.map((h) => {
+          const active =
+            highlight.length >= 3 &&
+            (h.nameDa.toLowerCase().includes(highlight) ||
+              h.nameEn.toLowerCase().includes(highlight));
+          return (
+            <li
+              key={h.date + h.nameEn}
+              className={`flex items-center justify-between gap-3 px-4 py-2.5 text-sm ${
+                active ? "bg-accent-soft" : ""
+              }`}
+            >
+              <span className="font-medium">{da ? h.nameDa : h.nameEn}</span>
+              <span className="shrink-0 text-muted">{h.date}</span>
+            </li>
+          );
+        })}
       </ul>
       <p className="text-xs text-muted">
         {da

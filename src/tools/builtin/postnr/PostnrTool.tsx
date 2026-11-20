@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Field,
   KitInput,
@@ -9,6 +9,7 @@ import {
   Segmented,
 } from "@/components/tools/ui";
 import { useLanguage } from "@/i18n/LanguageProvider";
+import { prefillChoice, type ToolPrefill } from "@/tools/prefill";
 import { looksLikePostcode, lookupPostcode } from "./api";
 import {
   COUNTRIES,
@@ -24,6 +25,29 @@ import {
   type PostnrRow,
 } from "./data";
 
+const COUNTRY_IDS = COUNTRIES.map((c) => c.id) as CountryId[];
+
+function seedFromPrefill(prefill?: ToolPrefill): {
+  countryId: CountryId;
+  query: string;
+  selected: PostnrRow | null;
+} {
+  const countryId =
+    prefillChoice(prefill, "country", COUNTRY_IDS) ?? "DK";
+  const raw = (prefill?.nr ?? prefill?.q ?? "").trim();
+  if (!raw) return { countryId, query: "", selected: null };
+  const rows = searchPostnr(countryId, raw, 5);
+  const exact =
+    rows.find(
+      (r) => r.nr.replace(/\s+/g, "") === raw.replace(/\s+/g, ""),
+    ) ?? rows[0] ?? null;
+  return {
+    countryId,
+    query: exact?.nr ?? raw,
+    selected: exact,
+  };
+}
+
 const PostnrMap = dynamic(
   () => import("./PostnrMap").then((m) => ({ default: m.PostnrMap })),
   {
@@ -36,17 +60,19 @@ const PostnrMap = dynamic(
   },
 );
 
-export function PostnrTool() {
+export function PostnrTool({ prefill }: { prefill?: ToolPrefill } = {}) {
   const { locale } = useLanguage();
   const da = locale === "da";
-  const [countryId, setCountryId] = useState<CountryId>("DK");
-  const [query, setQuery] = useState("");
-  const [selected, setSelected] = useState<PostnrRow | null>(null);
+  const seeded = useMemo(() => seedFromPrefill(prefill), [prefill]);
+  const [countryId, setCountryId] = useState<CountryId>(seeded.countryId);
+  const [query, setQuery] = useState(seeded.query);
+  const [selected, setSelected] = useState<PostnrRow | null>(seeded.selected);
   const [showNearby, setShowNearby] = useState(true);
   const [apiHits, setApiHits] = useState<PostnrRow[]>([]);
   const [apiStatus, setApiStatus] = useState<"idle" | "loading" | "error" | "done">(
     "idle",
   );
+  const skipCountryClear = useRef(true);
 
   const country = countryById(countryId);
   const localCount = catalogCount(countryId);
@@ -68,6 +94,18 @@ export function PostnrTool() {
   }, [selected, showNearby, countryId]);
 
   useEffect(() => {
+    const next = seedFromPrefill(prefill);
+    skipCountryClear.current = true;
+    setCountryId(next.countryId);
+    setQuery(next.query);
+    setSelected(next.selected);
+  }, [prefill]);
+
+  useEffect(() => {
+    if (skipCountryClear.current) {
+      skipCountryClear.current = false;
+      return;
+    }
     setSelected(null);
     setQuery("");
     setApiHits([]);

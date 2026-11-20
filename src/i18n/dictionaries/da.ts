@@ -14,6 +14,7 @@ export const da: Dictionary = {
     related: "Relateret",
     suggestions: "Forslag",
     toolsGroup: "Værktøjer",
+    contentGroup: "Opslag",
     webGroup: "Populære sites",
     libraryGroup: "Alle værktøjer",
     libraryWebGroup: "Alle sites",

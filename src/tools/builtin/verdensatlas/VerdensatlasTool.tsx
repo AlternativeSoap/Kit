@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Field,
   KitInput,
@@ -8,16 +8,39 @@ import {
   secondaryBtnClass,
 } from "@/components/tools/ui";
 import { useLanguage } from "@/i18n/LanguageProvider";
+import type { ToolPrefill } from "@/tools/prefill";
 import {
   COUNTRIES,
   REGIONS,
   matchesCountry,
+  searchCountries,
   popBandLabel,
   regionLabel,
   type RegionId,
 } from "./countries";
 
 type View = "list" | "map";
+
+function seedFromPrefill(prefill?: ToolPrefill): {
+  query: string;
+  selectedId: string;
+} {
+  const countryId = prefill?.country?.trim().toLowerCase();
+  if (countryId && COUNTRIES.some((c) => c.id === countryId)) {
+    const row = COUNTRIES.find((c) => c.id === countryId)!;
+    return {
+      query: prefill?.q?.trim() || row.nameDa,
+      selectedId: row.id,
+    };
+  }
+  const raw = (prefill?.q ?? "").trim();
+  if (!raw) return { query: "", selectedId: "dk" };
+  const hit = searchCountries(raw, 1)[0];
+  return {
+    query: raw,
+    selectedId: hit?.id ?? "dk",
+  };
+}
 
 function WorldDots({
   countries,
@@ -80,14 +103,22 @@ function WorldDots({
   );
 }
 
-export function VerdensatlasTool() {
+export function VerdensatlasTool({ prefill }: { prefill?: ToolPrefill } = {}) {
   const { locale } = useLanguage();
   const da = locale === "da";
+  const seeded = useMemo(() => seedFromPrefill(prefill), [prefill]);
   const [view, setView] = useState<View>("map");
   const [region, setRegion] = useState<RegionId | "all">("all");
-  const [query, setQuery] = useState("");
-  const [selectedId, setSelectedId] = useState("dk");
+  const [query, setQuery] = useState(seeded.query);
+  const [selectedId, setSelectedId] = useState(seeded.selectedId);
   const detailRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const next = seedFromPrefill(prefill);
+    if (!next.query && next.selectedId === "dk" && !prefill?.country) return;
+    setQuery(next.query);
+    setSelectedId(next.selectedId);
+  }, [prefill]);
 
   const filtered = useMemo(() => {
     return COUNTRIES.filter((c) => {

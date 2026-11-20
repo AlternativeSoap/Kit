@@ -91,6 +91,7 @@ export type Dictionary = {
     related: string;
     suggestions: string;
     toolsGroup: string;
+    contentGroup: string;
     webGroup: string;
     libraryGroup: string;
     libraryWebGroup: string;

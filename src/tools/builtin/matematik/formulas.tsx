@@ -769,3 +769,29 @@ export const SHEET_FORMULAS: SheetFormula[] = [
     ),
   },
 ];
+
+/** Text search over the school formula sheet (ignores rendered formula nodes). */
+export function searchSheetFormulas(
+  query: string,
+  limit = 5,
+): SheetFormula[] {
+  const q = query.trim().toLowerCase();
+  if (!q || q.length < 3 || /^\d+$/.test(q)) return [];
+  const scored: { row: SheetFormula; score: number }[] = [];
+  for (const row of SHEET_FORMULAS) {
+    const nameDa = row.nameDa.toLowerCase();
+    const nameEn = row.nameEn.toLowerCase();
+    const search = row.search.toLowerCase();
+    const topicDa = row.topicDa.toLowerCase();
+    const topicEn = row.topicEn.toLowerCase();
+    let score = -1;
+    if (nameDa === q || nameEn === q) score = 100;
+    else if (nameDa.startsWith(q) || nameEn.startsWith(q)) score = 90;
+    else if (search.includes(q)) score = 80;
+    else if (nameDa.includes(q) || nameEn.includes(q)) score = 70;
+    else if (topicDa.includes(q) || topicEn.includes(q)) score = 55;
+    if (score >= 0) scored.push({ row, score });
+  }
+  scored.sort((a, b) => b.score - a.score || a.row.id.localeCompare(b.row.id));
+  return scored.slice(0, limit).map((s) => s.row);
+}

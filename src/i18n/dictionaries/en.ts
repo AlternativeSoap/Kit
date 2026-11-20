@@ -14,6 +14,7 @@ export const en: Dictionary = {
     related: "Related",
     suggestions: "Suggestions",
     toolsGroup: "Tools",
+    contentGroup: "Lookups",
     webGroup: "Popular sites",
     libraryGroup: "All tools",
     libraryWebGroup: "All sites",

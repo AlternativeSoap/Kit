@@ -275,12 +275,12 @@ const KlimaTool = lazyPlain(() =>
     default: m.KlimaTool,
   })),
 );
-const PostnrTool = lazyPlain(() =>
+const PostnrTool = lazyPrefill(() =>
   import("./postnr/PostnrTool").then((m) => ({
     default: m.PostnrTool,
   })),
 );
-const UnnrTool = lazyPlain(() =>
+const UnnrTool = lazyPrefill(() =>
   import("./unnr/UnnrTool").then((m) => ({
     default: m.UnnrTool,
   })),
@@ -315,7 +315,7 @@ const BiomerTool = lazyPlain(() =>
     default: m.BiomerTool,
   })),
 );
-const VerdensatlasTool = lazyPlain(() =>
+const VerdensatlasTool = lazyPrefill(() =>
   import("./verdensatlas/VerdensatlasTool").then((m) => ({
     default: m.VerdensatlasTool,
   })),
@@ -365,7 +365,7 @@ const FerieplanTool = lazyPlain(() =>
     default: m.FerieplanTool,
   })),
 );
-const AffaldTool = lazyPlain(() =>
+const AffaldTool = lazyPrefill(() =>
   import("./affald/AffaldTool").then((m) => ({
     default: m.AffaldTool,
   })),
@@ -420,7 +420,7 @@ const UnderskriftTool = lazyPlain(() =>
     default: m.UnderskriftTool,
   })),
 );
-const HelligdageTool = lazyPlain(() =>
+const HelligdageTool = lazyPrefill(() =>
   import("./helligdage/HelligdageTool").then((m) => ({
     default: m.HelligdageTool,
   })),
@@ -798,9 +798,9 @@ export function BuiltinToolView({
     case "klima":
       return <KlimaTool />;
     case "postnr":
-      return <PostnrTool />;
+      return <PostnrTool prefill={prefill} />;
     case "unnr":
-      return <UnnrTool />;
+      return <UnnrTool prefill={prefill} />;
     case "havekalender":
       return <HavekalenderTool />;
     case "typografi":
@@ -814,7 +814,7 @@ export function BuiltinToolView({
     case "biomer":
       return <BiomerTool />;
     case "verdensatlas":
-      return <VerdensatlasTool />;
+      return <VerdensatlasTool prefill={prefill} />;
     case "ernaring":
       return <ErnaringTool />;
     case "smagshjul":
@@ -834,7 +834,7 @@ export function BuiltinToolView({
     case "ferieplan":
       return <FerieplanTool />;
     case "affald":
-      return <AffaldTool />;
+      return <AffaldTool prefill={prefill} />;
     case "skriftatlas":
       return <SkriftatlasTool />;
     case "optik":
@@ -866,7 +866,7 @@ export function BuiltinToolView({
     case "underskrift":
       return <UnderskriftTool />;
     case "helligdage":
-      return <HelligdageTool />;
+      return <HelligdageTool prefill={prefill} />;
     case "pakkeliste":
     case "checklistscore":
       return <PakkelisteTool />;

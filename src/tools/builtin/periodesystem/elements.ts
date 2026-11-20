@@ -3843,19 +3843,53 @@ export const ELEMENTS_BY_Z: Record<number, PeriodicElement> = Object.fromEntries
 );
 
 export function findElement(query: string): PeriodicElement | undefined {
+  return searchElements(query, 1)[0];
+}
+
+/** Ranked element lookup for search Opslag and the periodic table tool. */
+export function searchElements(
+  query: string,
+  limit = 8,
+): PeriodicElement[] {
   const q = query.trim();
-  if (!q) return undefined;
+  if (!q) return [];
+
   const asNum = Number(q);
-  if (Number.isInteger(asNum) && asNum >= 1 && asNum <= 118) {
-    return ELEMENTS_BY_Z[asNum];
+  if (
+    Number.isInteger(asNum) &&
+    asNum >= 1 &&
+    asNum <= 118 &&
+    /^\d{1,3}$/.test(q)
+  ) {
+    const el = ELEMENTS_BY_Z[asNum];
+    return el ? [el] : [];
   }
+
   const lower = q.toLowerCase();
-  return ELEMENTS.find(
-    (el) =>
-      el.symbol.toLowerCase() === lower ||
-      el.nameEn.toLowerCase() === lower ||
-      el.nameDa.toLowerCase() === lower ||
-      el.akaDa?.toLowerCase() === lower,
+  const scored: { el: PeriodicElement; score: number }[] = [];
+  for (const el of ELEMENTS) {
+    const symbol = el.symbol.toLowerCase();
+    const nameEn = el.nameEn.toLowerCase();
+    const nameDa = el.nameDa.toLowerCase();
+    const aka = el.akaDa?.toLowerCase() ?? "";
+    let score = -1;
+    if (symbol === lower) score = 100;
+    else if (nameEn === lower || nameDa === lower || aka === lower) score = 95;
+    else if (symbol.startsWith(lower) && lower.length >= 1) score = 80;
+    else if (nameEn.startsWith(lower) || nameDa.startsWith(lower) || aka.startsWith(lower)) {
+      score = 70;
+    }     else if (
+      lower.length >= 4 &&
+      (nameEn.includes(lower) || nameDa.includes(lower) || aka.includes(lower))
+    ) {
+      score = 50;
+    }
+    if (score >= 0) scored.push({ el, score });
+  }
+
+  scored.sort(
+    (a, b) => b.score - a.score || a.el.z - b.el.z,
   );
+  return scored.slice(0, limit).map((s) => s.el);
 }
 
