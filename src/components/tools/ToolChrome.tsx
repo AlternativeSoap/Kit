@@ -44,10 +44,10 @@ export function ToolChrome() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/90 pt-[env(safe-area-inset-top)] backdrop-blur-sm">
-      <div className="mx-auto flex w-full max-w-5xl items-center gap-2 px-2.5 py-2 sm:gap-4 sm:px-6 sm:py-3">
+      <div className="mx-auto flex w-full max-w-5xl items-center gap-2 px-2.5 py-2 sm:gap-3 sm:px-6 sm:py-3">
         <Link
           href="/"
-          className="kit-touch-target group flex shrink-0 items-center justify-center gap-2 rounded-[8px] text-sm font-medium text-foreground/80 hover:text-foreground"
+          className="kit-touch-target group flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px] text-sm font-medium text-foreground/80 hover:bg-overlay hover:text-foreground sm:h-auto sm:w-auto sm:gap-2 sm:rounded-[8px]"
           aria-label={dictionary.brand}
         >
           <KitMark className="h-5 w-5 transition-[transform] duration-200 group-hover:scale-105" />
@@ -55,11 +55,13 @@ export function ToolChrome() {
         </Link>
         <div
           ref={searchWrapRef}
-          className="relative z-50 min-w-0 flex-1 overflow-visible"
+          className="relative z-50 min-w-0 flex-1 self-center"
         >
           <SearchShell variant="compact" />
         </div>
-        <LanguageSwitcher compact />
+        <div className="relative z-30 shrink-0 self-center">
+          <LanguageSwitcher compact />
+        </div>
       </div>
     </header>
   );

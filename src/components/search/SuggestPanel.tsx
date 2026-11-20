@@ -15,6 +15,11 @@ export type SuggestGroup = {
   removeMode?: "recent" | "pin";
 };
 
+export type QuerySuggestion = {
+  query: string;
+  label: string;
+};
+
 type SuggestPanelProps = {
   groups: SuggestGroup[];
   query: string;
@@ -32,6 +37,11 @@ type SuggestPanelProps = {
   onAnswerOpenPrefill?: () => void;
   /** When set, this tool was opened by a personal shortcut alias. */
   shortcutToolId?: string;
+  /** Compact tool-chrome search vs home hero search. */
+  variant?: "home" | "compact";
+  /** Typed-prefix chips shown inside the panel (never in header flow). */
+  suggestions?: QuerySuggestion[];
+  onPickSuggestion?: (query: string) => void;
 };
 
 export function SuggestPanel({
@@ -48,6 +58,9 @@ export function SuggestPanel({
   onAnswerCopy,
   onAnswerOpenPrefill,
   shortcutToolId,
+  variant = "home",
+  suggestions = [],
+  onPickSuggestion,
 }: SuggestPanelProps) {
   const dictionary = useDictionary();
   const panelRef = useRef<HTMLDivElement>(null);
@@ -84,18 +97,42 @@ export function SuggestPanel({
 
   const hasResults = flatTools.length > 0 || answer !== null;
   const indexOffset = answer ? 1 : 0;
+  const compact = variant === "compact";
 
   return (
     <div
       ref={panelRef}
       id="kit-suggest"
       role="listbox"
-      className="kit-scrollbar kit-suggest-enter absolute left-0 right-0 top-[calc(100%+8px)] z-50 max-h-[min(22rem,calc(100dvh-8rem))] overflow-y-auto overscroll-contain rounded-[12px] border border-border bg-surface shadow-suggest max-sm:max-h-[min(18rem,calc(100dvh-10rem-env(safe-area-inset-bottom)))]"
+      className={`kit-scrollbar kit-suggest-enter z-50 overflow-y-auto overscroll-contain border border-border bg-surface shadow-suggest ${
+        compact
+          ? "fixed inset-x-2 max-h-[min(70dvh,calc(100dvh-5.5rem-env(safe-area-inset-bottom)))] rounded-[14px] max-sm:top-[calc(env(safe-area-inset-top)+3.35rem)] sm:absolute sm:inset-x-0 sm:top-[calc(100%+8px)] sm:max-h-[min(22rem,calc(100dvh-8rem))] sm:rounded-[12px]"
+          : "absolute left-0 right-0 top-[calc(100%+8px)] max-h-[min(22rem,calc(100dvh-8rem))] rounded-[12px] max-sm:max-h-[min(18rem,calc(100dvh-10rem-env(safe-area-inset-bottom)))]"
+      }`}
     >
+      {suggestions.length > 0 ? (
+        <div className="border-b border-border px-3 py-2">
+          <ul className="flex gap-1.5 overflow-x-auto pb-0.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {suggestions.map((item) => (
+              <li key={`${item.label}-${item.query}`} className="shrink-0">
+                <button
+                  type="button"
+                  className="inline-flex items-center rounded-full border border-border bg-background px-2.5 py-1 text-[12px] text-muted transition-colors hover:border-accent hover:bg-accent-soft hover:text-foreground"
+                  onMouseDown={(event) => event.preventDefault()}
+                  onClick={() => onPickSuggestion?.(item.query)}
+                >
+                  {item.label}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+
       {!hasResults ? (
         <p className="px-4 py-5 text-sm text-muted">{dictionary.search.empty}</p>
       ) : (
-        <div className="py-2">
+        <div className="py-1.5 sm:py-2">
           {answer ? (
             <AnswerRow
               answer={answer}
@@ -111,8 +148,8 @@ export function SuggestPanel({
           {groups.map((group) => {
             if (group.tools.length === 0) return null;
             return (
-              <div key={group.label} className="mb-1 last:mb-0">
-                <p className="px-4 pb-1 pt-2 text-[11px] font-medium uppercase tracking-[0.06em] text-muted">
+              <div key={group.label} className="mb-0.5 last:mb-0">
+                <p className="px-3.5 pb-1 pt-2 text-[11px] font-medium uppercase tracking-[0.06em] text-muted sm:px-4">
                   {group.label}
                 </p>
                 <ul>
@@ -126,7 +163,7 @@ export function SuggestPanel({
                     return (
                       <li key={tool.id}>
                         <div
-                          className={`group/row relative flex w-full items-start gap-3 px-4 py-3 transition-colors sm:py-2.5 ${
+                          className={`group/row relative flex w-full items-start gap-3 px-3.5 py-2.5 transition-colors sm:px-4 sm:py-2.5 ${
                             active ? "bg-accent-soft" : "hover:bg-background"
                           }`}
                           onPointerEnter={() => onHover(index)}
@@ -142,7 +179,7 @@ export function SuggestPanel({
                             }}
                           >
                             <span
-                              className={`mt-0.5 h-2 w-2 shrink-0 rounded-full ${
+                              className={`mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full sm:mt-0.5 sm:h-2 sm:w-2 ${
                                 tool.kind === "external"
                                   ? "bg-muted"
                                   : "bg-accent"
@@ -150,7 +187,7 @@ export function SuggestPanel({
                               aria-hidden
                             />
                             <span className="min-w-0 flex-1">
-                              <span className="block text-[15px] font-medium text-foreground">
+                              <span className="block text-[15px] font-medium leading-snug text-foreground">
                                 <HighlightMatch
                                   text={copy.name}
                                   query={query}
@@ -166,7 +203,7 @@ export function SuggestPanel({
                                   </span>
                                 ) : null}
                               </span>
-                              <span className="mt-0.5 block truncate text-[13px] text-muted">
+                              <span className="mt-0.5 block line-clamp-2 text-[13px] leading-snug text-muted sm:truncate sm:leading-normal">
                                 {opensPrefilled
                                   ? dictionary.answers.openPrefilled
                                   : copy.description}

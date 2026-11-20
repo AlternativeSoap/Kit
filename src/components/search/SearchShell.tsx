@@ -525,10 +525,15 @@ export function SearchShell({
       query.length > 0 ||
       flatTools.length > 0);
 
+  const panelSuggestions =
+    querySuggestions.length > 0 && trimmed && !answer
+      ? querySuggestions
+      : [];
+
   return (
     <div
       ref={rootRef}
-      className={`relative z-40 w-full ${variant === "home" ? "max-w-xl" : "max-w-md"}`}
+      className={`relative z-40 w-full ${variant === "home" ? "max-w-xl" : "max-w-none sm:max-w-md"}`}
     >
       <SearchField
         ref={inputRef}
@@ -568,38 +573,37 @@ export function SearchShell({
         }
       />
       {pasteMessage ? (
-        <p className="mt-2 px-1 text-xs text-muted">{pasteMessage}</p>
-      ) : null}
-      {querySuggestions.length > 0 && trimmed && !answer ? (
-        <ul className="mt-2 flex flex-wrap gap-2 px-1">
-          {querySuggestions.map((item) => (
-            <li key={item.query}>
-              <button
-                type="button"
-                className="kit-touch-target inline-flex items-center rounded-[8px] border border-border bg-surface px-3 py-2 text-xs text-muted transition-colors hover:bg-accent-soft hover:text-foreground sm:min-h-0 sm:min-w-0 sm:px-2.5 sm:py-1"
-                onMouseDown={(event) => event.preventDefault()}
-                onClick={() => {
-                  if (isLibraryQuery(item.query)) {
-                    openLibrary();
-                    return;
-                  }
-                  updateQuery(item.query);
-                  setOpen(true);
-                }}
-              >
-                {item.label}
-              </button>
-            </li>
-          ))}
-        </ul>
+        <p className="pointer-events-none absolute left-0 right-0 top-full z-50 mt-1 px-1 text-xs text-muted">
+          {pasteMessage}
+        </p>
       ) : null}
       {debugInfo ? (
         <pre className="mt-2 max-h-40 overflow-auto rounded-[8px] border border-border bg-background p-2 text-[10px] text-muted">
           {JSON.stringify(debugInfo, null, 2)}
         </pre>
       ) : null}
+
+      {showPanel && variant === "compact" ? (
+        <button
+          type="button"
+          aria-label={locale === "da" ? "Luk søgning" : "Close search"}
+          className="fixed inset-0 z-40 bg-background/50 backdrop-blur-[2px] sm:hidden"
+          onMouseDown={(event) => {
+            event.preventDefault();
+            closePanel();
+            inputRef.current?.blur();
+          }}
+        />
+      ) : null}
+
       {libraryBrowse && open ? (
-        <div className="absolute left-0 right-0 top-[calc(100%+8px)] z-50 overflow-hidden rounded-[12px] border border-border bg-surface shadow-suggest">
+        <div
+          className={`z-50 overflow-hidden border border-border bg-surface shadow-suggest ${
+            variant === "compact"
+              ? "fixed inset-x-2 rounded-[14px] max-sm:top-[calc(env(safe-area-inset-top)+3.35rem)] sm:absolute sm:inset-x-0 sm:top-[calc(100%+8px)] sm:rounded-[12px]"
+              : "absolute left-0 right-0 top-[calc(100%+8px)] rounded-[12px]"
+          }`}
+        >
           <button
             type="button"
             className="flex w-full flex-col items-start gap-0.5 bg-accent-soft px-4 py-3.5 text-left transition-colors hover:bg-accent-soft"
@@ -624,6 +628,16 @@ export function SearchShell({
           activeIndex={activeIndex}
           flatTools={flatTools}
           open={showPanel}
+          variant={variant}
+          suggestions={panelSuggestions}
+          onPickSuggestion={(next) => {
+            if (isLibraryQuery(next)) {
+              openLibrary();
+              return;
+            }
+            updateQuery(next);
+            setOpen(true);
+          }}
           onSelect={selectTool}
           onHover={setActiveIndex}
           onRemoveRecent={removeFromGroup}

@@ -26,9 +26,11 @@ export function suggestQueries(
 
   const push = (label: string, query: string) => {
     const key = normalize(query);
-    if (!key || key === q || seen.has(key)) return;
+    const labelKey = `label:${normalize(label)}`;
+    if (!key || key === q || seen.has(key) || seen.has(labelKey)) return;
     if (!key.startsWith(q) && !normalize(label).startsWith(q)) return;
     seen.add(key);
+    seen.add(labelKey);
     out.push({ label, query });
   };
 
@@ -55,12 +57,13 @@ export function suggestQueries(
       ...(tool.aliases ?? []),
       ...(tool.intents ?? []),
     ];
-    for (const candidate of candidates) {
-      if (out.length >= limit) break;
+    const hit = candidates.some((candidate) => {
       const n = normalize(candidate);
-      if (n.startsWith(q) || n.includes(` ${q}`)) {
-        push(copy.name, candidate);
-      }
+      return n.startsWith(q) || n.includes(` ${q}`);
+    });
+    // One chip per tool: insert the display name, not every matching alias.
+    if (hit) {
+      push(copy.name, copy.name);
     }
   }
 
