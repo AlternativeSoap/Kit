@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { Segmented } from "@/components/tools/ui";
 import { useDictionary, useLanguage } from "@/i18n/LanguageProvider";
 import type { ToolPrefill } from "@/tools/prefill";
 import { curatedFor, suggestFormulas } from "./compounds";
@@ -314,37 +315,18 @@ export function PeriodesystemTool({ prefill }: { prefill?: ToolPrefill }) {
     <div className="mx-auto w-full max-w-5xl space-y-5">
       <p className="text-sm text-muted">{t.intro}</p>
 
-      <div
-        role="tablist"
-        aria-label={dictionary.tools.periodesystem.name}
-        className="inline-flex rounded-[10px] border border-border bg-surface p-1"
-      >
-        {([
+      <Segmented
+        value={mode}
+        ariaLabel={dictionary.tools.periodesystem.name}
+        options={[
           { id: "explore", label: t.modeExplore },
           { id: "combine", label: t.modeCombine },
-        ] as const).map((item) => {
-          const active = mode === item.id;
-          return (
-            <button
-              key={item.id}
-              type="button"
-              role="tab"
-              aria-selected={active}
-              onClick={() => {
-                setMode(item.id);
-                setCombineError("");
-              }}
-              className={`kit-touch-target rounded-[8px] px-3 py-1.5 text-sm sm:min-h-0 ${
-                active
-                  ? "bg-accent text-on-accent"
-                  : "text-muted hover:text-foreground"
-              }`}
-            >
-              {item.label}
-            </button>
-          );
-        })}
-      </div>
+        ]}
+        onChange={(id) => {
+          setMode(id);
+          setCombineError("");
+        }}
+      />
 
       {mode === "combine" ? (
         <p className="text-sm text-muted">{t.combineIntro}</p>
@@ -377,11 +359,11 @@ export function PeriodesystemTool({ prefill }: { prefill?: ToolPrefill }) {
 
       <div>
         <p className="mb-2 text-sm font-medium text-foreground">{t.legend}</p>
-        <div className="flex flex-wrap gap-1.5">
+        <div className="kit-h-scroll gap-1.5">
           <button
             type="button"
             onClick={() => setCategoryFilter(null)}
-            className={`kit-touch-target rounded-[8px] border px-2.5 py-1.5 text-xs ${
+            className={`kit-touch-target shrink-0 rounded-[8px] border px-2.5 py-1.5 text-xs ${
               categoryFilter === null
                 ? "border-accent bg-accent text-on-accent"
                 : "border-border bg-surface text-foreground hover:bg-overlay"
@@ -397,7 +379,7 @@ export function PeriodesystemTool({ prefill }: { prefill?: ToolPrefill }) {
               onClick={() =>
                 setCategoryFilter((prev) => (prev === cat ? null : cat))
               }
-              className={`pt-cell kit-touch-target inline-flex items-center gap-1.5 rounded-[8px] border px-2.5 py-1.5 text-xs text-foreground ${
+              className={`pt-cell kit-touch-target inline-flex shrink-0 items-center gap-1.5 rounded-[8px] border px-2.5 py-1.5 text-xs text-foreground ${
                 categoryFilter === cat
                   ? "border-accent bg-accent-soft"
                   : "border-border bg-surface hover:bg-overlay"

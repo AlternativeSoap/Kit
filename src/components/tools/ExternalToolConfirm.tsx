@@ -64,7 +64,7 @@ export function ExternalToolConfirm({ toolId, href }: ExternalToolConfirmProps) 
         href={href}
         target="_blank"
         rel="noopener noreferrer"
-        className="kit-touch-target mt-6 inline-flex w-full items-center justify-center rounded-[10px] bg-accent px-4 py-2.5 text-sm font-medium text-on-accent transition-opacity hover:opacity-90 sm:w-auto sm:min-h-0"
+        className="kit-touch-target mt-6 inline-flex w-full items-center justify-center rounded-[10px] bg-accent px-4 py-2.5 text-sm font-medium text-on-accent transition-opacity hover:opacity-90 sm:w-auto"
       >
         {dictionary.external.open.replace("{name}", copy.name)}
       </a>

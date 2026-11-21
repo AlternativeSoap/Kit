@@ -110,7 +110,7 @@ export function PostnrMap({ country, selected, nearby, da }: Props) {
     <div className="overflow-hidden rounded-[12px] border border-border">
       <div
         ref={containerRef}
-        className="h-[320px] w-full bg-muted/20 sm:h-[380px]"
+        className="kit-map-frame"
         role="img"
         aria-label={
           da

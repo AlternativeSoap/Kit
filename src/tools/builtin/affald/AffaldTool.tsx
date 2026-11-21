@@ -1,7 +1,13 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Field, KitInput, Segmented } from "@/components/tools/ui";
+import {
+  Field,
+  KitInput,
+  Segmented,
+  pickerRowActiveClass,
+  pickerRowClass,
+} from "@/components/tools/ui";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import type { ToolPrefill } from "@/tools/prefill";
 import {
@@ -113,9 +119,11 @@ export function AffaldTool({ prefill }: { prefill?: ToolPrefill } = {}) {
                   <li key={item.id}>
                     <button
                       type="button"
-                      className={`flex w-full items-start justify-between gap-3 px-3 py-2.5 text-left text-sm transition-colors hover:bg-overlay ${
-                        selectedItem?.id === item.id ? "bg-overlay" : ""
-                      }`}
+                      className={`${
+                        selectedItem?.id === item.id
+                          ? pickerRowActiveClass
+                          : pickerRowClass
+                      } items-start justify-between`}
                       onClick={() => {
                         setSelectedItem(item);
                         setSelectedFraction(item.fraction);
@@ -192,9 +200,11 @@ export function AffaldTool({ prefill }: { prefill?: ToolPrefill } = {}) {
               <li key={f.id}>
                 <button
                   type="button"
-                  className={`flex w-full items-center gap-3 px-3 py-2.5 text-left text-sm transition-colors hover:bg-overlay ${
-                    selectedFraction === f.id ? "bg-overlay" : ""
-                  }`}
+                  className={`${
+                    selectedFraction === f.id
+                      ? pickerRowActiveClass
+                      : pickerRowClass
+                  } items-center`}
                   onClick={() => setSelectedFraction(f.id)}
                 >
                   <span

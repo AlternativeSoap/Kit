@@ -129,7 +129,70 @@ export function HavekalenderTool() {
         </span>
       </div>
 
-      <div className="overflow-x-auto rounded-[12px] border border-border bg-surface">
+      {/* Phone: plant cards. Desktop: full month grid. */}
+      <ul className="space-y-2 sm:hidden">
+        {filtered.map((p) => {
+          const active = selectedId === p.id;
+          return (
+            <li key={p.id}>
+              <button
+                type="button"
+                onClick={() => setSelectedId(p.id === selectedId ? null : p.id)}
+                className={`kit-touch-target w-full rounded-[12px] border px-3.5 py-3 text-left transition-colors ${
+                  active
+                    ? "border-accent bg-accent-soft"
+                    : "border-border bg-surface hover:bg-overlay"
+                }`}
+              >
+                <p className="font-medium text-foreground">
+                  {da ? p.nameDa : p.nameEn}
+                </p>
+                <div className="kit-h-scroll mt-2.5 gap-1.5">
+                  {Array.from({ length: 12 }, (_, i) => {
+                    const month = i + 1;
+                    return (
+                      <span
+                        key={month}
+                        className="inline-flex shrink-0 flex-col items-center gap-1"
+                      >
+                        <span className="text-[10px] tabular-nums text-muted">
+                          {months[i]?.slice(0, 3)}
+                        </span>
+                        <span className="inline-flex items-center gap-0.5">
+                          <CellMark
+                            kind="indoor"
+                            active={p.sowIndoor.includes(month)}
+                            label={da ? "Så inde" : "Sow indoors"}
+                          />
+                          <CellMark
+                            kind="outdoor"
+                            active={p.sowOutdoor.includes(month)}
+                            label={da ? "Så/plant ude" : "Sow/plant out"}
+                          />
+                          <CellMark
+                            kind="harvest"
+                            active={p.harvest.includes(month)}
+                            label={da ? "Høst" : "Harvest"}
+                          />
+                        </span>
+                      </span>
+                    );
+                  })}
+                </div>
+              </button>
+            </li>
+          );
+        })}
+        {filtered.length === 0 ? (
+          <li className="rounded-[12px] border border-border px-3 py-6 text-center text-sm text-muted">
+            {da
+              ? "Ingen planter matcher filteret."
+              : "No plants match the filter."}
+          </li>
+        ) : null}
+      </ul>
+
+      <div className="hidden overflow-x-auto rounded-[12px] border border-border bg-surface sm:block">
         <table className="w-full min-w-[640px] border-collapse text-left text-xs">
           <thead>
             <tr className="border-b border-border text-muted">
@@ -183,8 +246,13 @@ export function HavekalenderTool() {
             ))}
             {filtered.length === 0 ? (
               <tr>
-                <td colSpan={13} className="px-3 py-6 text-center text-sm text-muted">
-                  {da ? "Ingen planter matcher filteret." : "No plants match the filter."}
+                <td
+                  colSpan={13}
+                  className="px-3 py-6 text-center text-sm text-muted"
+                >
+                  {da
+                    ? "Ingen planter matcher filteret."
+                    : "No plants match the filter."}
                 </td>
               </tr>
             ) : null}

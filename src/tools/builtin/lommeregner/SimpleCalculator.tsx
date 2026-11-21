@@ -354,7 +354,7 @@ export function SimpleCalculator({ prefill }: { prefill?: ToolPrefill }) {
             type="button"
             onClick={key.action}
             aria-label={key.ariaLabel}
-            className={`kit-touch-target rounded-[10px] border border-border px-3 py-4 text-lg font-medium transition-colors sm:min-h-0 ${
+            className={`kit-touch-target rounded-[10px] border border-border px-3 py-4 text-lg font-medium transition-colors ${
               key.tone === "accent"
                 ? "bg-accent text-on-accent hover:opacity-90"
                 : key.tone === "muted"

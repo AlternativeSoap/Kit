@@ -151,11 +151,20 @@ select {
   outline: none;
 }
 
-/* Comfortable tap targets on touch devices. */
+/* Comfortable tap targets on touch devices.
+   !important beats utility overrides like sm:min-h-0 on tablets. */
 @media (pointer: coarse) {
   .kit-touch-target {
+    min-height: 2.75rem !important;
+    min-width: 2.75rem !important;
+  }
+
+  .kit-field {
     min-height: 2.75rem;
-    min-width: 2.75rem;
+  }
+
+  .kit-picker-row {
+    min-height: 2.75rem;
   }
 
   .kit-math-slot {
@@ -576,7 +585,51 @@ html[data-theme="dark"] .simple-tool-panel {
 
 /* Sticky header placeholder while ToolChrome streams in. */
 .kit-chrome-skeleton {
-  height: calc(var(--kit-chrome-height) + var(--kit-safe-top));
+  box-sizing: border-box;
+  min-height: calc(var(--kit-chrome-height) + var(--kit-safe-top));
+  padding-top: var(--kit-safe-top);
+}
+
+/* Shared selectable list rows (postnr, unnr, affald, …). */
+.kit-picker-row {
+  display: flex;
+  width: 100%;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.75rem 0.85rem;
+  text-align: left;
+  font-size: 0.875rem;
+  line-height: 1.35;
+  transition: background-color 140ms ease, color 140ms ease;
+}
+
+/* Leaflet / map frames: taller on phones so the map is usable. */
+.kit-map-frame {
+  width: 100%;
+  height: min(48dvh, 22rem);
+  min-height: 16rem;
+  background: color-mix(in srgb, var(--muted) 12%, transparent);
+}
+
+@media (min-width: 640px) {
+  .kit-map-frame {
+    height: 23.75rem;
+    min-height: 0;
+  }
+}
+
+.kit-map-frame-tall {
+  width: 100%;
+  height: min(52dvh, 24rem);
+  min-height: 17rem;
+  background: #0c314d;
+}
+
+@media (min-width: 640px) {
+  .kit-map-frame-tall {
+    height: 26.25rem;
+    min-height: 0;
+  }
 }
 
 .kit-segmented-btn:hover {
@@ -784,6 +837,8 @@ html[data-theme="dark"] .simple-tool-panel {
   .papers-desk {
     border-radius: 12px;
     padding: 0;
+    /* Room for the docked selection bubble above the home indicator. */
+    padding-bottom: calc(4rem + env(safe-area-inset-bottom, 0px));
   }
 
   .papers-ribbon {

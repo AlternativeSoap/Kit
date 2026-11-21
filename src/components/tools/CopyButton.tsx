@@ -24,7 +24,7 @@ export function CopyButton({
           setCopied(true);
           window.setTimeout(() => setCopied(false), 1400);
         }}
-        className="kit-touch-target inline-flex items-center justify-center rounded-[8px] border border-border px-3 py-2 text-xs font-medium text-muted transition-colors hover:bg-background hover:text-foreground sm:min-h-0 sm:min-w-0 sm:px-2.5 sm:py-1"
+        className="kit-touch-target inline-flex items-center justify-center rounded-[8px] border border-border px-3 py-2 text-xs font-medium text-muted transition-colors hover:bg-background hover:text-foreground sm:px-2.5 sm:py-1"
       >
         {copied ? copiedLabel : label}
       </button>

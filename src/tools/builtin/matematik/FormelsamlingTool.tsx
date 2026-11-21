@@ -41,20 +41,79 @@ export function FormelsamlingTool({ prefill }: { prefill?: ToolPrefill } = {}) {
         <KitInput
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder={da ? "fx pythagoras, brøk, sin…" : "e.g. pythagoras, fraction, sin…"}
+          placeholder={
+            da ? "fx pythagoras, brøk, sin…" : "e.g. pythagoras, fraction, sin…"
+          }
           autoComplete="off"
         />
       </Field>
 
-      <div className="overflow-x-auto rounded-[12px] border border-border">
+      {/* Phone: stacked formula cards. Desktop: full table. */}
+      <ul className="space-y-3 sm:hidden">
+        {rows.map((r) => (
+          <li
+            key={r.id}
+            className="rounded-[12px] border border-border bg-surface p-3.5"
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-[11px] font-medium uppercase tracking-wide text-muted">
+                  {da ? r.topicDa : r.topicEn}
+                </p>
+                <p className="mt-0.5 font-medium text-foreground">
+                  {da ? r.nameDa : r.nameEn}
+                </p>
+              </div>
+              <span
+                className={`shrink-0 rounded-[6px] px-1.5 py-0.5 text-[11px] font-medium ${
+                  r.level === "simple"
+                    ? "bg-accent-soft text-foreground"
+                    : "bg-overlay text-muted"
+                }`}
+              >
+                {r.level === "simple"
+                  ? da
+                    ? "Simpelt"
+                    : "Simple"
+                  : da
+                    ? "Avanceret"
+                    : "Advanced"}
+              </span>
+            </div>
+            <div className="mt-3 overflow-x-auto rounded-[10px] border border-border/70 bg-overlay/30 px-3 py-2">
+              {r.view}
+            </div>
+            <p className="mt-2 text-[13px] leading-snug text-muted">
+              {da ? r.noteDa : r.noteEn}
+            </p>
+          </li>
+        ))}
+        {rows.length === 0 ? (
+          <li className="rounded-[12px] border border-border px-3 py-6 text-center text-sm text-muted">
+            {da ? "Ingen formler matcher." : "No formulas match."}
+          </li>
+        ) : null}
+      </ul>
+
+      <div className="hidden overflow-x-auto rounded-[12px] border border-border sm:block">
         <table className="w-full min-w-[40rem] border-collapse text-left text-sm">
           <thead className="bg-overlay/60 text-xs uppercase tracking-wide text-muted">
             <tr>
-              <th className="px-3 py-2.5 font-medium">{da ? "Emne" : "Topic"}</th>
-              <th className="px-3 py-2.5 font-medium">{da ? "Navn" : "Name"}</th>
-              <th className="px-3 py-2.5 font-medium">{da ? "Formel" : "Formula"}</th>
-              <th className="px-3 py-2.5 font-medium">{da ? "Niveau" : "Level"}</th>
-              <th className="px-3 py-2.5 font-medium">{da ? "Note" : "Note"}</th>
+              <th className="px-3 py-2.5 font-medium">
+                {da ? "Emne" : "Topic"}
+              </th>
+              <th className="px-3 py-2.5 font-medium">
+                {da ? "Navn" : "Name"}
+              </th>
+              <th className="px-3 py-2.5 font-medium">
+                {da ? "Formel" : "Formula"}
+              </th>
+              <th className="px-3 py-2.5 font-medium">
+                {da ? "Niveau" : "Level"}
+              </th>
+              <th className="px-3 py-2.5 font-medium">
+                {da ? "Note" : "Note"}
+              </th>
             </tr>
           </thead>
           <tbody>

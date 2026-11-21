@@ -757,7 +757,7 @@ export function DiasTool() {
       <ErrorBanner>{error}</ErrorBanner>
 
       <div className="grid gap-3 sm:gap-4 lg:grid-cols-[6.5rem_minmax(0,1fr)_15rem] lg:items-stretch">
-        <div className="order-2 flex flex-col gap-2 lg:order-1 lg:max-h-[min(70vh,42rem)]">
+        <div className="order-2 flex flex-col gap-2 lg:order-1 lg:max-h-[min(70dvh,42rem)]">
           <div className="flex items-center gap-1 lg:flex-col lg:items-stretch">
             <PapersIconBtn label={t.addSlide} onClick={addSlide}>
               <IconPlus />
@@ -773,7 +773,7 @@ export function DiasTool() {
               <IconTrash />
             </PapersIconBtn>
           </div>
-          <div className="flex gap-2 overflow-x-auto pb-1 lg:flex-1 lg:flex-col lg:overflow-auto lg:pb-0">
+          <div className="flex gap-2 overflow-x-auto overscroll-x-contain pb-1 [-webkit-overflow-scrolling:touch] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden lg:flex-1 lg:flex-col lg:overflow-y-auto lg:overflow-x-visible lg:pb-0 lg:[scrollbar-width:thin]">
             {doc.slides.map((s, i) => (
               <button
                 key={s.id}
@@ -1113,7 +1113,7 @@ export function DiasTool() {
           </div>
         </div>
 
-        <div className="order-3 space-y-3 rounded-[12px] border border-border bg-surface p-3 lg:max-h-[min(70vh,42rem)] lg:overflow-y-auto">
+        <div className="order-3 space-y-3 rounded-[12px] border border-border bg-surface p-3 lg:max-h-[min(70dvh,42rem)] lg:overflow-y-auto">
           <h2 className="text-sm font-medium">{t.inspector}</h2>
           {!selected ? (
             <p className="text-xs text-muted">{t.noSelection}</p>
@@ -1265,7 +1265,7 @@ export function DiasTool() {
       {presenting ? (
         <div
           ref={presentRootRef}
-          className="dias-present-root fixed inset-0 z-50 flex flex-col bg-black"
+          className="dias-present-root fixed inset-0 z-50 flex flex-col bg-black pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]"
         >
           <div className="flex items-center justify-between gap-2 px-4 py-2 text-sm text-on-accent">
             <span>
@@ -1276,7 +1276,7 @@ export function DiasTool() {
             <div className="flex items-center gap-2">
               <button
                 type="button"
-                className="rounded-[8px] border border-white/30 px-3 py-1.5 disabled:opacity-40"
+                className="kit-touch-target rounded-[8px] border border-white/30 px-3 py-1.5 disabled:opacity-40"
                 disabled={slideIndex <= 0}
                 onClick={() => goPresentSlide(Math.max(0, slideIndex - 1))}
               >
@@ -1284,7 +1284,7 @@ export function DiasTool() {
               </button>
               <button
                 type="button"
-                className="rounded-[8px] border border-white/30 px-3 py-1.5 disabled:opacity-40"
+                className="kit-touch-target rounded-[8px] border border-white/30 px-3 py-1.5 disabled:opacity-40"
                 disabled={slideIndex >= doc.slides.length - 1}
                 onClick={() =>
                   goPresentSlide(
@@ -1296,7 +1296,7 @@ export function DiasTool() {
               </button>
               <button
                 type="button"
-                className="rounded-[8px] border border-white/30 px-3 py-1.5"
+                className="kit-touch-target rounded-[8px] border border-white/30 px-3 py-1.5"
                 onClick={() => void exitPresent()}
               >
                 {t.exitPresent}
@@ -1306,7 +1306,7 @@ export function DiasTool() {
           <div className="relative mx-auto flex w-full flex-1 items-center justify-center px-2 pb-2">
             <div
               key={`${slide.id}-${presentTick}`}
-              className={`dias-present-slide relative aspect-video h-auto max-h-full w-full max-w-[min(100%,calc((100vh-5.5rem)*16/9))] overflow-hidden ${slideTransitionClass(slide.transition)}`}
+              className={`dias-present-slide relative aspect-video h-auto max-h-full w-full max-w-[min(100%,calc((100dvh-5.5rem-env(safe-area-inset-top)-env(safe-area-inset-bottom))*16/9))] overflow-hidden ${slideTransitionClass(slide.transition)}`}
               style={{ background: slide.background }}
             >
               {sortedBlocks.map((block, index) => (

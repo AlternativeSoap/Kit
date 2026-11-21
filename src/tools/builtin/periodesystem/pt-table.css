@@ -84,11 +84,22 @@
 
 .pt-groups,
 .pt-main {
-  grid-template-columns: repeat(18, 2.9rem);
+  grid-template-columns: repeat(18, 2.55rem);
 }
 
 .pt-fblock {
-  grid-template-columns: 3.4rem repeat(15, 2.9rem);
+  grid-template-columns: 3rem repeat(15, 2.55rem);
+}
+
+@media (min-width: 480px) {
+  .pt-groups,
+  .pt-main {
+    grid-template-columns: repeat(18, 2.9rem);
+  }
+
+  .pt-fblock {
+    grid-template-columns: 3.4rem repeat(15, 2.9rem);
+  }
 }
 
 @media (min-width: 900px) {

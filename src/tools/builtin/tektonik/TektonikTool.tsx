@@ -23,7 +23,7 @@ const PlateWorldMap = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="flex h-[320px] items-center justify-center rounded-[14px] border border-border bg-muted/20 text-sm text-muted sm:h-[420px]">
+      <div className="kit-map-frame-tall flex items-center justify-center rounded-[14px] border border-border text-sm text-muted">
         OpenStreetMap…
       </div>
     ),

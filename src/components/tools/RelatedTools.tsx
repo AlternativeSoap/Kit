@@ -31,7 +31,7 @@ function RelatedList({
           <li key={item.id}>
             <Link
               href={`/t/${item.slug}`}
-              className="inline-flex min-h-11 items-center text-sm font-medium text-foreground underline-offset-4 hover:underline sm:min-h-0"
+              className="kit-touch-target inline-flex items-center text-sm font-medium text-foreground underline-offset-4 hover:underline"
             >
               {copy.name}
               {host ? (

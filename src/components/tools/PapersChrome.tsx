@@ -10,10 +10,10 @@ import {
 import { primaryBtnClass, secondaryBtnClass } from "@/components/tools/ui";
 
 export const papersIconBtnClass =
-  "kit-touch-target inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-[8px] border border-border bg-surface text-foreground disabled:opacity-40 sm:min-h-0";
+  "kit-touch-target inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-[8px] border border-border bg-surface text-foreground disabled:opacity-40";
 
 export const papersCompactBtnClass =
-  "kit-touch-target inline-flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-[8px] border border-border bg-surface px-2.5 text-sm font-medium text-foreground disabled:opacity-40 sm:min-h-0";
+  "kit-touch-target inline-flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-[8px] border border-border bg-surface px-2.5 text-sm font-medium text-foreground disabled:opacity-40";
 
 export function PapersIconBtn({
   label,

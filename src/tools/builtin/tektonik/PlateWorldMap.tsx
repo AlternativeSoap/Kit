@@ -150,7 +150,7 @@ export function PlateWorldMap({ plates, selectedId, onSelect, da }: Props) {
       <div className="overflow-hidden rounded-[14px] border border-border">
         <div
           ref={containerRef}
-          className="h-[320px] w-full bg-[#0c314d] sm:h-[420px]"
+          className="kit-map-frame-tall"
           role="img"
           aria-label={
             da

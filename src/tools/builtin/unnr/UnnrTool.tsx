@@ -1,7 +1,12 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { Field, KitInput } from "@/components/tools/ui";
+import {
+  Field,
+  KitInput,
+  pickerRowActiveClass,
+  pickerRowClass,
+} from "@/components/tools/ui";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import type { ToolPrefill } from "@/tools/prefill";
 import {
@@ -111,11 +116,7 @@ export function UnnrTool({ prefill }: { prefill?: ToolPrefill } = {}) {
             <li key={row.un}>
               <button
                 type="button"
-                className={`flex w-full items-baseline gap-3 rounded-[10px] px-3 py-2 text-left text-sm transition-colors ${
-                  active
-                    ? "bg-accent-soft text-foreground"
-                    : "text-foreground hover:bg-overlay"
-                }`}
+                className={`${active ? pickerRowActiveClass : pickerRowClass} items-baseline`}
                 onClick={() => pick(row)}
               >
                 <span className="w-12 shrink-0 tabular-nums text-muted">

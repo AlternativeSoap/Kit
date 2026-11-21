@@ -53,7 +53,7 @@ export function ToolChrome() {
       <div className="mx-auto flex w-full max-w-5xl items-center gap-2 px-2.5 py-2 sm:gap-3 sm:px-6 sm:py-3">
         <Link
           href="/"
-          className="kit-touch-target group flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px] text-sm font-medium text-foreground/80 hover:bg-overlay hover:text-foreground sm:h-auto sm:w-auto sm:gap-2 sm:rounded-[8px]"
+          className="kit-touch-target group flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px] text-sm font-medium text-foreground/80 hover:bg-overlay hover:text-foreground sm:w-auto sm:gap-2 sm:rounded-[8px] sm:px-2"
           aria-label={dictionary.brand}
         >
           <KitMark className="h-5 w-5 transition-[transform] duration-200 group-hover:scale-105" />

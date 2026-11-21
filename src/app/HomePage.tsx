@@ -5,7 +5,10 @@ import { useEffect } from "react";
 import { KitMark } from "@/components/KitMark";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { SearchShell } from "@/components/search/SearchShell";
-import { TryThisTips } from "@/components/search/TryThisTips";
+import {
+  MobileTryThisRail,
+  TryThisTips,
+} from "@/components/search/TryThisTips";
 import { useDictionary } from "@/i18n/LanguageProvider";
 
 export function HomePage() {
@@ -26,7 +29,7 @@ export function HomePage() {
         <div className="flex items-center gap-1 sm:gap-2">
           <Link
             href="/settings"
-            className="kit-touch-target inline-flex items-center justify-center rounded-[8px] px-3 py-2 text-xs font-medium text-muted transition-colors hover:bg-accent-soft hover:text-foreground sm:min-h-0 sm:min-w-0 sm:px-2 sm:py-1"
+            className="kit-touch-target inline-flex items-center justify-center rounded-[8px] px-3 py-2 text-xs font-medium text-muted transition-colors hover:bg-accent-soft hover:text-foreground sm:px-2 sm:py-1"
           >
             {dictionary.personal.open}
           </Link>
@@ -37,6 +40,7 @@ export function HomePage() {
       <div className="pointer-events-none relative z-40 flex flex-1 flex-col items-center justify-start px-4 pb-[max(6rem,env(safe-area-inset-bottom))] pt-24 sm:justify-center sm:px-6 sm:pb-24 sm:pt-20">
         <div className="pointer-events-auto w-full max-w-xl">
           <SearchShell variant="home" autoFocus />
+          <MobileTryThisRail />
         </div>
       </div>
     </main>

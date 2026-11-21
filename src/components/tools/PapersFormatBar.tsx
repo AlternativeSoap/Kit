@@ -65,7 +65,7 @@ function ToolBtn({
       type="button"
       title={title}
       onClick={onClick}
-      className={`kit-touch-target inline-flex h-10 min-w-10 shrink-0 items-center justify-center rounded-[8px] border px-2.5 text-sm font-semibold sm:h-9 sm:min-h-0 sm:min-w-9 sm:text-xs ${
+      className={`kit-touch-target inline-flex h-10 min-w-10 shrink-0 items-center justify-center rounded-[8px] border px-2.5 text-sm font-semibold sm:h-9 sm:min-w-9 sm:text-xs ${
         active
           ? "border-accent bg-accent text-on-accent"
           : "border-border bg-surface text-foreground hover:bg-accent-soft"

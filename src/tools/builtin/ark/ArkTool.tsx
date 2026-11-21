@@ -925,7 +925,7 @@ export function ArkTool() {
 
         <div
           ref={scrollRef}
-          className={`max-h-[min(62vh,40rem)] overflow-auto sm:max-h-[min(70vh,40rem)] ${
+          className={`max-h-[min(62dvh,40rem)] overflow-auto sm:max-h-[min(70dvh,40rem)] ${
             panning ? "cursor-grab active:cursor-grabbing select-none" : ""
           }`}
           onPointerDown={onScrollPointerDown}

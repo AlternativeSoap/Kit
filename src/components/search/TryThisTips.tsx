@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useDictionary } from "@/i18n/LanguageProvider";
 import { getToolCopy } from "@/i18n/tools";
 import { getExcludedIds } from "@/lib/personal";
@@ -352,6 +352,56 @@ export function TryThisTips() {
           </Link>
         );
       })}
+    </div>
+  );
+}
+
+/** Compact discovery chips under home search on phones (floating tips are desktop-only). */
+export function MobileTryThisRail() {
+  const dictionary = useDictionary();
+  const [hidden, setHidden] = useState(false);
+
+  useEffect(() => {
+    const input = document.getElementById(
+      "kit-search",
+    ) as HTMLInputElement | null;
+    if (!input) return;
+    const sync = () => setHidden(Boolean(input.value.trim()));
+    sync();
+    input.addEventListener("input", sync);
+    return () => input.removeEventListener("input", sync);
+  }, []);
+
+  const tools = useMemo(() => {
+    const exclude = getExcludedIds();
+    return TIP_SLUGS.map((slug) => getToolBySlug(slug))
+      .filter((tool): tool is ToolDefinition => Boolean(tool))
+      .filter((tool) => !exclude.includes(tool.id))
+      .slice(0, 10);
+  }, []);
+
+  if (hidden || tools.length === 0) return null;
+
+  return (
+    <div className="mt-5 min-[960px]:hidden">
+      <p className="mb-2 text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
+        {dictionary.search.tryThis}
+      </p>
+      <ul className="kit-h-scroll gap-2">
+        {tools.map((tool) => {
+          const copy = getToolCopy(dictionary, tool.id);
+          return (
+            <li key={tool.id}>
+              <Link
+                href={`/t/${tool.slug}`}
+                className="kit-touch-target inline-flex shrink-0 items-center rounded-full border border-border bg-surface px-3.5 py-2 text-sm font-medium text-foreground transition-colors hover:border-accent hover:bg-accent-soft"
+              >
+                {copy.name}
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
     </div>
   );
 }

@@ -7,6 +7,8 @@ import {
   KitInput,
   KitSelect,
   Segmented,
+  pickerRowActiveClass,
+  pickerRowClass,
 } from "@/components/tools/ui";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { prefillChoice, type ToolPrefill } from "@/tools/prefill";
@@ -53,7 +55,7 @@ const PostnrMap = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="flex h-[320px] items-center justify-center rounded-[12px] border border-border bg-muted/20 text-sm text-muted sm:h-[380px]">
+      <div className="kit-map-frame flex items-center justify-center rounded-[12px] border border-border text-sm text-muted">
         OpenStreetMap…
       </div>
     ),
@@ -229,9 +231,9 @@ export function PostnrTool({ prefill }: { prefill?: ToolPrefill } = {}) {
               <li key={r.id}>
                 <button
                   type="button"
-                  className={`flex w-full items-start justify-between gap-3 px-3 py-2.5 text-left text-sm transition-colors hover:bg-overlay ${
-                    selected?.id === r.id ? "bg-overlay" : ""
-                  }`}
+                  className={`${
+                    selected?.id === r.id ? pickerRowActiveClass : pickerRowClass
+                  } items-start justify-between`}
                   onClick={() => selectRow(r)}
                 >
                   <span>

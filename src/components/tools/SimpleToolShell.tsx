@@ -20,7 +20,7 @@ export function SimpleToolShell({
           {inputs}
           {footer ? <div className="pt-1">{footer}</div> : null}
         </section>
-        <section className="simple-tool-panel simple-tool-results min-w-0 rounded-[16px] border border-border bg-surface p-4 sm:p-5 lg:sticky lg:top-[calc(4.5rem+env(safe-area-inset-top))]">
+        <section className="simple-tool-panel simple-tool-results min-w-0 rounded-[16px] border border-border bg-surface p-4 sm:p-5 lg:sticky lg:top-[calc(var(--kit-chrome-offset)+0.5rem)]">
           {results}
         </section>
       </div>

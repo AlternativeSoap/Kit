@@ -35,7 +35,7 @@ function BubbleBtn({
       title={title}
       onMouseDown={(e) => e.preventDefault()}
       onClick={onClick}
-      className={`kit-touch-target inline-flex h-9 min-w-9 items-center justify-center rounded-[8px] px-2 text-sm font-semibold transition-colors sm:min-h-0 ${
+      className={`kit-touch-target inline-flex h-9 min-w-9 items-center justify-center rounded-[8px] px-2 text-sm font-semibold transition-colors ${
         active
           ? "bg-accent text-on-accent"
           : "text-foreground hover:bg-overlay"

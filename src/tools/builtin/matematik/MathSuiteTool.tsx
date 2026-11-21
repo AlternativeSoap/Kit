@@ -135,7 +135,7 @@ export function MathSuiteTool({
               type="button"
               disabled={count === 0}
               onClick={() => pickGroup(g.id)}
-              className={`shrink-0 rounded-[10px] border px-3 py-2 text-sm transition-colors ${
+              className={`kit-touch-target shrink-0 rounded-[10px] border px-3 py-2 text-sm transition-colors ${
                 active
                   ? "border-accent bg-accent-soft text-foreground"
                   : "border-border bg-surface text-muted hover:bg-overlay hover:text-foreground"
@@ -150,7 +150,58 @@ export function MathSuiteTool({
         })}
       </div>
 
-      <div className="overflow-x-auto rounded-[12px] border border-border">
+      {/* Phone: stacked list. Desktop: formula table. */}
+      <ul className="divide-y divide-border overflow-hidden rounded-[12px] border border-border sm:hidden">
+        {rows.map((row) => {
+          const active = row.id === selected.id;
+          return (
+            <li key={row.id}>
+              <button
+                type="button"
+                onClick={() => setSelectedId(row.id)}
+                className={`kit-touch-target flex w-full items-start justify-between gap-3 px-3.5 py-3 text-left transition-colors ${
+                  active
+                    ? "bg-accent-soft text-foreground"
+                    : "hover:bg-overlay"
+                }`}
+              >
+                <span className="min-w-0">
+                  <span className="block font-medium">
+                    {da ? row.nameDa : row.nameEn}
+                  </span>
+                  <span className="mt-0.5 block text-[13px] text-muted line-clamp-2">
+                    {da ? row.blurbDa : row.blurbEn}
+                  </span>
+                </span>
+                <span
+                  className={`shrink-0 rounded-[6px] px-1.5 py-0.5 text-[11px] font-medium ${
+                    row.level === "simple"
+                      ? "bg-surface text-foreground"
+                      : "bg-overlay text-muted"
+                  }`}
+                >
+                  {row.level === "simple"
+                    ? da
+                      ? "Simpelt"
+                      : "Simple"
+                    : da
+                      ? "Avanceret"
+                      : "Advanced"}
+                </span>
+              </button>
+            </li>
+          );
+        })}
+        {rows.length === 0 ? (
+          <li className="px-3.5 py-6 text-center text-sm text-muted">
+            {da
+              ? "Ingen værktøjer i denne gruppe for det valgte niveau."
+              : "No tools in this group for the selected level."}
+          </li>
+        ) : null}
+      </ul>
+
+      <div className="hidden overflow-x-auto rounded-[12px] border border-border sm:block">
         <table className="w-full min-w-[40rem] border-collapse text-left text-sm">
           <thead className="bg-overlay/60 text-xs uppercase tracking-wide text-muted">
             <tr>

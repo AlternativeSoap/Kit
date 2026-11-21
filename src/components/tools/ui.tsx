@@ -6,13 +6,20 @@ export const fieldClass =
   "kit-field w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 text-sm outline-none transition-[border-color,box-shadow] duration-150 focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)]";
 
 export const primaryBtnClass =
-  "kit-touch-target whitespace-nowrap rounded-[10px] bg-accent px-3.5 py-2.5 text-sm font-medium text-on-accent transition-[transform,opacity,background-color] duration-150 hover:brightness-[1.03] active:scale-[0.98] disabled:opacity-40 disabled:active:scale-100 sm:min-h-0 sm:px-4";
+  "kit-touch-target whitespace-nowrap rounded-[10px] bg-accent px-3.5 py-2.5 text-sm font-medium text-on-accent transition-[transform,opacity,background-color] duration-150 hover:brightness-[1.03] active:scale-[0.98] disabled:opacity-40 disabled:active:scale-100 sm:px-4";
 
 export const secondaryBtnClass =
-  "kit-touch-target whitespace-nowrap rounded-[10px] border border-border bg-surface px-3.5 py-2.5 text-sm font-medium text-foreground transition-[transform,opacity,background-color,border-color] duration-150 hover:bg-overlay active:scale-[0.98] disabled:opacity-40 disabled:active:scale-100 sm:min-h-0 sm:px-4";
+  "kit-touch-target whitespace-nowrap rounded-[10px] border border-border bg-surface px-3.5 py-2.5 text-sm font-medium text-foreground transition-[transform,opacity,background-color,border-color] duration-150 hover:bg-overlay active:scale-[0.98] disabled:opacity-40 disabled:active:scale-100 sm:px-4";
+
+/** Full-width list row for catalog pickers (postnr, unnr, affald, …). */
+export const pickerRowClass =
+  "kit-picker-row kit-touch-target rounded-[10px] text-foreground hover:bg-overlay";
+
+export const pickerRowActiveClass =
+  "kit-picker-row kit-touch-target rounded-[10px] bg-accent-soft text-foreground";
 
 export const fileInputClass =
-  "block w-full text-sm text-muted file:mr-3 file:min-h-11 file:rounded-[8px] file:border-0 file:bg-accent file:px-3.5 file:py-2.5 file:text-sm file:font-medium file:text-on-accent disabled:opacity-50 sm:file:min-h-0 sm:file:py-2";
+  "block w-full text-sm text-muted file:mr-3 file:min-h-11 file:rounded-[8px] file:border-0 file:bg-accent file:px-3.5 file:py-2.5 file:text-sm file:font-medium file:text-on-accent disabled:opacity-50 sm:file:py-2";
 
 export function ErrorBanner({ children }: { children: ReactNode }) {
   if (!children) return null;
@@ -110,7 +117,7 @@ export function Segmented<T extends string>({
           role="tab"
           aria-selected={opt.id === value}
           onClick={() => onChange(opt.id)}
-          className="kit-segmented-btn kit-touch-target sm:min-h-0"
+          className="kit-segmented-btn kit-touch-target"
         >
           {opt.label}
         </button>
