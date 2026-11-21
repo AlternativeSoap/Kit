@@ -67,10 +67,10 @@ export const SearchField = forwardRef<HTMLInputElement, SearchFieldProps>(
             onFocus={onFocus}
             onBlur={onBlur}
             onKeyDown={onKeyDown}
-            className={`w-full min-w-0 bg-transparent text-foreground outline-none placeholder:text-muted ${
+            className={`kit-field w-full min-w-0 bg-transparent text-foreground outline-none placeholder:text-muted ${
               compact
-                ? "text-[15px] leading-5 sm:text-[16px]"
-                : "text-base sm:text-[17px]"
+                ? "text-base leading-5"
+                : "text-base leading-snug sm:text-[17px]"
             }`}
           />
         </div>

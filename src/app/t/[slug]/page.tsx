@@ -42,7 +42,7 @@ export default function ToolPage({ params }: PageProps) {
     <Suspense
       fallback={
         <div className="flex min-h-full min-h-dvh flex-1 flex-col overflow-x-clip">
-          <div className="sticky top-0 z-40 h-[53px] border-b border-border bg-background/90 pt-[env(safe-area-inset-top)] sm:h-[57px]" />
+          <div className="kit-chrome-skeleton sticky top-0 z-40 border-b border-border bg-background/90" />
           <ToolContentFallback />
         </div>
       }

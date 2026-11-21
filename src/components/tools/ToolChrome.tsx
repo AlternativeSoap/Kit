@@ -5,11 +5,14 @@ import { useEffect, useRef } from "react";
 import { KitMark } from "@/components/KitMark";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { SearchShell } from "@/components/search/SearchShell";
+import { useChromeOffset } from "@/hooks/useChromeOffset";
 import { useDictionary } from "@/i18n/LanguageProvider";
 
 export function ToolChrome() {
   const dictionary = useDictionary();
+  const headerRef = useRef<HTMLElement>(null);
   const searchWrapRef = useRef<HTMLDivElement>(null);
+  useChromeOffset(headerRef);
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
@@ -43,7 +46,10 @@ export function ToolChrome() {
   }, []);
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border bg-background/90 pt-[env(safe-area-inset-top)] backdrop-blur-sm">
+    <header
+      ref={headerRef}
+      className="sticky top-0 z-40 border-b border-border bg-background/90 pt-[env(safe-area-inset-top)] backdrop-blur-sm"
+    >
       <div className="mx-auto flex w-full max-w-5xl items-center gap-2 px-2.5 py-2 sm:gap-3 sm:px-6 sm:py-3">
         <Link
           href="/"

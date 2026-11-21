@@ -41,6 +41,12 @@ import {
   searchTools,
   type SearchHit,
 } from "@/lib/search";
+import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
+import {
+  useIsFinePointer,
+  useIsPhoneLayout,
+} from "@/hooks/useMediaQuery";
+import { useVisualViewportInset } from "@/hooks/useVisualViewportInset";
 import { generatePassword } from "@/tools/builtin/password/calc";
 import { getToolById } from "@/tools/registry";
 import type { ToolDefinition } from "@/tools/types";
@@ -98,8 +104,11 @@ export function SearchShell({
   /** Counts query changes so a slow copy never reports on a newer answer. */
   const queryEdits = useRef(0);
   const [query, setQuery] = useState("");
-  const [open, setOpen] = useState(variant === "home");
+  // Home starts closed on phones; desktop fine-pointer opens empty state below.
+  const [open, setOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
+  const isPhone = useIsPhoneLayout();
+  const isFinePointer = useIsFinePointer();
   const [recentSlugs, setRecentSlugs] = useState<string[]>([]);
   const [pinnedSlugs, setPinnedSlugs] = useState<string[]>([]);
   const [usageCounts, setUsageCounts] = useState<Record<string, number>>({});
@@ -115,6 +124,7 @@ export function SearchShell({
     null,
   );
   const [pasteMessage, setPasteMessage] = useState<string | null>(null);
+  const [personalReady, setPersonalReady] = useState(false);
   const hydratedPersonal = useRef(false);
 
   useEffect(() => {
@@ -130,14 +140,22 @@ export function SearchShell({
         typeof window !== "undefined" &&
           new URLSearchParams(window.location.search).get("kitDebug") === "1",
       );
+      setPersonalReady(true);
     });
   }, []);
 
   useEffect(() => {
-    if (autoFocus) {
+    // Only autofocus when a fine pointer is present (desktop).
+    if (autoFocus && isFinePointer) {
       inputRef.current?.focus();
     }
-  }, [autoFocus]);
+  }, [autoFocus, isFinePointer]);
+
+  useEffect(() => {
+    if (variant === "home" && isFinePointer) {
+      setOpen(true);
+    }
+  }, [variant, isFinePointer]);
 
   useEffect(() => {
     return () => {
@@ -281,6 +299,8 @@ export function SearchShell({
         ? withAnswerTool(matched, answerTool, dictionary.search.toolsGroup)
         : matched;
     }
+    // Avoid pinned/recent flash before localStorage is read.
+    if (!personalReady) return [];
     const { pinned, recent, related, suggestions } = emptyStateTools(
       recentSlugs,
       pinnedSlugs,
@@ -307,6 +327,7 @@ export function SearchShell({
     libraryBrowse,
     hits,
     answer,
+    personalReady,
     recentSlugs,
     pinnedSlugs,
     usageCounts,
@@ -572,6 +593,11 @@ export function SearchShell({
       flatTools.length > 0 ||
       contentHits.length > 0);
 
+  // On phones, an open suggest panel is a modal overlay (scroll lock + dim).
+  const overlayActive = Boolean(showPanel && isPhone);
+  useBodyScrollLock(overlayActive);
+  useVisualViewportInset(overlayActive);
+
   const panelSuggestions =
     querySuggestions.length > 0 && trimmed && !answer
       ? querySuggestions
@@ -630,12 +656,12 @@ export function SearchShell({
         </pre>
       ) : null}
 
-      {showPanel && variant === "compact" ? (
+      {overlayActive ? (
         <button
           type="button"
           aria-label={locale === "da" ? "Luk søgning" : "Close search"}
-          className="fixed inset-0 z-40 bg-background/50 backdrop-blur-[2px] sm:hidden"
-          onMouseDown={(event) => {
+          className="fixed inset-0 z-[var(--kit-overlay-z)] bg-background/55 backdrop-blur-[2px]"
+          onPointerDown={(event) => {
             event.preventDefault();
             closePanel();
             inputRef.current?.blur();
@@ -645,16 +671,16 @@ export function SearchShell({
 
       {libraryBrowse && open ? (
         <div
-          className={`z-50 overflow-hidden border border-border bg-surface shadow-suggest ${
+          className={`overflow-hidden border border-border bg-surface shadow-suggest ${
             variant === "compact"
-              ? "fixed inset-x-2 rounded-[14px] max-sm:top-[calc(env(safe-area-inset-top)+3.35rem)] sm:absolute sm:inset-x-0 sm:top-[calc(100%+8px)] sm:rounded-[12px]"
-              : "absolute left-0 right-0 top-[calc(100%+8px)] rounded-[12px]"
+              ? "fixed inset-x-2 z-[var(--kit-overlay-panel-z)] top-[var(--kit-search-panel-top)] rounded-[14px] sm:absolute sm:inset-x-0 sm:top-[calc(100%+8px)] sm:z-50 sm:rounded-[12px]"
+              : "absolute left-0 right-0 top-[calc(100%+8px)] z-50 rounded-[12px] max-sm:z-[var(--kit-overlay-panel-z)]"
           }`}
         >
           <button
             type="button"
-            className="flex w-full flex-col items-start gap-0.5 bg-accent-soft px-4 py-3.5 text-left transition-colors hover:bg-accent-soft"
-            onMouseDown={(event) => event.preventDefault()}
+            className="kit-touch-target flex w-full flex-col items-start gap-0.5 bg-accent-soft px-4 py-3.5 text-left transition-colors hover:bg-accent-soft sm:min-h-0"
+            onPointerDown={(event) => event.preventDefault()}
             onClick={openLibrary}
           >
             <span className="text-sm font-medium text-foreground">

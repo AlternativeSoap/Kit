@@ -114,21 +114,21 @@ export function SuggestPanel({
       ref={panelRef}
       id="kit-suggest"
       role="listbox"
-      className={`kit-scrollbar kit-suggest-enter z-50 overflow-y-auto overscroll-contain border border-border bg-surface shadow-suggest ${
+      className={`kit-scrollbar kit-suggest-enter overflow-y-auto overscroll-contain border border-border bg-surface shadow-suggest ${
         compact
-          ? "fixed inset-x-2 max-h-[min(70dvh,calc(100dvh-5.5rem-env(safe-area-inset-bottom)))] rounded-[14px] max-sm:top-[calc(env(safe-area-inset-top)+3.35rem)] sm:absolute sm:inset-x-0 sm:top-[calc(100%+8px)] sm:max-h-[min(22rem,calc(100dvh-8rem))] sm:rounded-[12px]"
-          : "absolute left-0 right-0 top-[calc(100%+8px)] max-h-[min(22rem,calc(100dvh-8rem))] rounded-[12px] max-sm:max-h-[min(18rem,calc(100dvh-10rem-env(safe-area-inset-bottom)))]"
+          ? "fixed inset-x-2 z-[var(--kit-overlay-panel-z)] max-h-[var(--kit-search-panel-max-h)] rounded-[14px] max-sm:top-[var(--kit-search-panel-top)] sm:absolute sm:inset-x-0 sm:top-[calc(100%+8px)] sm:z-50 sm:max-h-[min(22rem,calc(100dvh-8rem))] sm:rounded-[12px]"
+          : "absolute left-0 right-0 top-[calc(100%+8px)] z-50 max-h-[min(22rem,calc(100dvh-8rem))] rounded-[12px] max-sm:z-[var(--kit-overlay-panel-z)] max-sm:max-h-[var(--kit-search-panel-max-h)]"
       }`}
     >
       {suggestions.length > 0 ? (
         <div className="border-b border-border px-3 py-2">
-          <ul className="flex gap-1.5 overflow-x-auto pb-0.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <ul className="kit-h-scroll gap-1.5 pb-0.5">
             {suggestions.map((item) => (
               <li key={`${item.label}-${item.query}`} className="shrink-0">
                 <button
                   type="button"
-                  className="inline-flex items-center rounded-full border border-border bg-background px-2.5 py-1 text-[12px] text-muted transition-colors hover:border-accent hover:bg-accent-soft hover:text-foreground"
-                  onMouseDown={(event) => event.preventDefault()}
+                  className="kit-touch-target inline-flex items-center rounded-full border border-border bg-background px-3 py-1.5 text-[13px] text-muted transition-colors hover:border-accent hover:bg-accent-soft hover:text-foreground sm:min-h-0 sm:min-w-0 sm:px-2.5 sm:py-1 sm:text-[12px]"
+                  onPointerDown={(event) => event.preventDefault()}
                   onClick={() => onPickSuggestion?.(item.query)}
                 >
                   {item.label}

@@ -25,6 +25,25 @@
   /* Document / export surfaces that should stay paper-like in both themes. */
   --paper: #ffffff;
   --paper-ink: #141414;
+  /*
+    Mobile chrome + overlay contract. ToolChrome updates --kit-chrome-offset
+    and --kit-chrome-height via ResizeObserver. Search overlays read these.
+  */
+  --kit-safe-top: env(safe-area-inset-top, 0px);
+  --kit-safe-bottom: env(safe-area-inset-bottom, 0px);
+  --kit-chrome-height: 3.75rem;
+  --kit-chrome-offset: calc(var(--kit-safe-top) + var(--kit-chrome-height));
+  --kit-keyboard-inset: 0px;
+  --kit-search-panel-top: calc(var(--kit-chrome-offset) + 0.5rem);
+  --kit-search-panel-max-h: min(
+    70dvh,
+    calc(
+      100dvh - var(--kit-search-panel-top) - var(--kit-safe-bottom) -
+        var(--kit-keyboard-inset) - 0.5rem
+    )
+  );
+  --kit-overlay-z: 40;
+  --kit-overlay-panel-z: 50;
   color-scheme: light;
 }
 
@@ -548,6 +567,18 @@ html[data-theme="dark"] .simple-tool-panel {
     transform 120ms ease;
 }
 
+@media (pointer: coarse) {
+  .kit-segmented-btn {
+    min-height: 2.75rem;
+    padding-inline: 0.95rem;
+  }
+}
+
+/* Sticky header placeholder while ToolChrome streams in. */
+.kit-chrome-skeleton {
+  height: calc(var(--kit-chrome-height) + var(--kit-safe-top));
+}
+
 .kit-segmented-btn:hover {
   color: var(--foreground);
 }
@@ -760,7 +791,7 @@ html[data-theme="dark"] .simple-tool-panel {
     max-width: none;
     border-radius: 12px 12px 0 0;
     position: sticky;
-    top: calc(3.3rem + env(safe-area-inset-top));
+    top: var(--kit-chrome-offset);
   }
 
   .papers-format-bar {
