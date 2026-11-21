@@ -320,7 +320,7 @@ export function BoligokonomiTool() {
                 {view === "chart" ? (
                   <NetWorthChart base={base.rows} stress={stress?.rows ?? null} da={da} />
                 ) : (
-                  <div className="max-h-72 overflow-auto">
+                  <div className="kit-scrollbar max-h-[min(18rem,50dvh)] overflow-auto overscroll-contain touch-pan-y">
                     <table className="w-full min-w-[480px] border-collapse text-left text-xs">
                       <thead>
                         <tr className="border-b border-border text-muted">

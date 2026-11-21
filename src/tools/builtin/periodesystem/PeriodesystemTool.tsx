@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Segmented } from "@/components/tools/ui";
+import { fieldClass, Segmented } from "@/components/tools/ui";
 import { useDictionary, useLanguage } from "@/i18n/LanguageProvider";
 import type { ToolPrefill } from "@/tools/prefill";
 import { curatedFor, suggestFormulas } from "./compounds";
@@ -340,14 +340,14 @@ export function PeriodesystemTool({ prefill }: { prefill?: ToolPrefill }) {
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder={t.searchPlaceholder}
-              className="w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 pr-10 text-base text-foreground outline-none focus:border-accent sm:text-sm"
+              className={`${fieldClass} pr-10`}
               autoComplete="off"
               spellCheck={false}
             />
             {query ? (
               <button
                 type="button"
-                className="absolute inset-y-0 right-0 px-3 text-sm text-muted hover:text-foreground"
+                className="kit-touch-target absolute inset-y-0 right-0 px-3 text-sm text-muted hover:text-foreground"
                 onClick={() => setQuery("")}
               >
                 {t.clearSearch}

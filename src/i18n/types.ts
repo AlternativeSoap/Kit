@@ -99,6 +99,8 @@ export type Dictionary = {
     externalBadge: string;
     shortcutBadge: string;
     tryThis: string;
+    /** Short line under home tip chips when search is empty. */
+    tryThisHint: string;
   };
   intent: {
     calculateVat: string;

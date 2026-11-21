@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { CopyButton } from "@/components/tools/CopyButton";
-import { Field, KitSelect, Segmented } from "@/components/tools/ui";
+import { Field, KitSelect, Segmented, fieldClass } from "@/components/tools/ui";
 import { useDictionary, useLanguage } from "@/i18n/LanguageProvider";
 import { prefillChoice, prefillNumber, type ToolPrefill } from "@/tools/prefill";
 import {
@@ -244,7 +244,7 @@ export function PasswordTool({ prefill }: { prefill?: ToolPrefill }) {
               type="text"
               value={checkValue}
               onChange={(e) => setCheckValue(e.target.value)}
-              className="kit-field w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 font-mono text-sm"
+              className={`${fieldClass} font-mono`}
               autoComplete="off"
             />
           </Field>

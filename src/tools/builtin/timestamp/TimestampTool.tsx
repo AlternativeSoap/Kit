@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { fieldClass } from "@/components/tools/ui";
 import { CopyButton } from "@/components/tools/CopyButton";
 import { useDictionary, useLanguage } from "@/i18n/LanguageProvider";
 import { prefillChoice, type ToolPrefill } from "@/tools/prefill";
@@ -69,7 +70,7 @@ export function TimestampTool({ prefill }: { prefill?: ToolPrefill }) {
           inputMode="numeric"
           value={unix}
           onChange={(event) => setUnix(event.target.value)}
-          className="w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 font-mono text-[15px] outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)]"
+          className={`${fieldClass} font-mono`}
         />
       </label>
 
@@ -79,7 +80,7 @@ export function TimestampTool({ prefill }: { prefill?: ToolPrefill }) {
           type="text"
           value={iso}
           onChange={(event) => setIso(event.target.value)}
-          className="w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 font-mono text-[15px] outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)]"
+          className={`${fieldClass} font-mono`}
         />
       </label>
 

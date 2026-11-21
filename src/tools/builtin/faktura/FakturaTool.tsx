@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState, type ReactNode } from "react";
 import {
   Field,
   KitInput,
+  fieldClass,
   primaryBtnClass,
   secondaryBtnClass,
 } from "@/components/tools/ui";
@@ -56,9 +57,6 @@ function formatDateLabel(iso: string, locale: string) {
     year: "numeric",
   }).format(d);
 }
-
-const fieldClass =
-  "kit-field w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 text-sm outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)]";
 
 function Chip({
   active,

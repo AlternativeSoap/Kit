@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { fieldClass } from "@/components/tools/ui";
 import { CopyButton } from "@/components/tools/CopyButton";
 import { useDictionary } from "@/i18n/LanguageProvider";
 import { prefillChoice, type ToolPrefill } from "@/tools/prefill";
@@ -58,14 +59,14 @@ export function SlugTool({ prefill }: { prefill?: ToolPrefill }) {
             value={text}
             onChange={(event) => setText(event.target.value)}
             rows={6}
-            className="w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 text-[16px] outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)]"
+            className={fieldClass}
           />
         </Field>
         <Field label={t.style}>
           <select
             value={style}
             onChange={(event) => setStyle(event.target.value as SlugStyle)}
-            className="w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 text-[15px] outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)]"
+            className={fieldClass}
           >
             {STYLES.map((item) => (
               <option key={item} value={item}>

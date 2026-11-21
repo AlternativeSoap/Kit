@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useRef, useState } from "react";
-import { Segmented } from "@/components/tools/ui";
+import { Segmented, fieldClass } from "@/components/tools/ui";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import {
   EVENTS,
@@ -190,14 +190,14 @@ export function TidslinjeTool() {
               placeholder={
                 da ? "År, titel eller stikord…" : "Year, title, or keyword…"
               }
-              className="w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 pr-10 text-base text-foreground outline-none focus:border-accent sm:text-sm"
+              className={`${fieldClass} pr-10`}
               autoComplete="off"
               spellCheck={false}
             />
             {query ? (
               <button
                 type="button"
-                className="absolute inset-y-0 right-0 px-3 text-sm text-muted hover:text-foreground"
+                className="kit-touch-target absolute inset-y-0 right-0 px-3 text-sm text-muted hover:text-foreground"
                 onClick={() => setQuery("")}
               >
                 {da ? "Ryd" : "Clear"}
@@ -381,7 +381,7 @@ export function TidslinjeTool() {
                       setSlot(v);
                       if (v) setSelectedId(v);
                     }}
-                    className="w-full rounded-[10px] border border-border bg-background px-3 py-2.5 text-sm outline-none focus:border-accent"
+                    className={fieldClass}
                   >
                     <option value="">
                       {da ? "Vælg…" : "Choose…"}

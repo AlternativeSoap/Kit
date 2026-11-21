@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { CopyButton } from "@/components/tools/CopyButton";
+import { primaryBtnClass } from "@/components/tools/ui";
 import { useDictionary } from "@/i18n/LanguageProvider";
 import { prefillNumber, type ToolPrefill } from "@/tools/prefill";
 import {
@@ -43,14 +44,14 @@ export function UuidTool({ prefill }: { prefill?: ToolPrefill }) {
           max={UUID_MAX_COUNT}
           value={count}
           onChange={(event) => setCount(Number(event.target.value))}
-          className="w-full accent-[var(--accent)]"
+          className="kit-range w-full accent-[var(--accent)]"
         />
       </label>
 
       <button
         type="button"
         onClick={regenerate}
-        className="rounded-[10px] bg-accent px-4 py-2.5 text-sm font-medium text-on-accent hover:opacity-90"
+        className={primaryBtnClass}
       >
         {t.generate}
       </button>

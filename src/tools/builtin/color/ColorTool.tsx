@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { fieldClass } from "@/components/tools/ui";
 import { CopyButton } from "@/components/tools/CopyButton";
 import { useDictionary } from "@/i18n/LanguageProvider";
 import type { ToolPrefill } from "@/tools/prefill";
@@ -70,7 +71,7 @@ export function ColorTool({ prefill }: { prefill?: ToolPrefill }) {
             setHex(next);
             applyAnswer(setHex, setR, setG, setB, setH, setS, setL, next.startsWith("#") ? next : `#${next}`);
           }}
-          className="w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 font-mono text-[15px] outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)]"
+          className={`${fieldClass} font-mono`}
         />
       </label>
 
@@ -99,7 +100,7 @@ export function ColorTool({ prefill }: { prefill?: ToolPrefill }) {
                 const parsed = colorFromRgb(Number(nextR), Number(nextG), Number(nextB));
                 if (parsed) applyAnswer(setHex, setR, setG, setB, setH, setS, setL, parsed.hex);
               }}
-              className="w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 text-[15px] outline-none focus:border-accent"
+              className={fieldClass}
             />
           </label>
         ))}
@@ -131,7 +132,7 @@ export function ColorTool({ prefill }: { prefill?: ToolPrefill }) {
                 const parsed = colorFromHsl(Number(nextH), Number(nextS), Number(nextL));
                 if (parsed) applyAnswer(setHex, setR, setG, setB, setH, setS, setL, parsed.hex);
               }}
-              className="w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 text-[15px] outline-none focus:border-accent"
+              className={fieldClass}
             />
           </label>
         ))}

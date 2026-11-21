@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { fieldClass } from "@/components/tools/ui";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { formatNumber } from "@/lib/format";
 import { prefillNumber, type ToolPrefill } from "@/tools/prefill";
@@ -46,7 +47,7 @@ function NumberInput({
       value={value}
       placeholder={placeholder}
       onChange={(event) => onChange(event.target.value)}
-      className="w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 text-base outline-none transition-colors focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)] sm:text-[15px]"
+      className={fieldClass}
     />
   );
 }
@@ -115,7 +116,7 @@ export function SimpleLadmeter({ prefill }: { prefill?: ToolPrefill }) {
           <select
             value={palletType}
             onChange={(event) => setPalletType(event.target.value as PalletType)}
-            className="kit-touch-target w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 text-base outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)] sm:min-h-0 sm:text-[15px]"
+            className={fieldClass}
           >
             <option value="eur">{t.eur}</option>
             <option value="industri">{t.industrial}</option>

@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { CopyButton } from "@/components/tools/CopyButton";
+import { fieldClass } from "@/components/tools/ui";
 import { useDictionary } from "@/i18n/LanguageProvider";
 import type { ToolPrefill } from "@/tools/prefill";
 import {
@@ -52,7 +53,7 @@ export function RegexTool({ prefill }: { prefill?: ToolPrefill }) {
             value={pattern}
             onChange={(event) => setPattern(event.target.value)}
             spellCheck={false}
-            className="w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 font-mono text-base outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)] sm:text-[14px]"
+            className={`${fieldClass} font-mono`}
           />
         </label>
         <div>
@@ -86,7 +87,7 @@ export function RegexTool({ prefill }: { prefill?: ToolPrefill }) {
           onChange={(event) => setText(event.target.value)}
           rows={8}
           spellCheck={false}
-          className="w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 font-mono text-base outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)] sm:text-[14px]"
+          className={`${fieldClass} font-mono`}
         />
       </label>
 
@@ -108,7 +109,7 @@ export function RegexTool({ prefill }: { prefill?: ToolPrefill }) {
                 copiedLabel={t.copied}
               />
             </div>
-            <pre className="max-h-56 overflow-auto whitespace-pre-wrap break-words font-mono text-[13px] leading-relaxed">
+            <pre className="kit-scrollbar max-h-[min(14rem,42dvh)] overflow-auto overscroll-contain touch-pan-y whitespace-pre-wrap break-words font-mono text-[13px] leading-relaxed">
               {segments.map((part, index) =>
                 part.hit ? (
                   <mark

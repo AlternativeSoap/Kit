@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Field,
   KitInput,
+  fieldClass,
   primaryBtnClass,
   secondaryBtnClass,
 } from "@/components/tools/ui";
@@ -396,7 +397,7 @@ export function PartiklerTool() {
                 value={color}
                 onChange={(e) => setColor(e.target.value)}
                 spellCheck={false}
-                className="kit-field min-w-0 flex-1 rounded-[10px] border border-border bg-surface px-3 py-2.5 font-mono text-sm outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)]"
+                className={`${fieldClass} min-w-0 flex-1 font-mono`}
               />
             </div>
           </Field>

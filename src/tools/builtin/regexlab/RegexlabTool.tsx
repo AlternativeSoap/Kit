@@ -5,6 +5,7 @@ import {
   Field,
   KitInput,
   Segmented,
+  fieldClass,
   primaryBtnClass,
   secondaryBtnClass,
 } from "@/components/tools/ui";
@@ -111,7 +112,7 @@ export function RegexlabTool() {
               value={pattern}
               onChange={(e) => setPattern(e.target.value)}
               spellCheck={false}
-              className="kit-field w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 font-mono text-sm outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)]"
+              className={`${fieldClass} font-mono`}
             />
           </Field>
           <div>
@@ -148,7 +149,7 @@ export function RegexlabTool() {
                 onChange={(e) => setText(e.target.value)}
                 rows={6}
                 spellCheck={false}
-                className="kit-field w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 font-mono text-sm outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)]"
+                className={`${fieldClass} font-mono`}
               />
             </Field>
 
@@ -177,7 +178,7 @@ export function RegexlabTool() {
                       /{pattern}/{flagString}
                     </span>
                   </div>
-                  <pre className="max-h-56 overflow-auto whitespace-pre-wrap break-words font-mono text-[13px] leading-relaxed text-foreground">
+                  <pre className="kit-scrollbar max-h-[min(14rem,42dvh)] overflow-auto overscroll-contain touch-pan-y whitespace-pre-wrap break-words font-mono text-[13px] leading-relaxed text-foreground">
                     {segments.map((part, index) =>
                       part.hit ? (
                         <mark
@@ -356,7 +357,7 @@ export function RegexlabTool() {
                       if (e.key === "Enter") addCase();
                     }}
                     spellCheck={false}
-                    className="kit-field w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 font-mono text-sm outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)]"
+                    className={`${fieldClass} font-mono`}
                   />
                 </Field>
               </div>

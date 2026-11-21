@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { fieldClass } from "@/components/tools/ui";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { formatKr, formatPercent } from "@/lib/format";
 import { prefillChoice, prefillNumber, type ToolPrefill } from "@/tools/prefill";
@@ -53,7 +54,7 @@ function NumberInput({
       value={value}
       placeholder={placeholder}
       onChange={(event) => onChange(event.target.value)}
-      className="w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 text-[15px] outline-none transition-colors focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)]"
+      className={fieldClass}
     />
   );
 }

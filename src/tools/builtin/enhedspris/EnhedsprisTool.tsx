@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { fieldClass } from "@/components/tools/ui";
 import { CopyButton } from "@/components/tools/CopyButton";
 import { useDictionary, useLanguage } from "@/i18n/LanguageProvider";
 import { formatKr, formatNumber } from "@/lib/format";
@@ -111,7 +112,7 @@ export function EnhedsprisTool({ prefill }: { prefill?: ToolPrefill }) {
                   updateRow(row.id, { label: event.target.value })
                 }
                 placeholder={`${t.product} ${row.id}`}
-                className="w-full rounded-[10px] border border-border bg-background px-3 py-2.5 text-[15px] outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)]"
+                className={fieldClass}
               />
             </Field>
             <div className="grid gap-3 sm:grid-cols-2">
@@ -125,7 +126,7 @@ export function EnhedsprisTool({ prefill }: { prefill?: ToolPrefill }) {
                   onChange={(event) =>
                     updateRow(row.id, { price: event.target.value })
                   }
-                  className="w-full rounded-[10px] border border-border bg-background px-3 py-2.5 text-[15px] outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)]"
+                  className={fieldClass}
                 />
               </Field>
               <Field label={t.quantity}>
@@ -138,7 +139,7 @@ export function EnhedsprisTool({ prefill }: { prefill?: ToolPrefill }) {
                   onChange={(event) =>
                     updateRow(row.id, { quantity: event.target.value })
                   }
-                  className="w-full rounded-[10px] border border-border bg-background px-3 py-2.5 text-[15px] outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)]"
+                  className={fieldClass}
                 />
               </Field>
             </div>

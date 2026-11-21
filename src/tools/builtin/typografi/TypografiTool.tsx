@@ -3,12 +3,10 @@
 import { useMemo, useState } from "react";
 import { CopyButton } from "@/components/tools/CopyButton";
 import { FontFamilyInput } from "@/components/tools/FontFamilyInput";
-import {
-  Field,
+import { Field,
   KitInput,
   Segmented,
-  secondaryBtnClass,
-} from "@/components/tools/ui";
+  secondaryBtnClass, fieldClass } from "@/components/tools/ui";
 import { useLanguage } from "@/i18n/LanguageProvider";
 
 type Align = "left" | "center" | "right" | "justify";
@@ -122,7 +120,7 @@ background-color: ${bgOk ? bgHex : "#ffffff"};`;
             value={text}
             onChange={(e) => setText(e.target.value)}
             rows={3}
-            className="kit-field w-full resize-y rounded-[10px] border border-border bg-surface px-3 py-2.5 text-sm outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)]"
+            className={`${fieldClass} resize-y`}
           />
         </Field>
 
@@ -222,7 +220,7 @@ background-color: ${bgOk ? bgHex : "#ffffff"};`;
                 value={fg}
                 onChange={(e) => setFg(e.target.value)}
                 spellCheck={false}
-                className="kit-field min-w-0 flex-1 rounded-[10px] border border-border bg-surface px-3 py-2.5 font-mono text-sm outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)]"
+                className={`${fieldClass} min-w-0 flex-1 font-mono`}
               />
             </div>
           </Field>
@@ -239,7 +237,7 @@ background-color: ${bgOk ? bgHex : "#ffffff"};`;
                 value={bg}
                 onChange={(e) => setBg(e.target.value)}
                 spellCheck={false}
-                className="kit-field min-w-0 flex-1 rounded-[10px] border border-border bg-surface px-3 py-2.5 font-mono text-sm outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)]"
+                className={`${fieldClass} min-w-0 flex-1 font-mono`}
               />
             </div>
           </Field>

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { CopyButton } from "@/components/tools/CopyButton";
+import { fieldClass, secondaryBtnClass } from "@/components/tools/ui";
 import { useDictionary } from "@/i18n/LanguageProvider";
 import { parseUserAgent } from "./calc";
 
@@ -32,7 +33,7 @@ export function UaTool() {
         <button
           type="button"
           onClick={() => setUa(navigator.userAgent)}
-          className="rounded-[10px] border border-border bg-surface px-3 py-2 text-sm text-foreground"
+          className={secondaryBtnClass}
         >
           {t.useCurrent}
         </button>
@@ -48,7 +49,7 @@ export function UaTool() {
           onChange={(event) => setUa(event.target.value)}
           rows={5}
           spellCheck={false}
-          className="w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 font-mono text-[13px] outline-none focus:border-accent"
+          className={`${fieldClass} font-mono`}
         />
       </label>
 

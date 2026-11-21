@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { CopyButton } from "@/components/tools/CopyButton";
+import { fieldClass } from "@/components/tools/ui";
 import { useDictionary, useLanguage } from "@/i18n/LanguageProvider";
 import type { ToolPrefill } from "@/tools/prefill";
 import { buildPalette, type PaletteMode } from "./calc";
@@ -61,7 +62,7 @@ export function PaletteTool({ prefill }: { prefill?: ToolPrefill }) {
               value={hex}
               onChange={(event) => setHex(event.target.value)}
               spellCheck={false}
-              className="min-w-0 flex-1 rounded-[10px] border border-border bg-surface px-3 py-2.5 font-mono text-sm outline-none focus:border-accent"
+              className={`${fieldClass} min-w-0 flex-1 font-mono`}
             />
           </div>
         </label>

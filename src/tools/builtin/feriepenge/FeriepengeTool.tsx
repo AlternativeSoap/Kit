@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { fieldClass } from "@/components/tools/ui";
 import Link from "next/link";
 import { CopyButton } from "@/components/tools/CopyButton";
 import { useDictionary, useLanguage } from "@/i18n/LanguageProvider";
@@ -58,7 +59,7 @@ export function FeriepengeTool({ prefill }: { prefill?: ToolPrefill }) {
             step="0.01"
             value={pay}
             onChange={(event) => setPay(event.target.value)}
-            className="w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 text-[15px] outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)]"
+            className={fieldClass}
           />
         </Field>
         <Field label={t.rate} hint={t.rateHint}>
@@ -70,7 +71,7 @@ export function FeriepengeTool({ prefill }: { prefill?: ToolPrefill }) {
             step="0.1"
             value={rate}
             onChange={(event) => setRate(event.target.value)}
-            className="w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 text-[15px] outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)]"
+            className={fieldClass}
           />
         </Field>
         <p className="text-sm text-muted">

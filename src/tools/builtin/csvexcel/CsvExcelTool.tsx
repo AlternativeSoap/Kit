@@ -182,7 +182,7 @@ export function CsvExcelTool({ prefill }: { prefill?: ToolPrefill }) {
           onChange={(e) => setInput(e.target.value)}
           rows={10}
           spellCheck={false}
-          className={`${fieldClass} font-mono text-base sm:text-[13px]`}
+          className={`${fieldClass} font-mono`}
         />
       </Field>
 
@@ -199,7 +199,7 @@ export function CsvExcelTool({ prefill }: { prefill?: ToolPrefill }) {
           readOnly
           value={output}
           rows={10}
-          className="w-full rounded-[10px] border border-border bg-background px-3 py-2.5 font-mono text-base outline-none sm:text-[13px]"
+          className={`${fieldClass} bg-background font-mono`}
         />
       </label>
 

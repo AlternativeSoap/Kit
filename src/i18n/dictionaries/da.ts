@@ -22,6 +22,7 @@ export const da: Dictionary = {
     externalBadge: "Andet site",
     shortcutBadge: "Genvej",
     tryThis: "Prøv dette",
+    tryThisHint: "Vælg et værktøj her, eller skriv i søgefeltet.",
   },
   intent: {
     calculateVat: "Beregn moms.",

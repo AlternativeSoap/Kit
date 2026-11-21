@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { CopyButton } from "@/components/tools/CopyButton";
+import { fieldClass } from "@/components/tools/ui";
 import { useDictionary } from "@/i18n/LanguageProvider";
 import { extensionToMime, mimeToExtensions } from "./calc";
 
@@ -40,7 +41,7 @@ export function MimeTool() {
           onChange={(event) => setInput(event.target.value)}
           placeholder={t.placeholder}
           spellCheck={false}
-          className="w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 font-mono text-sm outline-none focus:border-accent"
+          className={`${fieldClass} font-mono`}
         />
         <span className="mt-1 block text-xs text-muted">{t.hint}</span>
       </label>

@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { CopyButton } from "@/components/tools/CopyButton";
+import { fieldClass, fileInputClass } from "@/components/tools/ui";
 import { useDictionary } from "@/i18n/LanguageProvider";
 
 type Mode = "toBase64" | "fromBase64";
@@ -94,7 +95,7 @@ export function ImgBase64Tool() {
             type="file"
             accept="image/*,.heic,.heif,.avif,.bmp,.gif,.svg,.ico,.webp,.jpg,.jpeg,.png"
             onChange={(event) => void onPick(event.target.files?.[0] ?? null)}
-            className="block w-full text-sm text-muted file:mr-3 file:rounded-[8px] file:border-0 file:bg-accent file:px-3 file:py-2 file:text-sm file:font-medium file:text-on-accent"
+            className={fileInputClass}
           />
         </label>
       ) : (
@@ -117,7 +118,7 @@ export function ImgBase64Tool() {
             rows={6}
             spellCheck={false}
             placeholder="data:image/png;base64,... or raw base64"
-            className="w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 font-mono text-[13px] outline-none focus:border-accent"
+            className={`${fieldClass} font-mono`}
           />
         </label>
       )}
@@ -141,7 +142,7 @@ export function ImgBase64Tool() {
               onChange={(event) => setDataUrl(event.target.value)}
               rows={5}
               spellCheck={false}
-              className="w-full rounded-[10px] border border-border bg-background px-3 py-2.5 font-mono text-[12px] outline-none"
+              className={`${fieldClass} bg-background font-mono`}
             />
           </label>
 

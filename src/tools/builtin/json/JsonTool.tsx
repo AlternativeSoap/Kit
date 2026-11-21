@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { CopyButton } from "@/components/tools/CopyButton";
+import { fieldClass } from "@/components/tools/ui";
 import { useDictionary } from "@/i18n/LanguageProvider";
 import { prefillChoice, type ToolPrefill } from "@/tools/prefill";
 import { lineColumnAt, processJson, type JsonMode } from "./calc";
@@ -58,7 +59,7 @@ export function JsonTool({ prefill }: { prefill?: ToolPrefill }) {
           onChange={(event) => setInput(event.target.value)}
           rows={10}
           spellCheck={false}
-          className="w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 font-mono text-base outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)] sm:text-[14px]"
+          className={`${fieldClass} font-mono`}
         />
       </label>
 
@@ -84,7 +85,7 @@ export function JsonTool({ prefill }: { prefill?: ToolPrefill }) {
             readOnly
             value={result.output}
             rows={10}
-            className="w-full rounded-[10px] border border-border bg-background px-3 py-2.5 font-mono text-base outline-none sm:text-[14px]"
+            className={`${fieldClass} bg-background font-mono`}
           />
         </label>
       )}

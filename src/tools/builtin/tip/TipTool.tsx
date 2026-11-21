@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { fieldClass } from "@/components/tools/ui";
 import { CopyButton } from "@/components/tools/CopyButton";
 import { useDictionary, useLanguage } from "@/i18n/LanguageProvider";
 import { formatKr, formatNumber } from "@/lib/format";
@@ -78,7 +79,7 @@ export function TipTool({ prefill }: { prefill?: ToolPrefill }) {
             step="0.01"
             value={bill}
             onChange={(event) => setBill(event.target.value)}
-            className="w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 text-[15px] outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)]"
+            className={fieldClass}
           />
         </Field>
         <div className="grid gap-4 sm:grid-cols-2">
@@ -90,7 +91,7 @@ export function TipTool({ prefill }: { prefill?: ToolPrefill }) {
               step="0.1"
               value={tipPercent}
               onChange={(event) => setTipPercent(event.target.value)}
-              className="w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 text-[15px] outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)]"
+              className={fieldClass}
             />
           </Field>
           <Field label={t.people} hint={t.peopleHint}>
@@ -101,7 +102,7 @@ export function TipTool({ prefill }: { prefill?: ToolPrefill }) {
               step="1"
               value={people}
               onChange={(event) => setPeople(event.target.value)}
-              className="w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 text-[15px] outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)]"
+              className={fieldClass}
             />
           </Field>
         </div>

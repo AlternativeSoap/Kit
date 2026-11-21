@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { CopyButton } from "@/components/tools/CopyButton";
-import { Field, primaryBtnClass } from "@/components/tools/ui";
+import { Field, primaryBtnClass, fieldClass } from "@/components/tools/ui";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { downloadTextFile } from "../media/canvas";
 import { buildIcs } from "./calc";
@@ -46,7 +46,7 @@ export function IcsTool() {
     <div className="mx-auto max-w-xl space-y-5">
       <Field label={da ? "Titel" : "Title"}>
         <input
-          className="kit-field w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 text-sm"
+          className={fieldClass}
           value={title}
           onChange={(e) => setTitle(e.target.value)}
         />
@@ -55,7 +55,7 @@ export function IcsTool() {
         <Field label={da ? "Start" : "Start"}>
           <input
             type="datetime-local"
-            className="kit-field w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 text-sm"
+            className={fieldClass}
             value={start}
             onChange={(e) => setStart(e.target.value)}
           />
@@ -63,7 +63,7 @@ export function IcsTool() {
         <Field label={da ? "Slut" : "End"}>
           <input
             type="datetime-local"
-            className="kit-field w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 text-sm"
+            className={fieldClass}
             value={end}
             onChange={(e) => setEnd(e.target.value)}
           />
@@ -71,7 +71,7 @@ export function IcsTool() {
       </div>
       <Field label={da ? "Sted" : "Location"}>
         <input
-          className="kit-field w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 text-sm"
+          className={fieldClass}
           value={location}
           onChange={(e) => setLocation(e.target.value)}
         />
@@ -79,7 +79,7 @@ export function IcsTool() {
       <Field label={da ? "Beskrivelse" : "Description"}>
         <textarea
           rows={3}
-          className="kit-field w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 text-sm"
+          className={fieldClass}
           value={description}
           onChange={(e) => setDescription(e.target.value)}
         />

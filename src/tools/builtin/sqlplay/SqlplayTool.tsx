@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import {
   ErrorBanner,
   Field,
+  fieldClass,
   primaryBtnClass,
   secondaryBtnClass,
 } from "@/components/tools/ui";
@@ -492,7 +493,7 @@ export function SqlplayTool() {
             onChange={(e) => setSql(e.target.value)}
             rows={5}
             spellCheck={false}
-            className="kit-field w-full resize-y rounded-[10px] border border-border bg-surface px-3 py-2.5 font-mono text-sm outline-none focus:border-accent"
+            className={`${fieldClass} resize-y font-mono`}
           />
         </Field>
         <div className="kit-h-scroll">

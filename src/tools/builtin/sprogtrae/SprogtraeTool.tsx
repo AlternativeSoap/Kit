@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useRef, useState } from "react";
-import { Segmented } from "@/components/tools/ui";
+import { Segmented, fieldClass } from "@/components/tools/ui";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import {
   IPA_SYMBOLS,
@@ -334,7 +334,7 @@ export function SprogtraeTool() {
                 placeholder={
                   da ? "Sprog eller familie…" : "Language or family…"
                 }
-                className="w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 text-base text-foreground outline-none focus:border-accent sm:text-sm"
+                className={fieldClass}
                 autoComplete="off"
                 spellCheck={false}
               />

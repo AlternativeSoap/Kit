@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { fieldClass } from "@/components/tools/ui";
 import { useDictionary } from "@/i18n/LanguageProvider";
 import { getToolCopy } from "@/i18n/tools";
 import {
@@ -213,7 +214,7 @@ export function SettingsForm() {
             {t.pinTool}
           </span>
           <select
-            className="w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 text-base outline-none focus:border-accent sm:py-2 sm:text-sm"
+            className={fieldClass}
             defaultValue=""
             onChange={(event) => {
               const slug = event.target.value;
@@ -273,7 +274,7 @@ export function SettingsForm() {
             {t.excludeTool}
           </span>
           <select
-            className="w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 text-base outline-none focus:border-accent sm:py-2 sm:text-sm"
+            className={fieldClass}
             defaultValue=""
             onChange={(event) => {
               const id = event.target.value;
@@ -344,7 +345,7 @@ export function SettingsForm() {
                 setError("");
                 setCleared(false);
               }}
-              className="w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 text-base outline-none focus:border-accent sm:py-2 sm:text-sm"
+              className={fieldClass}
               maxLength={32}
               placeholder="pw"
             />
@@ -356,7 +357,7 @@ export function SettingsForm() {
             <select
               value={toolId}
               onChange={(event) => setToolId(event.target.value)}
-              className="w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 text-base outline-none focus:border-accent sm:py-2 sm:text-sm"
+              className={fieldClass}
             >
               {shortcutChoices.map((tool) => {
                 const copy = getToolCopy(dictionary, tool.id);

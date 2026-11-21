@@ -151,7 +151,7 @@ export function WordCountTool({ prefill }: { prefill?: ToolPrefill }) {
           onChange={(e) => setText(e.target.value)}
           disabled={busy}
           rows={12}
-          className={`${fieldClass} text-base disabled:opacity-60 sm:text-[15px]`}
+          className={`${fieldClass} disabled:opacity-60`}
         />
       </label>
 

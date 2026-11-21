@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { CopyButton } from "@/components/tools/CopyButton";
+import { fieldClass } from "@/components/tools/ui";
 import { useDictionary } from "@/i18n/LanguageProvider";
 import type { ToolPrefill } from "@/tools/prefill";
 import { nodesToSafeHtml, parseMarkdown } from "./calc";
@@ -42,7 +43,7 @@ export function MarkdownTool({ prefill }: { prefill?: ToolPrefill }) {
           onChange={(event) => setInput(event.target.value)}
           rows={12}
           spellCheck={false}
-          className="w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 font-mono text-base outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)] sm:text-[14px]"
+          className={`${fieldClass} font-mono`}
         />
       </label>
 

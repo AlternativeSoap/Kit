@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { fieldClass } from "@/components/tools/ui";
 import { useDictionary } from "@/i18n/LanguageProvider";
 import { FORMULAS, type FormulaId } from "./formulas";
 
@@ -101,7 +102,7 @@ export function FormulaPicker({ value, onChange }: FormulaPickerProps) {
               onChange={(event) => setQuery(event.target.value)}
               placeholder={t.formulaSearch}
               aria-label={t.formulaSearch}
-              className="w-full rounded-[8px] border border-border bg-background px-3 py-2.5 text-base outline-none focus:border-accent sm:py-2 sm:text-sm"
+              className={fieldClass}
             />
           </div>
           <ul

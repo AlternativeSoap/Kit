@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { fieldClass } from "@/components/tools/ui";
 import { CopyButton } from "@/components/tools/CopyButton";
 import { useDictionary, useLanguage } from "@/i18n/LanguageProvider";
 import { formatKr, formatNumber } from "@/lib/format";
@@ -76,7 +77,7 @@ export function BreakevenTool({ prefill }: { prefill?: ToolPrefill }) {
             step="0.01"
             value={fixedCosts}
             onChange={(event) => setFixedCosts(event.target.value)}
-            className="w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 text-[15px] outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)]"
+            className={fieldClass}
           />
         </Field>
         <div className="grid gap-4 sm:grid-cols-2">
@@ -88,7 +89,7 @@ export function BreakevenTool({ prefill }: { prefill?: ToolPrefill }) {
               step="0.01"
               value={pricePerUnit}
               onChange={(event) => setPricePerUnit(event.target.value)}
-              className="w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 text-[15px] outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)]"
+              className={fieldClass}
             />
           </Field>
           <Field label={t.variablePerUnit} hint={t.variablePerUnitHint}>
@@ -99,7 +100,7 @@ export function BreakevenTool({ prefill }: { prefill?: ToolPrefill }) {
               step="0.01"
               value={variablePerUnit}
               onChange={(event) => setVariablePerUnit(event.target.value)}
-              className="w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 text-[15px] outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)]"
+              className={fieldClass}
             />
           </Field>
         </div>

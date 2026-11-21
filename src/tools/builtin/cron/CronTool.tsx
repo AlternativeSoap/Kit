@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { fieldClass } from "@/components/tools/ui";
 import Link from "next/link";
 import { useDictionary, useLanguage } from "@/i18n/LanguageProvider";
 import { type ToolPrefill } from "@/tools/prefill";
@@ -38,7 +39,7 @@ export function CronTool({ prefill }: { prefill?: ToolPrefill }) {
             value={expression}
             onChange={(event) => setExpression(event.target.value)}
             spellCheck={false}
-            className="w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 font-mono text-[15px] outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)]"
+            className={`${fieldClass} font-mono`}
           />
           <span className="mt-1 block text-xs text-muted">{t.expressionHint}</span>
         </label>

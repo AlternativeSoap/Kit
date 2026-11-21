@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { fieldClass } from "@/components/tools/ui";
 import { useDictionary, useLanguage } from "@/i18n/LanguageProvider";
 import { prefillNumber, type ToolPrefill } from "@/tools/prefill";
 import {
@@ -66,7 +67,7 @@ export function BarselTool({ prefill }: { prefill?: ToolPrefill }) {
               type="date"
               value={startInput}
               onChange={(event) => setStartInput(event.target.value)}
-              className="w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 text-[15px] outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)]"
+              className={fieldClass}
             />
           </label>
 
@@ -79,7 +80,7 @@ export function BarselTool({ prefill }: { prefill?: ToolPrefill }) {
               step="1"
               value={weeks}
               onChange={(event) => setWeeks(event.target.value)}
-              className="w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 text-[15px] outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)]"
+              className={fieldClass}
             />
             <span className="mt-1 block text-xs text-muted">{t.weeksHint}</span>
           </label>

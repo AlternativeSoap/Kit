@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { fieldClass } from "@/components/tools/ui";
 import Link from "next/link";
 import { CopyButton } from "@/components/tools/CopyButton";
 import { useDictionary, useLanguage } from "@/i18n/LanguageProvider";
@@ -77,7 +78,7 @@ export function AvanceTool({ prefill }: { prefill?: ToolPrefill }) {
             step="0.01"
             value={cost}
             onChange={(event) => setCost(event.target.value)}
-            className="w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 text-[15px] outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)]"
+            className={fieldClass}
           />
         </Field>
         <Field label={t.sell} hint={t.sellHint}>
@@ -88,7 +89,7 @@ export function AvanceTool({ prefill }: { prefill?: ToolPrefill }) {
             step="0.01"
             value={sell}
             onChange={(event) => setSell(event.target.value)}
-            className="w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 text-[15px] outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)]"
+            className={fieldClass}
           />
         </Field>
         <div className="grid gap-4 sm:grid-cols-2">
@@ -102,7 +103,7 @@ export function AvanceTool({ prefill }: { prefill?: ToolPrefill }) {
               value={margin}
               onChange={(event) => setMargin(event.target.value)}
               disabled={Boolean(sell.trim())}
-              className="w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 text-[15px] outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)] disabled:opacity-50"
+              className={`${fieldClass} disabled:opacity-50`}
             />
           </Field>
           <Field label={t.markup} hint={t.markupHint}>
@@ -114,7 +115,7 @@ export function AvanceTool({ prefill }: { prefill?: ToolPrefill }) {
               value={markup}
               onChange={(event) => setMarkup(event.target.value)}
               disabled={Boolean(sell.trim()) || Boolean(margin.trim())}
-              className="w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 text-[15px] outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)] disabled:opacity-50"
+              className={`${fieldClass} disabled:opacity-50`}
             />
           </Field>
         </div>

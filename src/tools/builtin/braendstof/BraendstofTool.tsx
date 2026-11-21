@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { fieldClass } from "@/components/tools/ui";
 import { CopyButton } from "@/components/tools/CopyButton";
 import { useDictionary, useLanguage } from "@/i18n/LanguageProvider";
 import { formatKr, formatNumber } from "@/lib/format";
@@ -119,7 +120,7 @@ export function BraendstofTool({ prefill }: { prefill?: ToolPrefill }) {
               step="0.1"
               value={distance}
               onChange={(event) => setDistance(event.target.value)}
-              className="w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 text-base outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)] sm:text-[15px]"
+              className={fieldClass}
             />
           </Field>
           <Field
@@ -133,7 +134,7 @@ export function BraendstofTool({ prefill }: { prefill?: ToolPrefill }) {
               step="0.1"
               value={consumption}
               onChange={(event) => setConsumption(event.target.value)}
-              className="w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 text-base outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)] sm:text-[15px]"
+              className={fieldClass}
             />
           </Field>
           <Field
@@ -147,7 +148,7 @@ export function BraendstofTool({ prefill }: { prefill?: ToolPrefill }) {
               step="0.01"
               value={price}
               onChange={(event) => setPrice(event.target.value)}
-              className="w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 text-base outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)] sm:text-[15px]"
+              className={fieldClass}
             />
           </Field>
         </div>

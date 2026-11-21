@@ -56,7 +56,7 @@ const LINE_FILL = [
 ];
 
 const fieldClass =
-  "w-full rounded-[8px] border border-border bg-background px-2 py-1.5 text-sm outline-none focus:border-accent";
+  "kit-field w-full rounded-[8px] border border-border bg-background px-2 py-1.5 text-sm outline-none focus:border-accent";
 
 export function AdvancedLoadPlanner() {
   const { locale, dictionary } = useLanguage();

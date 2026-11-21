@@ -79,7 +79,7 @@ export function TextTool({ prefill }: { prefill?: ToolPrefill }) {
           value={value}
           onChange={(event) => setValue(event.target.value)}
           rows={8}
-          className={`${fieldClass} text-base sm:text-[15px]`}
+          className={fieldClass}
         />
       </Field>
 

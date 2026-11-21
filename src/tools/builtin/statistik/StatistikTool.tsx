@@ -1,13 +1,11 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
-import {
-  Field,
+import { Field,
   KitInput,
   Segmented,
   primaryBtnClass,
-  secondaryBtnClass,
-} from "@/components/tools/ui";
+  secondaryBtnClass, fieldClass } from "@/components/tools/ui";
 import { useLanguage } from "@/i18n/LanguageProvider";
 
 type DistKind = "normal" | "uniform" | "bernoulli";
@@ -409,7 +407,7 @@ export function StatistikTool() {
                 inputMode="numeric"
                 value={String(seed)}
                 onChange={(e) => setSeed(Number(e.target.value) || 0)}
-                className="kit-field w-28 rounded-[10px] border border-border bg-surface px-3 py-2.5 text-sm tabular-nums outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)]"
+                className={`${fieldClass} w-28 tabular-nums`}
               />
             </Field>
           ) : null}

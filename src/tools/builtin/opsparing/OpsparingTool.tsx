@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { fieldClass } from "@/components/tools/ui";
 import { CopyButton } from "@/components/tools/CopyButton";
 import { useDictionary, useLanguage } from "@/i18n/LanguageProvider";
 import { formatKr, formatNumber } from "@/lib/format";
@@ -86,7 +87,7 @@ export function OpsparingTool({ prefill }: { prefill?: ToolPrefill }) {
             step="100"
             value={principal}
             onChange={(event) => setPrincipal(event.target.value)}
-            className="w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 text-[15px] outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)]"
+            className={fieldClass}
           />
         </Field>
         <Field label={t.monthlyDeposit} hint={t.monthlyDepositHint}>
@@ -97,7 +98,7 @@ export function OpsparingTool({ prefill }: { prefill?: ToolPrefill }) {
             step="50"
             value={monthlyDeposit}
             onChange={(event) => setMonthlyDeposit(event.target.value)}
-            className="w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 text-[15px] outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)]"
+            className={fieldClass}
           />
         </Field>
         <div className="grid gap-4 sm:grid-cols-2">
@@ -110,7 +111,7 @@ export function OpsparingTool({ prefill }: { prefill?: ToolPrefill }) {
               step="0.1"
               value={annualRate}
               onChange={(event) => setAnnualRate(event.target.value)}
-              className="w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 text-[15px] outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)]"
+              className={fieldClass}
             />
           </Field>
           <Field label={t.years} hint={t.yearsHint}>
@@ -121,7 +122,7 @@ export function OpsparingTool({ prefill }: { prefill?: ToolPrefill }) {
               step="1"
               value={years}
               onChange={(event) => setYears(event.target.value)}
-              className="w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 text-[15px] outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)]"
+              className={fieldClass}
             />
           </Field>
         </div>

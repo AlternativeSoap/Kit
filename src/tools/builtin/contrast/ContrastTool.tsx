@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { fieldClass } from "@/components/tools/ui";
 import { CopyButton } from "@/components/tools/CopyButton";
 import { useDictionary, useLanguage } from "@/i18n/LanguageProvider";
 import { formatNumber } from "@/lib/format";
@@ -94,7 +95,7 @@ export function ContrastTool({ prefill }: { prefill?: ToolPrefill }) {
               value={foreground}
               onChange={(event) => setForeground(event.target.value)}
               spellCheck={false}
-              className="min-w-0 flex-1 rounded-[10px] border border-border bg-surface px-3 py-2.5 font-mono text-[15px] outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)]"
+              className={`${fieldClass} min-w-0 flex-1 font-mono`}
             />
           </div>
         </Field>
@@ -110,7 +111,7 @@ export function ContrastTool({ prefill }: { prefill?: ToolPrefill }) {
               value={background}
               onChange={(event) => setBackground(event.target.value)}
               spellCheck={false}
-              className="min-w-0 flex-1 rounded-[10px] border border-border bg-surface px-3 py-2.5 font-mono text-[15px] outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)]"
+              className={`${fieldClass} min-w-0 flex-1 font-mono`}
             />
           </div>
         </Field>

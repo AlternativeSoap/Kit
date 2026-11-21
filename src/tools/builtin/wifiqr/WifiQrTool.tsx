@@ -1,12 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import {
-  Field,
+import { Field,
   KitSelect,
   primaryBtnClass,
-  secondaryBtnClass,
-} from "@/components/tools/ui";
+  secondaryBtnClass, fieldClass } from "@/components/tools/ui";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { canvasPngDataUrl, drawQrOnCanvas } from "../qr/calc";
 import { buildWifiQrPayload, type WifiSecurity } from "./calc";
@@ -40,7 +38,7 @@ export function WifiQrTool() {
     <div className="mx-auto max-w-xl space-y-5">
       <Field label="SSID">
         <input
-          className="kit-field w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 text-sm"
+          className={fieldClass}
           value={ssid}
           onChange={(e) => setSsid(e.target.value)}
           autoComplete="off"
@@ -60,7 +58,7 @@ export function WifiQrTool() {
         <Field label={da ? "Adgangskode" : "Password"}>
           <input
             type="text"
-            className="kit-field w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 text-sm"
+            className={fieldClass}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             autoComplete="off"

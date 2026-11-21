@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { fieldClass } from "@/components/tools/ui";
 import { useDictionary, useLanguage } from "@/i18n/LanguageProvider";
 import type { Dictionary } from "@/i18n/types";
 import { getToolCopy } from "@/i18n/tools";
@@ -212,7 +213,7 @@ export function LibraryCatalog() {
             value={filter}
             onChange={(event) => setFilter(event.target.value)}
             placeholder={t.filterPlaceholder}
-            className="w-full rounded-[12px] border border-border bg-surface px-4 py-3 text-base outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)]"
+            className={`${fieldClass} px-4 py-3`}
           />
         </label>
       </div>

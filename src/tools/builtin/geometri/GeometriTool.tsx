@@ -1,12 +1,10 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import {
-  Field,
+import { Field,
   KitInput,
   Segmented,
-  secondaryBtnClass,
-} from "@/components/tools/ui";
+  secondaryBtnClass, fieldClass } from "@/components/tools/ui";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import {
   type ShapeId,
@@ -280,7 +278,7 @@ export function GeometriTool() {
                         inputMode="decimal"
                         value={sideA}
                         onChange={(e) => setSideA(e.target.value)}
-                        className="kit-field w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 text-sm tabular-nums outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)]"
+                        className={`${fieldClass} tabular-nums`}
                       />
                     </Field>
                     <Field label="b">
@@ -288,7 +286,7 @@ export function GeometriTool() {
                         inputMode="decimal"
                         value={sideB}
                         onChange={(e) => setSideB(e.target.value)}
-                        className="kit-field w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 text-sm tabular-nums outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)]"
+                        className={`${fieldClass} tabular-nums`}
                       />
                     </Field>
                     <Field label="c">
@@ -296,7 +294,7 @@ export function GeometriTool() {
                         inputMode="decimal"
                         value={sideC}
                         onChange={(e) => setSideC(e.target.value)}
-                        className="kit-field w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 text-sm tabular-nums outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)]"
+                        className={`${fieldClass} tabular-nums`}
                       />
                     </Field>
                   </div>
@@ -317,7 +315,7 @@ export function GeometriTool() {
                       inputMode="decimal"
                       value={width}
                       onChange={(e) => setWidth(e.target.value)}
-                      className="kit-field w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 text-sm tabular-nums outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)]"
+                      className={`${fieldClass} tabular-nums`}
                     />
                   </Field>
                   <Field label={da ? "Højde (h)" : "Height (h)"}>
@@ -325,7 +323,7 @@ export function GeometriTool() {
                       inputMode="decimal"
                       value={height}
                       onChange={(e) => setHeight(e.target.value)}
-                      className="kit-field w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 text-sm tabular-nums outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)]"
+                      className={`${fieldClass} tabular-nums`}
                     />
                   </Field>
                 </div>
@@ -337,7 +335,7 @@ export function GeometriTool() {
                     inputMode="decimal"
                     value={radius}
                     onChange={(e) => setRadius(e.target.value)}
-                    className="kit-field w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 text-sm tabular-nums outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)]"
+                    className={`${fieldClass} tabular-nums`}
                   />
                 </Field>
               ) : null}
@@ -350,7 +348,7 @@ export function GeometriTool() {
                       value={polySides}
                       onChange={(e) => setPolySides(e.target.value)}
                       onBlur={() => setPolySides(String(nSides))}
-                      className="kit-field w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 text-sm tabular-nums outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)]"
+                      className={`${fieldClass} tabular-nums`}
                     />
                   </Field>
                   <Field label={da ? "Sidens længde" : "Side length"}>
@@ -358,7 +356,7 @@ export function GeometriTool() {
                       inputMode="decimal"
                       value={polySide}
                       onChange={(e) => setPolySide(e.target.value)}
-                      className="kit-field w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 text-sm tabular-nums outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)]"
+                      className={`${fieldClass} tabular-nums`}
                     />
                   </Field>
                 </div>
@@ -429,7 +427,7 @@ export function GeometriTool() {
                 value={pyA}
                 onChange={(e) => setPyA(e.target.value)}
                 placeholder="?"
-                className="kit-field w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 text-sm tabular-nums outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)]"
+                className={`${fieldClass} tabular-nums`}
               />
             </Field>
             <Field label={da ? "Katete b" : "Leg b"}>
@@ -438,7 +436,7 @@ export function GeometriTool() {
                 value={pyB}
                 onChange={(e) => setPyB(e.target.value)}
                 placeholder="?"
-                className="kit-field w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 text-sm tabular-nums outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)]"
+                className={`${fieldClass} tabular-nums`}
               />
             </Field>
             <Field label={da ? "Hypotenuse c" : "Hypotenuse c"}>
@@ -447,7 +445,7 @@ export function GeometriTool() {
                 value={pyC}
                 onChange={(e) => setPyC(e.target.value)}
                 placeholder="?"
-                className="kit-field w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 text-sm tabular-nums outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)]"
+                className={`${fieldClass} tabular-nums`}
               />
             </Field>
           </div>

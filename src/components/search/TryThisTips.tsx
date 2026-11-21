@@ -359,30 +359,46 @@ export function TryThisTips() {
 /** Compact discovery chips under home search on phones (floating tips are desktop-only). */
 export function MobileTryThisRail() {
   const dictionary = useDictionary();
-  const [hidden, setHidden] = useState(false);
-  const [overlayOpen, setOverlayOpen] = useState(false);
+  /** Only show when the field is empty and not actively searching. */
+  const [idle, setIdle] = useState(false);
 
   useEffect(() => {
     const input = document.getElementById(
       "kit-search",
     ) as HTMLInputElement | null;
     if (!input) return;
-    const sync = () => setHidden(Boolean(input.value.trim()));
+
+    let blurTimer = 0;
+    const sync = () => {
+      const overlayOpen =
+        document.documentElement.dataset.kitOverlayOpen === "1";
+      const panelOpen = Boolean(document.getElementById("kit-suggest"));
+      const typing = Boolean(input.value.trim());
+      const focused = document.activeElement === input;
+      setIdle(!typing && !focused && !overlayOpen && !panelOpen);
+    };
+
+    const onBlur = () => {
+      window.clearTimeout(blurTimer);
+      blurTimer = window.setTimeout(sync, 200);
+    };
+
     sync();
     input.addEventListener("input", sync);
-    return () => input.removeEventListener("input", sync);
-  }, []);
-
-  useEffect(() => {
-    const root = document.documentElement;
-    const sync = () => setOverlayOpen(root.dataset.kitOverlayOpen === "1");
-    sync();
+    input.addEventListener("focus", sync);
+    input.addEventListener("blur", onBlur);
     const observer = new MutationObserver(sync);
-    observer.observe(root, {
+    observer.observe(document.documentElement, {
       attributes: true,
       attributeFilter: ["data-kit-overlay-open"],
     });
-    return () => observer.disconnect();
+    return () => {
+      window.clearTimeout(blurTimer);
+      input.removeEventListener("input", sync);
+      input.removeEventListener("focus", sync);
+      input.removeEventListener("blur", onBlur);
+      observer.disconnect();
+    };
   }, []);
 
   const tools = useMemo(() => {
@@ -393,14 +409,14 @@ export function MobileTryThisRail() {
       .slice(0, 10);
   }, []);
 
-  // Hide while the suggest overlay is open so chips do not show through the dim.
-  if (hidden || overlayOpen || tools.length === 0) return null;
+  if (!idle || tools.length === 0) return null;
 
   return (
     <div className="mt-5 min-[960px]:hidden">
-      <p className="mb-2 text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
+      <p className="mb-1 text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
         {dictionary.search.tryThis}
       </p>
+      <p className="mb-3 text-sm text-muted">{dictionary.search.tryThisHint}</p>
       <ul className="kit-h-scroll gap-2">
         {tools.map((tool) => {
           const copy = getToolCopy(dictionary, tool.id);

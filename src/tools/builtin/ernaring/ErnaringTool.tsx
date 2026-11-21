@@ -1,13 +1,11 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import {
-  Field,
+import { Field,
   KitInput,
   KitSelect,
   primaryBtnClass,
-  secondaryBtnClass,
-} from "@/components/tools/ui";
+  secondaryBtnClass, fieldClass } from "@/components/tools/ui";
 import { useLanguage } from "@/i18n/LanguageProvider";
 
 type Category =
@@ -755,7 +753,7 @@ export function ErnaringTool() {
           </Field>
         </div>
 
-        <div className="max-h-56 overflow-y-auto rounded-[10px] border border-border">
+        <div className="kit-scrollbar max-h-[min(14rem,42dvh)] overflow-y-auto overscroll-contain rounded-[10px] border border-border touch-pan-y">
           {filtered.length === 0 ? (
             <p className="px-3 py-4 text-sm text-muted">
               {da ? "Ingen match." : "No matches."}
@@ -854,7 +852,7 @@ export function ErnaringTool() {
               value={gramsDraft}
               onChange={(e) => setGramsDraft(e.target.value)}
               inputMode="decimal"
-              className="kit-field w-28 rounded-[10px] border border-border bg-surface px-3 py-2.5 text-sm outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)]"
+              className={`${fieldClass} w-28`}
             />
           </Field>
           <button type="button" className={primaryBtnClass} onClick={addToTray}>

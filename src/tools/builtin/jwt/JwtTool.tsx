@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { CopyButton } from "@/components/tools/CopyButton";
+import { fieldClass } from "@/components/tools/ui";
 import { useDictionary, useLanguage } from "@/i18n/LanguageProvider";
 import { type ToolPrefill } from "@/tools/prefill";
 import { decodeJwt, formatJwtJson } from "./calc";
@@ -38,7 +39,7 @@ export function JwtTool({ prefill }: { prefill?: ToolPrefill }) {
             rows={6}
             spellCheck={false}
             placeholder={t.tokenPlaceholder}
-            className="w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 font-mono text-base outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)] sm:text-[13px]"
+            className={`${fieldClass} font-mono`}
           />
           <span className="mt-1 block text-xs text-muted">{t.privacy}</span>
         </label>
@@ -96,7 +97,7 @@ export function JwtTool({ prefill }: { prefill?: ToolPrefill }) {
                   copiedLabel={t.copied}
                 />
               </div>
-              <pre className="max-h-48 overflow-auto whitespace-pre-wrap break-all font-mono text-xs leading-relaxed">
+              <pre className="kit-scrollbar max-h-[min(12rem,40dvh)] overflow-auto overscroll-contain touch-pan-y whitespace-pre-wrap break-all font-mono text-xs leading-relaxed">
                 {headerText || t.invalidPart}
               </pre>
             </div>
@@ -110,7 +111,7 @@ export function JwtTool({ prefill }: { prefill?: ToolPrefill }) {
                   copiedLabel={t.copied}
                 />
               </div>
-              <pre className="max-h-64 overflow-auto whitespace-pre-wrap break-all font-mono text-xs leading-relaxed">
+              <pre className="kit-scrollbar max-h-[min(16rem,50dvh)] overflow-auto overscroll-contain touch-pan-y whitespace-pre-wrap break-all font-mono text-xs leading-relaxed">
                 {payloadText || t.invalidPart}
               </pre>
             </div>

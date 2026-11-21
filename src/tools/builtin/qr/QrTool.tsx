@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { CopyButton } from "@/components/tools/CopyButton";
-import { Field, KitSelect, Segmented } from "@/components/tools/ui";
+import { Field, KitSelect, Segmented, fieldClass } from "@/components/tools/ui";
 import { useDictionary, useLanguage } from "@/i18n/LanguageProvider";
 import { prefillChoice, type ToolPrefill } from "@/tools/prefill";
 import {
@@ -81,14 +81,14 @@ export function QrTool({ prefill }: { prefill?: ToolPrefill }) {
             value={text}
             onChange={(event) => setText(event.target.value)}
             rows={4}
-            className="w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 text-[15px] outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)]"
+            className={fieldClass}
           />
         </label>
       ) : (
         <div className="space-y-4">
           <Field label="SSID">
             <input
-              className="kit-field w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 text-sm"
+              className={fieldClass}
               value={ssid}
               onChange={(e) => setSsid(e.target.value)}
               autoComplete="off"
@@ -108,7 +108,7 @@ export function QrTool({ prefill }: { prefill?: ToolPrefill }) {
             <Field label={da ? "Adgangskode" : "Password"}>
               <input
                 type="text"
-                className="kit-field w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 text-sm"
+                className={fieldClass}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 autoComplete="off"

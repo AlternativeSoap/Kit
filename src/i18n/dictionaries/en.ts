@@ -22,6 +22,7 @@ export const en: Dictionary = {
     externalBadge: "External site",
     shortcutBadge: "Shortcut",
     tryThis: "Try this",
+    tryThisHint: "Pick a tool here, or type in the search field.",
   },
   intent: {
     calculateVat: "Calculate VAT.",

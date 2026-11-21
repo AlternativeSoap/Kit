@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { CopyButton } from "@/components/tools/CopyButton";
-import { Field, KitInput, Segmented } from "@/components/tools/ui";
+import { Field, KitInput, Segmented, fieldClass } from "@/components/tools/ui";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import {
   contrastRatio,
@@ -99,7 +99,7 @@ export function FarvelabTool() {
                 if (parseHex(n)) setHexDraft(n.toLowerCase());
               }}
               spellCheck={false}
-              className="kit-field w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 font-mono text-sm outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)]"
+              className={`${fieldClass} font-mono`}
             />
           </Field>
         </div>
@@ -154,7 +154,7 @@ export function FarvelabTool() {
               <KitInput
                 value={hex}
                 readOnly
-                className="kit-field min-w-0 flex-1 rounded-[10px] border border-border bg-surface px-3 py-2.5 font-mono text-sm outline-none"
+                className={`${fieldClass} min-w-0 flex-1 font-mono`}
               />
             </div>
           </Field>
@@ -171,7 +171,7 @@ export function FarvelabTool() {
                 value={bgDraft}
                 onChange={(e) => setBgDraft(e.target.value)}
                 spellCheck={false}
-                className="kit-field min-w-0 flex-1 rounded-[10px] border border-border bg-surface px-3 py-2.5 font-mono text-sm outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)]"
+                className={`${fieldClass} min-w-0 flex-1 font-mono`}
               />
             </div>
           </Field>
