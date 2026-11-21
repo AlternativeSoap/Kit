@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { fieldClass } from "@/components/tools/ui";
 import { useDictionary, useLanguage } from "@/i18n/LanguageProvider";
 import { prefillFlag, prefillNumber, type ToolPrefill } from "@/tools/prefill";
 import {
@@ -57,7 +58,7 @@ export function DatoTool({ prefill }: { prefill?: ToolPrefill }) {
               type="date"
               value={start}
               onChange={(event) => setStart(event.target.value)}
-              className="w-full rounded-[10px] border border-border bg-background px-3 py-2.5 text-[15px] outline-none focus:border-accent"
+              className={fieldClass}
             />
           </label>
           <label className="block">
@@ -66,7 +67,7 @@ export function DatoTool({ prefill }: { prefill?: ToolPrefill }) {
               type="date"
               value={end}
               onChange={(event) => setEnd(event.target.value)}
-              className="w-full rounded-[10px] border border-border bg-background px-3 py-2.5 text-[15px] outline-none focus:border-accent"
+              className={fieldClass}
             />
           </label>
           <p className="text-2xl font-semibold tracking-tight">
@@ -86,10 +87,11 @@ export function DatoTool({ prefill }: { prefill?: ToolPrefill }) {
             step="1"
             value={offset}
             onChange={(event) => setOffset(event.target.value)}
-            className="w-full rounded-[10px] border border-border bg-background px-3 py-2.5 text-[15px] outline-none focus:border-accent"
+            className={fieldClass}
+            inputMode="numeric"
           />
         </label>
-        <label className="flex items-center gap-2 text-sm">
+        <label className="kit-touch-target flex items-center gap-2.5 text-sm">
           <input
             type="checkbox"
             checked={businessOnly}

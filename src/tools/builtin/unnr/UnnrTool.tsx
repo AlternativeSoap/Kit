@@ -108,7 +108,7 @@ export function UnnrTool({ prefill }: { prefill?: ToolPrefill } = {}) {
         />
       </Field>
 
-      <ul className="max-h-64 space-y-0.5 overflow-y-auto">
+      <ul className="kit-scrollbar max-h-[min(16rem,42dvh)] space-y-0.5 overflow-y-auto overscroll-contain">
         {list.map((row) => {
           const name = da ? row.nameDa : row.nameEn;
           const active = selected?.un === row.un;

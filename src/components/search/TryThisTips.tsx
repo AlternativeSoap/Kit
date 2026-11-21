@@ -360,6 +360,7 @@ export function TryThisTips() {
 export function MobileTryThisRail() {
   const dictionary = useDictionary();
   const [hidden, setHidden] = useState(false);
+  const [overlayOpen, setOverlayOpen] = useState(false);
 
   useEffect(() => {
     const input = document.getElementById(
@@ -372,6 +373,18 @@ export function MobileTryThisRail() {
     return () => input.removeEventListener("input", sync);
   }, []);
 
+  useEffect(() => {
+    const root = document.documentElement;
+    const sync = () => setOverlayOpen(root.dataset.kitOverlayOpen === "1");
+    sync();
+    const observer = new MutationObserver(sync);
+    observer.observe(root, {
+      attributes: true,
+      attributeFilter: ["data-kit-overlay-open"],
+    });
+    return () => observer.disconnect();
+  }, []);
+
   const tools = useMemo(() => {
     const exclude = getExcludedIds();
     return TIP_SLUGS.map((slug) => getToolBySlug(slug))
@@ -380,7 +393,8 @@ export function MobileTryThisRail() {
       .slice(0, 10);
   }, []);
 
-  if (hidden || tools.length === 0) return null;
+  // Hide while the suggest overlay is open so chips do not show through the dim.
+  if (hidden || overlayOpen || tools.length === 0) return null;
 
   return (
     <div className="mt-5 min-[960px]:hidden">

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { CopyButton } from "@/components/tools/CopyButton";
+import { fieldClass } from "@/components/tools/ui";
 import { useDictionary, useLanguage } from "@/i18n/LanguageProvider";
 
 const CITIES = [
@@ -158,7 +159,7 @@ export function WorldClockTool() {
               type="datetime-local"
               value={meetLocal}
               onChange={(event) => setMeetLocal(event.target.value)}
-              className="w-full rounded-[10px] border border-border bg-background px-3 py-2 text-sm outline-none focus:border-accent"
+              className={fieldClass}
             />
           </label>
           <label className="block">
@@ -166,7 +167,7 @@ export function WorldClockTool() {
             <select
               value={fromZone}
               onChange={(event) => setFromZone(event.target.value)}
-              className="w-full rounded-[10px] border border-border bg-background px-3 py-2 text-sm"
+              className={fieldClass}
             >
               {zoneOptions.map((opt) => (
                 <option key={opt.zone} value={opt.zone}>
@@ -180,7 +181,7 @@ export function WorldClockTool() {
             <select
               value={toZone}
               onChange={(event) => setToZone(event.target.value)}
-              className="w-full rounded-[10px] border border-border bg-background px-3 py-2 text-sm"
+              className={fieldClass}
             >
               {zoneOptions.map((opt) => (
                 <option key={`to-${opt.zone}`} value={opt.zone}>

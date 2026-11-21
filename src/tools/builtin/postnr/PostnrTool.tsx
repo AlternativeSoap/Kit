@@ -285,12 +285,12 @@ export function PostnrTool({ prefill }: { prefill?: ToolPrefill } = {}) {
             nearby={nearby}
             da={da}
           />
-          <label className="flex items-center gap-2 text-sm">
+          <label className="kit-touch-target flex items-center gap-2.5 text-sm">
             <input
               type="checkbox"
               checked={showNearby}
               onChange={(e) => setShowNearby(e.target.checked)}
-              className="rounded border-border"
+              className="h-4 w-4 rounded border-border"
             />
             {da
               ? "Vis nærliggende fra udsnit (ca. 40 km)"

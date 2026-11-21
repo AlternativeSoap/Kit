@@ -783,7 +783,7 @@ export function DiasTool() {
                   setSelectedId(s.blocks[0]?.id ?? null);
                   setEditingId(null);
                 }}
-                className={`w-[5.25rem] shrink-0 rounded-[8px] border p-1 text-left lg:w-full ${
+                className={`kit-touch-target w-[5.25rem] shrink-0 rounded-[8px] border p-1 text-left lg:min-h-0 lg:w-full ${
                   i === slideIndex ? "border-accent" : "border-border"
                 }`}
               >

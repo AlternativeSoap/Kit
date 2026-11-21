@@ -81,16 +81,16 @@ export function PapersMenu({
 
   useEffect(() => {
     if (!open) return;
-    function onDoc(e: MouseEvent) {
+    function onDoc(e: PointerEvent) {
       if (!rootRef.current?.contains(e.target as Node)) setOpen(false);
     }
     function onKey(e: KeyboardEvent) {
       if (e.key === "Escape") setOpen(false);
     }
-    document.addEventListener("mousedown", onDoc);
+    document.addEventListener("pointerdown", onDoc);
     document.addEventListener("keydown", onKey);
     return () => {
-      document.removeEventListener("mousedown", onDoc);
+      document.removeEventListener("pointerdown", onDoc);
       document.removeEventListener("keydown", onKey);
     };
   }, [open]);
@@ -127,7 +127,7 @@ export function PapersMenu({
         <div
           id={menuId}
           role="menu"
-          className={`absolute top-[calc(100%+4px)] z-[90] min-w-[12rem] rounded-[10px] border border-border bg-surface py-1 shadow-[0_10px_28px_rgba(20,20,20,0.16)] ${
+          className={`kit-scrollbar absolute top-[calc(100%+4px)] z-[90] max-h-[min(18rem,50dvh)] min-w-[12rem] overflow-y-auto overscroll-contain rounded-[10px] border border-border bg-surface py-1 shadow-[0_10px_28px_rgba(20,20,20,0.16)] ${
             align === "right" ? "right-0" : "left-0"
           }`}
         >
@@ -146,7 +146,7 @@ export function PapersMenu({
                 <label
                   key={item.id}
                   role="menuitem"
-                  className={`flex cursor-pointer px-3 py-2 text-sm hover:bg-accent-soft ${
+                  className={`kit-touch-target flex cursor-pointer items-center px-3 py-2.5 text-sm hover:bg-accent-soft sm:min-h-0 sm:py-2 ${
                     item.disabled ? "pointer-events-none opacity-40" : ""
                   }`}
                 >
@@ -172,7 +172,7 @@ export function PapersMenu({
                 type="button"
                 role="menuitem"
                 disabled={item.disabled}
-                className={`flex w-full px-3 py-2 text-left text-sm hover:bg-accent-soft disabled:opacity-40 ${
+                className={`kit-touch-target flex w-full items-center px-3 py-2.5 text-left text-sm hover:bg-accent-soft disabled:opacity-40 sm:min-h-0 sm:py-2 ${
                   item.danger ? "text-red-700" : ""
                 }`}
                 onClick={() => {

@@ -46,14 +46,14 @@ export function FontFamilyInput({
 
   useEffect(() => {
     if (!open) return;
-    function onDoc(e: MouseEvent) {
+    function onDoc(e: PointerEvent) {
       if (!rootRef.current?.contains(e.target as Node)) {
         setOpen(false);
         setBrowseAll(false);
       }
     }
-    document.addEventListener("mousedown", onDoc);
-    return () => document.removeEventListener("mousedown", onDoc);
+    document.addEventListener("pointerdown", onDoc);
+    return () => document.removeEventListener("pointerdown", onDoc);
   }, [open]);
 
   const filtered = useMemo(() => {
@@ -151,9 +151,12 @@ export function FontFamilyInput({
         title={title}
         aria-label={title}
         aria-expanded={open}
-        className="absolute inset-y-0 right-0 flex w-8 items-center justify-center text-muted hover:text-foreground"
-        onMouseDown={(e) => {
+        className="kit-touch-target absolute inset-y-0 right-0 flex w-11 items-center justify-center text-muted hover:text-foreground sm:w-8"
+        onPointerDown={(e) => {
           e.preventDefault();
+          e.stopPropagation();
+        }}
+        onClick={(e) => {
           e.stopPropagation();
           toggleList();
         }}
@@ -179,7 +182,7 @@ export function FontFamilyInput({
         <ul
           id={listId}
           role="listbox"
-          className="absolute left-0 right-0 top-[calc(100%+4px)] z-[95] max-h-56 overflow-auto rounded-[10px] border border-border bg-surface py-1 shadow-suggest"
+          className="kit-scrollbar absolute left-0 right-0 top-[calc(100%+4px)] z-[95] max-h-[min(14rem,42dvh)] overflow-y-auto overscroll-contain rounded-[10px] border border-border bg-surface py-1 shadow-suggest touch-pan-y"
         >
           {filtered.map((font) => {
             const active = displayFontLabel(value) === font.label;
@@ -187,15 +190,11 @@ export function FontFamilyInput({
               <li key={font.id} role="option" aria-selected={active}>
                 <button
                   type="button"
-                  className={`flex w-full items-center px-3 py-2 text-left text-sm hover:bg-accent-soft ${
+                  className={`kit-touch-target flex w-full items-center px-3 py-2.5 text-left text-sm hover:bg-accent-soft sm:min-h-0 sm:py-2 ${
                     active ? "bg-accent-soft font-semibold" : ""
                   }`}
                   style={{ fontFamily: font.id }}
-                  onMouseDown={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    pick(font);
-                  }}
+                  onClick={() => pick(font)}
                 >
                   {font.label}
                 </button>

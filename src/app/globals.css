@@ -131,7 +131,8 @@ body {
   font-family: var(--font-geist-sans), ui-sans-serif, sans-serif;
 }
 
-/* Keep form controls at 16px so iOS does not zoom on focus. */
+/* Keep form controls at 16px so iOS does not zoom on focus.
+   Coarse pointers force 16px even when a utility sets text-sm. */
 input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
 textarea,
 select {
@@ -140,6 +141,28 @@ select {
 
 .kit-field {
   font-size: 16px;
+}
+
+@media (pointer: coarse) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}
+
+/* Native search clear / cancel controls are easy to mis-tap on phones. */
+input[type="search"] {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+input[type="search"]::-webkit-search-decoration,
+input[type="search"]::-webkit-search-cancel-button,
+input[type="search"]::-webkit-search-results-button,
+input[type="search"]::-webkit-search-results-decoration {
+  -webkit-appearance: none;
+  appearance: none;
 }
 
 :focus-visible {
@@ -608,6 +631,7 @@ html[data-theme="dark"] .simple-tool-panel {
   width: 100%;
   height: min(48dvh, 22rem);
   min-height: 16rem;
+  touch-action: pan-x pan-y;
   background: color-mix(in srgb, var(--muted) 12%, transparent);
 }
 
@@ -622,6 +646,7 @@ html[data-theme="dark"] .simple-tool-panel {
   width: 100%;
   height: min(52dvh, 24rem);
   min-height: 17rem;
+  touch-action: pan-x pan-y;
   background: #0c314d;
 }
 

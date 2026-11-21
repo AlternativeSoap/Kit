@@ -38,14 +38,14 @@ export function CurrencyCombobox({
 
   useEffect(() => {
     if (!open) return;
-    function onDoc(e: MouseEvent) {
+    function onDoc(e: PointerEvent) {
       if (!rootRef.current?.contains(e.target as Node)) {
         setOpen(false);
         setBrowseAll(false);
       }
     }
-    document.addEventListener("mousedown", onDoc);
-    return () => document.removeEventListener("mousedown", onDoc);
+    document.addEventListener("pointerdown", onDoc);
+    return () => document.removeEventListener("pointerdown", onDoc);
   }, [open]);
 
   const filtered = useMemo(() => {
@@ -161,9 +161,12 @@ export function CurrencyCombobox({
         tabIndex={-1}
         aria-label={da ? "Vis alle valutaer" : "Show all currencies"}
         aria-expanded={open}
-        className="absolute inset-y-0 right-0 flex w-9 items-center justify-center text-muted hover:text-foreground"
-        onMouseDown={(e) => {
+        className="kit-touch-target absolute inset-y-0 right-0 flex w-11 items-center justify-center text-muted hover:text-foreground sm:w-9"
+        onPointerDown={(e) => {
           e.preventDefault();
+          e.stopPropagation();
+        }}
+        onClick={(e) => {
           e.stopPropagation();
           toggleList();
         }}
@@ -189,7 +192,7 @@ export function CurrencyCombobox({
         <ul
           id={listId}
           role="listbox"
-          className="absolute left-0 right-0 top-[calc(100%+4px)] z-[95] max-h-60 overflow-auto rounded-[10px] border border-border bg-surface py-1 shadow-suggest"
+          className="kit-scrollbar absolute left-0 right-0 top-[calc(100%+4px)] z-[95] max-h-[min(15rem,45dvh)] overflow-y-auto overscroll-contain rounded-[10px] border border-border bg-surface py-1 shadow-suggest touch-pan-y"
         >
           {filtered.length === 0 ? (
             <li className="px-3 py-2 text-sm text-muted">
@@ -208,14 +211,10 @@ export function CurrencyCombobox({
                 >
                   <button
                     type="button"
-                    className={`flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-accent-soft ${
+                    className={`kit-touch-target flex w-full items-center gap-2 px-3 py-2.5 text-left text-sm hover:bg-accent-soft sm:min-h-0 sm:py-2 ${
                       highlighted || active ? "bg-accent-soft" : ""
                     } ${active ? "font-semibold" : ""}`}
-                    onMouseDown={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      pick(option);
-                    }}
+                    onClick={() => pick(option)}
                     onMouseEnter={() => setActiveIndex(index)}
                   >
                     <span className="w-10 font-mono text-[13px]">

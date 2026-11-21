@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { CopyButton } from "@/components/tools/CopyButton";
+import { fieldClass } from "@/components/tools/ui";
 import { formatClock } from "@/lib/answers/clock";
 import { useDictionary } from "@/i18n/LanguageProvider";
 import { prefillNumber, type ToolPrefill } from "@/tools/prefill";
@@ -66,7 +67,7 @@ export function ArbejdstidTool({ prefill }: { prefill?: ToolPrefill }) {
               type="time"
               value={start}
               onChange={(event) => setStart(event.target.value)}
-              className="w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 text-[15px] outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)]"
+              className={fieldClass}
             />
           </Field>
           <Field label={t.end} hint={t.endHint}>
@@ -74,7 +75,7 @@ export function ArbejdstidTool({ prefill }: { prefill?: ToolPrefill }) {
               type="time"
               value={end}
               onChange={(event) => setEnd(event.target.value)}
-              className="w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 text-[15px] outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)]"
+              className={fieldClass}
             />
           </Field>
         </div>
@@ -86,16 +87,22 @@ export function ArbejdstidTool({ prefill }: { prefill?: ToolPrefill }) {
             step="5"
             value={breakMin}
             onChange={(event) => setBreakMin(event.target.value)}
-            className="w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 text-[15px] outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)]"
+            className={fieldClass}
           />
         </Field>
         <p className="text-sm text-muted">
           {t.relatedNote}{" "}
-          <Link href="/t/dato" className="text-accent hover:underline">
+          <Link
+            href="/t/dato"
+            className="kit-touch-target inline-flex items-center text-accent hover:underline"
+          >
             {t.relatedDato}
           </Link>
           {", "}
-          <Link href="/t/stopur" className="text-accent hover:underline">
+          <Link
+            href="/t/stopur"
+            className="kit-touch-target inline-flex items-center text-accent hover:underline"
+          >
             {t.relatedStopur}
           </Link>
         </p>

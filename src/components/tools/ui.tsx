@@ -3,7 +3,7 @@
 import type { InputHTMLAttributes, ReactNode, SelectHTMLAttributes } from "react";
 
 export const fieldClass =
-  "kit-field w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 text-sm outline-none transition-[border-color,box-shadow] duration-150 focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)]";
+  "kit-field w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 text-base outline-none transition-[border-color,box-shadow] duration-150 focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-soft)] sm:text-sm";
 
 export const primaryBtnClass =
   "kit-touch-target whitespace-nowrap rounded-[10px] bg-accent px-3.5 py-2.5 text-sm font-medium text-on-accent transition-[transform,opacity,background-color] duration-150 hover:brightness-[1.03] active:scale-[0.98] disabled:opacity-40 disabled:active:scale-100 sm:px-4";

@@ -114,10 +114,10 @@ export function SuggestPanel({
       ref={panelRef}
       id="kit-suggest"
       role="listbox"
-      className={`kit-scrollbar kit-suggest-enter overflow-y-auto overscroll-contain border border-border bg-surface shadow-suggest ${
+      className={`kit-scrollbar kit-suggest-enter overflow-y-auto overscroll-contain touch-pan-y border border-border bg-surface shadow-suggest ${
         compact
           ? "fixed inset-x-2 z-[var(--kit-overlay-panel-z)] max-h-[var(--kit-search-panel-max-h)] rounded-[14px] max-sm:top-[var(--kit-search-panel-top)] sm:absolute sm:inset-x-0 sm:top-[calc(100%+8px)] sm:z-50 sm:max-h-[min(22rem,calc(100dvh-8rem))] sm:rounded-[12px]"
-          : "absolute left-0 right-0 top-[calc(100%+8px)] z-50 max-h-[min(22rem,calc(100dvh-8rem))] rounded-[12px] max-sm:z-[var(--kit-overlay-panel-z)] max-sm:max-h-[var(--kit-search-panel-max-h)]"
+          : "absolute left-0 right-0 top-[calc(100%+8px)] z-50 max-h-[min(22rem,calc(100dvh-8rem))] rounded-[12px] max-sm:z-[var(--kit-overlay-panel-z)] max-sm:max-h-[min(70dvh,calc(100dvh-9rem-var(--kit-keyboard-inset)-var(--kit-safe-bottom)))]"
       }`}
     >
       {suggestions.length > 0 ? (
@@ -174,7 +174,7 @@ export function SuggestPanel({
                         type="button"
                         role="option"
                         aria-selected={active}
-                        className={`flex w-full items-start gap-3 px-3.5 py-2.5 text-left transition-colors sm:px-4 sm:py-2.5 ${
+                        className={`kit-touch-target flex w-full items-start gap-3 px-3.5 py-3 text-left transition-colors sm:min-h-0 sm:px-4 sm:py-2.5 ${
                           active ? "bg-accent-soft" : "hover:bg-background"
                         }`}
                         onPointerEnter={() => onHover(index)}
@@ -230,7 +230,7 @@ export function SuggestPanel({
                             type="button"
                             role="option"
                             aria-selected={active}
-                            className="flex min-w-0 flex-1 items-start gap-3 pr-10 text-left sm:pr-7"
+                            className="kit-touch-target flex min-w-0 flex-1 items-start gap-3 py-0.5 pr-10 text-left sm:min-h-0 sm:pr-7"
                             onClick={() => onSelect(tool)}
                           >
                             <span

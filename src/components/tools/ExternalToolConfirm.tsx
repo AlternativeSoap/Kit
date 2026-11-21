@@ -81,7 +81,7 @@ export function ExternalToolConfirm({ toolId, href }: ExternalToolConfirmProps) 
                 <li key={item.id}>
                   <Link
                     href={`/t/${item.slug}`}
-                    className="text-sm font-medium text-foreground underline-offset-4 hover:underline"
+                    className="kit-touch-target inline-flex items-center text-sm font-medium text-foreground underline-offset-4 hover:underline"
                   >
                     {altCopy.name}
                   </Link>

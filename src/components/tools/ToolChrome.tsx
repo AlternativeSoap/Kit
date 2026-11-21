@@ -50,7 +50,7 @@ export function ToolChrome() {
       ref={headerRef}
       className="sticky top-0 z-40 border-b border-border bg-background/95 pt-[env(safe-area-inset-top)] backdrop-blur-sm [[data-kit-overlay-open]_&]:z-[calc(var(--kit-overlay-panel-z)+2)] [[data-kit-overlay-open]_&]:bg-background [[data-kit-overlay-open]_&]:backdrop-blur-none"
     >
-      <div className="mx-auto flex w-full max-w-5xl items-center gap-2 px-2.5 py-2 sm:gap-3 sm:px-6 sm:py-3">
+      <div className="mx-auto flex w-full max-w-5xl items-center gap-1.5 px-2 py-2 sm:gap-3 sm:px-6 sm:py-3">
         <Link
           href="/"
           className="kit-touch-target group flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px] text-sm font-medium text-foreground/80 hover:bg-overlay hover:text-foreground sm:w-auto sm:gap-2 sm:rounded-[8px] sm:px-2"
