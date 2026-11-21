@@ -178,10 +178,7 @@ export function SuggestPanel({
                           active ? "bg-accent-soft" : "hover:bg-background"
                         }`}
                         onPointerEnter={() => onHover(index)}
-                        onPointerDown={(event) => {
-                          event.preventDefault();
-                          onSelectContent?.(hit);
-                        }}
+                        onClick={() => onSelectContent?.(hit)}
                       >
                         <span
                           className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-accent sm:mt-0.5 sm:h-2 sm:w-2"
@@ -234,10 +231,7 @@ export function SuggestPanel({
                             role="option"
                             aria-selected={active}
                             className="flex min-w-0 flex-1 items-start gap-3 pr-10 text-left sm:pr-7"
-                            onPointerDown={(event) => {
-                              event.preventDefault();
-                              onSelect(tool);
-                            }}
+                            onClick={() => onSelect(tool)}
                           >
                             <span
                               className={`mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full sm:mt-0.5 sm:h-2 sm:w-2 ${
@@ -286,7 +280,7 @@ export function SuggestPanel({
                                   : dictionary.search.removeRecent
                               }
                               className="absolute right-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-md text-muted opacity-100 transition-opacity hover:bg-overlay hover:text-foreground sm:h-6 sm:w-6 sm:opacity-0 sm:group-hover/row:opacity-100 sm:focus-visible:opacity-100"
-                              onPointerDown={(event) => {
+                              onClick={(event) => {
                                 event.preventDefault();
                                 event.stopPropagation();
                                 onRemoveRecent(tool, group.removeMode);

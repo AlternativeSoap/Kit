@@ -101,6 +101,8 @@ export function SearchShell({
   const inputRef = useRef<HTMLInputElement>(null);
   const blurTimer = useRef(0);
   const copyTimer = useRef(0);
+  /** True while the finger/pointer is on the suggest panel (mobile scroll must not close it). */
+  const panelPointerActive = useRef(false);
   /** Counts query changes so a slow copy never reports on a newer answer. */
   const queryEdits = useRef(0);
   const [query, setQuery] = useState("");
@@ -598,6 +600,60 @@ export function SearchShell({
   useBodyScrollLock(overlayActive);
   useVisualViewportInset(overlayActive);
 
+  // Touching the list blurs the input on mobile before scroll starts. Keep the
+  // panel open for that gesture; only the backdrop / Escape should dismiss it.
+  useEffect(() => {
+    if (!showPanel) {
+      panelPointerActive.current = false;
+      return;
+    }
+
+    const isInSuggestUi = (target: EventTarget | null) => {
+      if (!(target instanceof Node)) return false;
+      const panel = document.getElementById("kit-suggest");
+      if (panel?.contains(target)) return true;
+      return Boolean(
+        rootRef.current?.querySelector("[data-kit-library-browse]")?.contains(
+          target,
+        ),
+      );
+    };
+
+    const onPointerDown = (event: PointerEvent) => {
+      if (isInSuggestUi(event.target)) {
+        panelPointerActive.current = true;
+        window.clearTimeout(blurTimer.current);
+      }
+    };
+
+    const onPointerEnd = () => {
+      window.setTimeout(() => {
+        const touchedPanel = panelPointerActive.current;
+        panelPointerActive.current = false;
+        const panel = document.getElementById("kit-suggest");
+        if (panel?.dataset.scrolling === "true") return;
+        // Phone overlay stays open until the backdrop is used.
+        if (document.documentElement.dataset.kitOverlayOpen === "1") return;
+        if (
+          touchedPanel &&
+          rootRef.current &&
+          !rootRef.current.contains(document.activeElement)
+        ) {
+          closePanel();
+        }
+      }, 450);
+    };
+
+    document.addEventListener("pointerdown", onPointerDown, true);
+    document.addEventListener("pointerup", onPointerEnd, true);
+    document.addEventListener("pointercancel", onPointerEnd, true);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown, true);
+      document.removeEventListener("pointerup", onPointerEnd, true);
+      document.removeEventListener("pointercancel", onPointerEnd, true);
+    };
+  }, [showPanel, closePanel]);
+
   const panelSuggestions =
     querySuggestions.length > 0 && trimmed && !answer
       ? querySuggestions
@@ -608,43 +664,58 @@ export function SearchShell({
       ref={rootRef}
       className={`relative z-40 w-full ${variant === "home" ? "max-w-xl" : "max-w-none sm:max-w-md"}`}
     >
-      <SearchField
-        ref={inputRef}
-        value={query}
-        compact={variant === "compact"}
-        expanded={showPanel}
-        label={dictionary.search.label}
-        onChange={(value) => {
-          updateQuery(value);
-          if (!isExactLibraryQuery(value)) {
-            setOpen(true);
-          }
-        }}
-        onFocus={() => {
-          window.clearTimeout(blurTimer.current);
-          setOpen(true);
-          setPinnedSlugs(getPinnedSlugs());
-          setShortcutTick((value) => value + 1);
-        }}
-        onBlur={(event) => {
-          const next = event.relatedTarget as Node | null;
-          if (next && rootRef.current?.contains(next)) {
-            return;
-          }
-          window.clearTimeout(blurTimer.current);
-          blurTimer.current = window.setTimeout(() => {
-            if (!rootRef.current?.contains(document.activeElement)) {
-              closePanel();
-            }
-          }, 150);
-        }}
-        onKeyDown={onKeyDown}
-        placeholder={
-          variant === "compact"
-            ? dictionary.search.placeholderCompact
-            : dictionary.search.placeholder
+      {/* Keep the field above the dim so typing stays sharp on phones. */}
+      <div
+        className={
+          overlayActive
+            ? "relative z-[calc(var(--kit-overlay-panel-z)+1)]"
+            : "relative"
         }
-      />
+      >
+        <SearchField
+          ref={inputRef}
+          value={query}
+          compact={variant === "compact"}
+          expanded={showPanel}
+          label={dictionary.search.label}
+          onChange={(value) => {
+            updateQuery(value);
+            if (!isExactLibraryQuery(value)) {
+              setOpen(true);
+            }
+          }}
+          onFocus={() => {
+            window.clearTimeout(blurTimer.current);
+            setOpen(true);
+            setPinnedSlugs(getPinnedSlugs());
+            setShortcutTick((value) => value + 1);
+          }}
+          onBlur={(event) => {
+            const next = event.relatedTarget as Node | null;
+            if (next && rootRef.current?.contains(next)) {
+              return;
+            }
+            if (panelPointerActive.current) {
+              return;
+            }
+            window.clearTimeout(blurTimer.current);
+            blurTimer.current = window.setTimeout(() => {
+              if (panelPointerActive.current) return;
+              const panel = document.getElementById("kit-suggest");
+              if (panel?.dataset.scrolling === "true") return;
+              if (!rootRef.current?.contains(document.activeElement)) {
+                closePanel();
+              }
+            }, 200);
+          }}
+          onKeyDown={onKeyDown}
+          placeholder={
+            variant === "compact"
+              ? dictionary.search.placeholderCompact
+              : dictionary.search.placeholder
+          }
+        />
+      </div>
       {pasteMessage ? (
         <p className="pointer-events-none absolute left-0 right-0 top-full z-50 mt-1 px-1 text-xs text-muted">
           {pasteMessage}
@@ -659,10 +730,16 @@ export function SearchShell({
       {overlayActive ? (
         <button
           type="button"
+          data-kit-search-backdrop=""
           aria-label={locale === "da" ? "Luk søgning" : "Close search"}
-          className="fixed inset-0 z-[var(--kit-overlay-z)] bg-background/55 backdrop-blur-[2px]"
+          className={
+            variant === "compact"
+              ? "fixed inset-x-0 bottom-0 top-[var(--kit-chrome-offset)] z-[var(--kit-overlay-z)] bg-background/55"
+              : "fixed inset-0 z-[var(--kit-overlay-z)] bg-background/55"
+          }
           onPointerDown={(event) => {
             event.preventDefault();
+            panelPointerActive.current = false;
             closePanel();
             inputRef.current?.blur();
           }}
@@ -671,6 +748,7 @@ export function SearchShell({
 
       {libraryBrowse && open ? (
         <div
+          data-kit-library-browse=""
           className={`overflow-hidden border border-border bg-surface shadow-suggest ${
             variant === "compact"
               ? "fixed inset-x-2 z-[var(--kit-overlay-panel-z)] top-[var(--kit-search-panel-top)] rounded-[14px] sm:absolute sm:inset-x-0 sm:top-[calc(100%+8px)] sm:z-50 sm:rounded-[12px]"

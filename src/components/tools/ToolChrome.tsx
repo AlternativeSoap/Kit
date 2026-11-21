@@ -48,7 +48,7 @@ export function ToolChrome() {
   return (
     <header
       ref={headerRef}
-      className="sticky top-0 z-40 border-b border-border bg-background/90 pt-[env(safe-area-inset-top)] backdrop-blur-sm"
+      className="sticky top-0 z-40 border-b border-border bg-background/95 pt-[env(safe-area-inset-top)] backdrop-blur-sm [[data-kit-overlay-open]_&]:z-[calc(var(--kit-overlay-panel-z)+2)] [[data-kit-overlay-open]_&]:bg-background [[data-kit-overlay-open]_&]:backdrop-blur-none"
     >
       <div className="mx-auto flex w-full max-w-5xl items-center gap-2 px-2.5 py-2 sm:gap-3 sm:px-6 sm:py-3">
         <Link
