@@ -1401,6 +1401,137 @@ export const da: Dictionary = {
       name: "TinyURL",
       description: "Forkort lange links.",
     },
+    barcode: {
+      name: "Stregkodegenerator",
+      description:
+        "Lav Code 128 og EAN-13 som SVG eller PNG. Kontrolcifre tjekkes lokalt i browseren.",
+    },
+    xmlformat: {
+      name: "XML-formatter",
+      description: "Formatér, minify og validér XML i browseren. Intet uploades.",
+    },
+    yamljson: {
+      name: "JSON ↔ YAML",
+      description: "Konvertér mellem JSON og YAML med tydelige fejl. Kører lokalt.",
+    },
+    vcard: {
+      name: "vCard kontaktkort",
+      description:
+        "Byg et kontaktkort (.vcf) med navn, telefon, e-mail og adresse. Download eller kopiér.",
+    },
+    maling: {
+      name: "Malingsberegner",
+      description:
+        "Beregn liter maling ud fra areal, lag, dækkeevne og spild. Foreslår antal spande.",
+    },
+    gaeld: {
+      name: "Gældsplan",
+      description:
+        "Planlæg afdrag med snowball eller avalanche, ekstra betaling, måneder og samlet rente.",
+    },
+    aeglosning: {
+      name: "Ægløsningskalender",
+      description:
+        "Estimer ægløsning, frugtbar periode og næste menstruation. Kun vejledning, ikke lægefagligt råd.",
+    },
+    modeomkostning: {
+      name: "Mødeomkostning",
+      description:
+        "Beregn prisen på et møde ud fra deltagere, timeløn og varighed. Valgfri ugentlig gentagelse.",
+    },
+    testdata: {
+      name: "Testdata-generator",
+      description:
+        "Generér falske navne, e-mails, telefoner og adresser til test. Dansk eller engelsk. CSV eller JSON.",
+    },
+    beslutning: {
+      name: "Beslutningsmatrix",
+      description:
+        "Sammenlign valg med vægtede kriterier. Se en klar vinder, mens du justerer scorer.",
+    },
+    isbn: {
+      name: "ISBN-værktøj",
+      description:
+        "Validér ISBN-10 og ISBN-13, konvertér mellem dem, og se kontrolcifret.",
+    },
+    budget: {
+      name: "Månedsbudget",
+      description:
+        "Planlæg månedsbudget med indtægter og udgiftskategorier. Se restbeløb og fordeling.",
+    },
+    fliser: {
+      name: "Fliseberegner",
+      description:
+        "Beregn fliser eller gulv ud fra rum, flisestørrelse, fuger, spild og pakker pr. kasse.",
+    },
+    modstand: {
+      name: "Modstandsfarvekode",
+      description:
+        "Aflæs 4- og 5-bånds modstande, eller indtast ohm og se farvebåndene.",
+    },
+    pdfmerge: {
+      name: "Sammenflet PDF",
+      description:
+        "Kombinér flere PDF-filer til én i browseren. Omarranger før download.",
+    },
+    pdfsplit: {
+      name: "Opdel PDF",
+      description:
+        "Udtræk sider eller gem hver side for sig. Kører lokalt i browseren.",
+    },
+    htmlformat: {
+      name: "HTML-formatter",
+      description: "Formatér, minify og tjek HTML i browseren. Intet uploades.",
+    },
+    sqlformat: {
+      name: "SQL-formatter",
+      description: "Formatér eller minify SQL med tydeligere nøgleord og indrykning.",
+    },
+    beton: {
+      name: "Betonberegner",
+      description:
+        "Beregn betonvolumen til plader, render eller søjler, plus sække hvis du angiver udbytte.",
+    },
+    gardin: {
+      name: "Gardin-/stofberegner",
+      description:
+        "Beregn stoflængde til gardiner ud fra vindue, fylde, sømme og stofbredde.",
+    },
+    flyttekasser: {
+      name: "Flyttekasse-beregner",
+      description:
+        "Estimer flyttekasser og pakkemateriale ud fra rum eller antal ting.",
+    },
+    raadighed: {
+      name: "Boliglån-rådighed",
+      description:
+        "Estimer max lån og månedlig ydelse ud fra indkomst, gæld, rente og løbetid. Ikke bankrådgivning.",
+    },
+    secretsanta: {
+      name: "Hemmelig gave",
+      description:
+        "Træk fair Secret Santa-par med valgfrie undtagelser. Bland igen og kopiér listen.",
+    },
+    holdlod: {
+      name: "Holdfordeler",
+      description:
+        "Del en namneliste i tilfældige, balancerede hold. Bland igen og kopiér grupperne.",
+    },
+    blodtype: {
+      name: "Blodtype-arv",
+      description:
+        "Se mulige blodtyper for et barn ud fra to forældre (ABO + Rh). Kun undervisning.",
+    },
+    lejeforhojelse: {
+      name: "Lejeforhøjelse",
+      description:
+        "Beregn huslejestigning i procent eller nyt beløb. Se månedlig og årlig forskel.",
+    },
+    feriedage: {
+      name: "Feriedage",
+      description:
+        "Hold styr på optjente og resterende feriedage ud fra startdato, årsnorm og brugte dage.",
+    },
   },
   salary: {
     monthly: "Månedsløn",

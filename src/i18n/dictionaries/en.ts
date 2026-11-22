@@ -1103,6 +1103,137 @@ export const en: Dictionary = {
       description:
         "Free browser photo editor. Works without an account for everyday edits.",
     },
+    barcode: {
+      name: "Barcode generator",
+      description:
+        "Create Code 128 and EAN-13 barcodes as SVG or PNG. Check digits are validated in your browser.",
+    },
+    xmlformat: {
+      name: "XML formatter",
+      description: "Format, minify, and validate XML in your browser. Nothing is uploaded.",
+    },
+    yamljson: {
+      name: "JSON ↔ YAML",
+      description: "Convert between JSON and YAML with clear parse errors. Runs locally.",
+    },
+    vcard: {
+      name: "vCard contact",
+      description:
+        "Build a contact card (.vcf) from name, phone, email, and address. Download or copy.",
+    },
+    maling: {
+      name: "Paint calculator",
+      description:
+        "Estimate paint liters from wall area, coats, coverage, and waste. Suggests can count.",
+    },
+    gaeld: {
+      name: "Debt payoff planner",
+      description:
+        "Plan debt payoff with snowball or avalanche, extra payments, months to freedom, and total interest.",
+    },
+    aeglosning: {
+      name: "Ovulation calendar",
+      description:
+        "Estimate ovulation, fertile window, and next period from cycle length. Guidance only, not medical advice.",
+    },
+    modeomkostning: {
+      name: "Meeting cost",
+      description:
+        "Estimate the cost of a meeting from attendees, hourly rates, and duration. Optional weekly recurrence.",
+    },
+    testdata: {
+      name: "Test data generator",
+      description:
+        "Generate fake names, emails, phones, and addresses for testing. Danish or English. Copy as CSV or JSON.",
+    },
+    beslutning: {
+      name: "Decision matrix",
+      description:
+        "Compare options with weighted criteria. Scores update live so you can see a clear winner.",
+    },
+    isbn: {
+      name: "ISBN tool",
+      description:
+        "Validate ISBN-10 and ISBN-13, convert between them, and show the check digit.",
+    },
+    budget: {
+      name: "Monthly budget",
+      description:
+        "Plan a monthly budget with income and expense categories. See what is left and where money goes.",
+    },
+    fliser: {
+      name: "Tile calculator",
+      description:
+        "Estimate tiles or flooring from room size, tile size, gaps, waste, and packs per box.",
+    },
+    modstand: {
+      name: "Resistor color code",
+      description:
+        "Read 4-band and 5-band resistor codes, or enter ohms to see the color bands.",
+    },
+    pdfmerge: {
+      name: "Merge PDF",
+      description:
+        "Combine several PDF files into one in your browser. Reorder before download.",
+    },
+    pdfsplit: {
+      name: "Split PDF",
+      description:
+        "Extract page ranges from a PDF, or save each page as its own file. Runs locally.",
+    },
+    htmlformat: {
+      name: "HTML formatter",
+      description: "Format, minify, and check HTML in your browser. Nothing is uploaded.",
+    },
+    sqlformat: {
+      name: "SQL formatter",
+      description: "Format or minify SQL with clearer keywords and indentation. Local only.",
+    },
+    beton: {
+      name: "Concrete calculator",
+      description:
+        "Estimate concrete volume for slabs, trenches, or columns, plus bags if you set bag yield.",
+    },
+    gardin: {
+      name: "Curtain fabric calculator",
+      description:
+        "Estimate fabric meters for curtains from window size, fullness, hems, and fabric width.",
+    },
+    flyttekasser: {
+      name: "Moving box estimator",
+      description:
+        "Estimate moving boxes and packing materials from rooms or item counts.",
+    },
+    raadighed: {
+      name: "Mortgage affordability",
+      description:
+        "Estimate max loan and monthly payment from income, debts, rate, and term. Not bank advice.",
+    },
+    secretsanta: {
+      name: "Secret Santa",
+      description:
+        "Draw fair Secret Santa pairs with optional exclusions. Reshuffle and copy the list.",
+    },
+    holdlod: {
+      name: "Team splitter",
+      description:
+        "Split a list of names into random balanced teams. Reshuffle and copy the groups.",
+    },
+    blodtype: {
+      name: "Blood type inheritance",
+      description:
+        "See possible child blood types from two parents (ABO + Rh). Educational estimate only.",
+    },
+    lejeforhojelse: {
+      name: "Rent increase",
+      description:
+        "Calculate a rent increase from percent or a new rent. See monthly and yearly difference.",
+    },
+    feriedage: {
+      name: "Vacation day tracker",
+      description:
+        "Track accrued and remaining vacation days from start date, yearly allowance, and days used.",
+    },
   },
   salary: {
     monthly: "Monthly salary",

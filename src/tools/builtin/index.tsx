@@ -433,6 +433,101 @@ const PakkelisteTool = lazyPlain(() =>
 const LejevsobTool = lazyPlain(() =>
   import("./lejevsob/LejevsobTool").then((m) => ({ default: m.LejevsobTool })),
 );
+const BarcodeTool = lazyPrefill(() =>
+  import("./barcode/BarcodeTool").then((m) => ({ default: m.BarcodeTool })),
+);
+const XmlFormatTool = lazyPrefill(() =>
+  import("./xmlformat/XmlFormatTool").then((m) => ({ default: m.XmlFormatTool })),
+);
+const YamlJsonTool = lazyPrefill(() =>
+  import("./yamljson/YamlJsonTool").then((m) => ({ default: m.YamlJsonTool })),
+);
+const VcardTool = lazyPrefill(() =>
+  import("./vcard/VcardTool").then((m) => ({ default: m.VcardTool })),
+);
+const MalingTool = lazyPrefill(() =>
+  import("./maling/MalingTool").then((m) => ({ default: m.MalingTool })),
+);
+const GaeldTool = lazyPrefill(() =>
+  import("./gaeld/GaeldTool").then((m) => ({ default: m.GaeldTool })),
+);
+const AeglosningTool = lazyPrefill(() =>
+  import("./aeglosning/AeglosningTool").then((m) => ({
+    default: m.AeglosningTool,
+  })),
+);
+const ModeomkostningTool = lazyPrefill(() =>
+  import("./modeomkostning/ModeomkostningTool").then((m) => ({
+    default: m.ModeomkostningTool,
+  })),
+);
+const TestdataTool = lazyPrefill(() =>
+  import("./testdata/TestdataTool").then((m) => ({ default: m.TestdataTool })),
+);
+const BeslutningTool = lazyPrefill(() =>
+  import("./beslutning/BeslutningTool").then((m) => ({
+    default: m.BeslutningTool,
+  })),
+);
+const IsbnTool = lazyPrefill(() =>
+  import("./isbn/IsbnTool").then((m) => ({ default: m.IsbnTool })),
+);
+const BudgetTool = lazyPrefill(() =>
+  import("./budget/BudgetTool").then((m) => ({ default: m.BudgetTool })),
+);
+const FliserTool = lazyPrefill(() =>
+  import("./fliser/FliserTool").then((m) => ({ default: m.FliserTool })),
+);
+const ModstandTool = lazyPrefill(() =>
+  import("./modstand/ModstandTool").then((m) => ({ default: m.ModstandTool })),
+);
+const PdfMergeTool = lazyPrefill(() =>
+  import("./pdfmerge/PdfMergeTool").then((m) => ({ default: m.PdfMergeTool })),
+);
+const PdfSplitTool = lazyPrefill(() =>
+  import("./pdfsplit/PdfSplitTool").then((m) => ({ default: m.PdfSplitTool })),
+);
+const HtmlFormatTool = lazyPrefill(() =>
+  import("./htmlformat/HtmlFormatTool").then((m) => ({
+    default: m.HtmlFormatTool,
+  })),
+);
+const SqlFormatTool = lazyPrefill(() =>
+  import("./sqlformat/SqlFormatTool").then((m) => ({ default: m.SqlFormatTool })),
+);
+const BetonTool = lazyPrefill(() =>
+  import("./beton/BetonTool").then((m) => ({ default: m.BetonTool })),
+);
+const GardinTool = lazyPrefill(() =>
+  import("./gardin/GardinTool").then((m) => ({ default: m.GardinTool })),
+);
+const FlyttekasserTool = lazyPrefill(() =>
+  import("./flyttekasser/FlyttekasserTool").then((m) => ({
+    default: m.FlyttekasserTool,
+  })),
+);
+const RaadighedTool = lazyPrefill(() =>
+  import("./raadighed/RaadighedTool").then((m) => ({ default: m.RaadighedTool })),
+);
+const SecretsantaTool = lazyPrefill(() =>
+  import("./secretsanta/SecretsantaTool").then((m) => ({
+    default: m.SecretsantaTool,
+  })),
+);
+const HoldlodTool = lazyPrefill(() =>
+  import("./holdlod/HoldlodTool").then((m) => ({ default: m.HoldlodTool })),
+);
+const BlodtypeTool = lazyPrefill(() =>
+  import("./blodtype/BlodtypeTool").then((m) => ({ default: m.BlodtypeTool })),
+);
+const LejeforhojelseTool = lazyPrefill(() =>
+  import("./lejeforhojelse/LejeforhojelseTool").then((m) => ({
+    default: m.LejeforhojelseTool,
+  })),
+);
+const FeriedageTool = lazyPrefill(() =>
+  import("./feriedage/FeriedageTool").then((m) => ({ default: m.FeriedageTool })),
+);
 const HealthSuiteTool = dynamic(
   () =>
     import("./HealthSuiteTool").then((m) => ({ default: m.HealthSuiteTool })),
@@ -872,6 +967,60 @@ export function BuiltinToolView({
       return <PakkelisteTool />;
     case "lejevsob":
       return <LejevsobTool />;
+    case "barcode":
+      return <BarcodeTool prefill={prefill} />;
+    case "xmlformat":
+      return <XmlFormatTool prefill={prefill} />;
+    case "yamljson":
+      return <YamlJsonTool prefill={prefill} />;
+    case "vcard":
+      return <VcardTool prefill={prefill} />;
+    case "maling":
+      return <MalingTool prefill={prefill} />;
+    case "gaeld":
+      return <GaeldTool prefill={prefill} />;
+    case "aeglosning":
+      return <AeglosningTool prefill={prefill} />;
+    case "modeomkostning":
+      return <ModeomkostningTool prefill={prefill} />;
+    case "testdata":
+      return <TestdataTool prefill={prefill} />;
+    case "beslutning":
+      return <BeslutningTool prefill={prefill} />;
+    case "isbn":
+      return <IsbnTool prefill={prefill} />;
+    case "budget":
+      return <BudgetTool prefill={prefill} />;
+    case "fliser":
+      return <FliserTool prefill={prefill} />;
+    case "modstand":
+      return <ModstandTool prefill={prefill} />;
+    case "pdfmerge":
+      return <PdfMergeTool prefill={prefill} />;
+    case "pdfsplit":
+      return <PdfSplitTool prefill={prefill} />;
+    case "htmlformat":
+      return <HtmlFormatTool prefill={prefill} />;
+    case "sqlformat":
+      return <SqlFormatTool prefill={prefill} />;
+    case "beton":
+      return <BetonTool prefill={prefill} />;
+    case "gardin":
+      return <GardinTool prefill={prefill} />;
+    case "flyttekasser":
+      return <FlyttekasserTool prefill={prefill} />;
+    case "raadighed":
+      return <RaadighedTool prefill={prefill} />;
+    case "secretsanta":
+      return <SecretsantaTool prefill={prefill} />;
+    case "holdlod":
+      return <HoldlodTool prefill={prefill} />;
+    case "blodtype":
+      return <BlodtypeTool prefill={prefill} />;
+    case "lejeforhojelse":
+      return <LejeforhojelseTool prefill={prefill} />;
+    case "feriedage":
+      return <FeriedageTool prefill={prefill} />;
     // Overlaps: route weaker duplicates into stronger tools.
     case "csvjson":
       return <CsvExcelTool prefill={prefill} />;
