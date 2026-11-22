@@ -131,38 +131,34 @@ body {
   font-family: var(--font-geist-sans), ui-sans-serif, sans-serif;
 }
 
-/* Keep form controls at 16px so iOS does not zoom on focus.
-   Coarse pointers force 16px even when a utility sets text-sm. */
-input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
-textarea,
-select {
-  font-size: 16px;
-}
-
-.kit-field {
-  font-size: 16px;
-}
-
-@media (pointer: coarse) {
+/* Keep form controls at 16px on phones / touch so iOS does not zoom on focus.
+   Desktop fine pointers can use sm:text-sm from fieldClass. */
+@media (pointer: coarse), (max-width: 639px) {
   input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
   textarea,
   select {
     font-size: 16px !important;
   }
+
+  .kit-field {
+    font-size: 16px;
+  }
 }
 
-/* Native search clear / cancel controls are easy to mis-tap on phones. */
+/* Native search clear controls are easy to mis-tap on phones. */
 input[type="search"] {
   -webkit-appearance: none;
   appearance: none;
 }
 
-input[type="search"]::-webkit-search-decoration,
-input[type="search"]::-webkit-search-cancel-button,
-input[type="search"]::-webkit-search-results-button,
-input[type="search"]::-webkit-search-results-decoration {
-  -webkit-appearance: none;
-  appearance: none;
+@media (pointer: coarse), (max-width: 639px) {
+  input[type="search"]::-webkit-search-decoration,
+  input[type="search"]::-webkit-search-cancel-button,
+  input[type="search"]::-webkit-search-results-button,
+  input[type="search"]::-webkit-search-results-decoration {
+    -webkit-appearance: none;
+    appearance: none;
+  }
 }
 
 :focus-visible {
@@ -437,7 +433,7 @@ details:not([open]) > :not(summary) {
 }
 
 .simple-tool-results {
-  min-height: 12rem;
+  min-height: 0;
 }
 
 .simple-tool-result-row {
@@ -458,12 +454,6 @@ details:not([open]) > :not(summary) {
 }
 .simple-tool-result-row:nth-child(5) {
   animation-delay: 140ms;
-}
-
-@media (max-width: 639px) {
-  .simple-tool-results {
-    min-height: 0;
-  }
 }
 
 /* Shared polish for newer interactive tools */
@@ -552,11 +542,27 @@ html[data-theme="dark"] .simple-tool-panel {
   overflow-x: auto;
   overscroll-behavior-x: contain;
   -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) transparent;
 }
 
 .kit-segmented-scroll::-webkit-scrollbar {
-  display: none;
+  height: 6px;
+}
+
+.kit-segmented-scroll::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-thumb);
+  border-radius: 999px;
+}
+
+@media (pointer: coarse), (max-width: 639px) {
+  .kit-segmented-scroll {
+    scrollbar-width: none;
+  }
+
+  .kit-segmented-scroll::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 .kit-segmented-scroll .kit-segmented-btn {
@@ -811,7 +817,7 @@ html[data-theme="dark"] .simple-tool-panel {
 
 .papers-ribbon {
   position: sticky;
-  top: 0;
+  top: var(--kit-chrome-offset);
   z-index: 20;
   width: 100%;
   border-bottom: 1px solid var(--border);
@@ -870,8 +876,6 @@ html[data-theme="dark"] .simple-tool-panel {
     width: 100%;
     max-width: none;
     border-radius: 12px 12px 0 0;
-    position: sticky;
-    top: var(--kit-chrome-offset);
   }
 
   .papers-format-bar {

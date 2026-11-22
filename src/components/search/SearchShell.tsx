@@ -154,12 +154,6 @@ export function SearchShell({
   }, [autoFocus, isFinePointer]);
 
   useEffect(() => {
-    if (variant === "home" && isFinePointer) {
-      setOpen(true);
-    }
-  }, [variant, isFinePointer]);
-
-  useEffect(() => {
     return () => {
       window.clearTimeout(blurTimer.current);
       window.clearTimeout(copyTimer.current);
@@ -587,10 +581,11 @@ export function SearchShell({
     }
   };
 
+  // Home stays closed until the user types, pastes, or presses arrows.
+  // Tool chrome still opens empty-state pins/recent on focus.
   const showPanel =
     open &&
     (libraryBrowse ||
-      variant === "home" ||
       query.length > 0 ||
       flatTools.length > 0 ||
       contentHits.length > 0);
@@ -662,7 +657,7 @@ export function SearchShell({
   return (
     <div
       ref={rootRef}
-      className={`relative z-40 w-full ${variant === "home" ? "max-w-xl" : "max-w-none sm:max-w-md"}`}
+      className={`relative z-40 w-full ${variant === "home" ? "max-w-xl" : "max-w-none sm:max-w-lg lg:max-w-xl"}`}
     >
       {/* Keep the field above the dim so typing stays sharp on phones. */}
       <div
@@ -686,9 +681,11 @@ export function SearchShell({
           }}
           onFocus={() => {
             window.clearTimeout(blurTimer.current);
-            setOpen(true);
             setPinnedSlugs(getPinnedSlugs());
             setShortcutTick((value) => value + 1);
+            // Home autofocus should not force the suggest panel open.
+            if (variant === "home" && !query.trim()) return;
+            setOpen(true);
           }}
           onBlur={(event) => {
             const next = event.relatedTarget as Node | null;
