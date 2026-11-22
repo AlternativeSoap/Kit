@@ -27,7 +27,7 @@ export function WifiQrTool() {
       setReady(false);
       return;
     }
-    setReady(drawQrOnCanvas(canvas, payload));
+    setReady(drawQrOnCanvas(canvas, { text: payload }));
   }, [payload]);
 
   useEffect(() => {
