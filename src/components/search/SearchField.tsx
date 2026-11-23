@@ -38,7 +38,7 @@ export const SearchField = forwardRef<HTMLInputElement, SearchFieldProps>(
           {label}
         </label>
         <div
-          className={`flex items-center rounded-[12px] border bg-surface transition-[border-color,box-shadow] duration-200 ease-out ${
+          className={`kit-search-shell flex items-center rounded-[12px] border bg-surface transition-[border-color,box-shadow] duration-200 ease-out ${
             compact
               ? "gap-2 border-border px-2.5 py-2 sm:gap-3 sm:px-3 sm:py-2.5"
               : "gap-3 border-border px-4 py-3.5 shadow-sm sm:py-4"
@@ -67,7 +67,7 @@ export const SearchField = forwardRef<HTMLInputElement, SearchFieldProps>(
             onFocus={onFocus}
             onBlur={onBlur}
             onKeyDown={onKeyDown}
-            className={`kit-field w-full min-w-0 bg-transparent text-foreground outline-none placeholder:text-muted ${
+            className={`kit-search-input w-full min-w-0 bg-transparent text-foreground outline-none placeholder:text-muted ${
               compact
                 ? "text-base leading-5"
                 : "text-base leading-snug sm:text-[17px]"

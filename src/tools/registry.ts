@@ -4801,7 +4801,15 @@ const kitToolsManual: ToolDefinition[] = [
     ...LOCAL_BUILTIN,
     tags: ["work", "safety"],
     capabilities: ["lookup", "learn"],
-    relatedIds: ["apv", "risikovurdering", "amrquiz", "amodroftelse"],
+    relatedIds: [
+      "apv",
+      "risikovurdering",
+      "amrquiz",
+      "amodroftelse",
+      "at",
+      "arbejdsmiljoeloven",
+      "nfa",
+    ],
   },
   {
     id: "risikovurdering",
@@ -4871,7 +4879,13 @@ const kitToolsManual: ToolDefinition[] = [
     ...LOCAL_BUILTIN,
     tags: ["work", "safety"],
     capabilities: ["learn"],
-    relatedIds: ["amobegreber", "apv", "risikovurdering"],
+    relatedIds: [
+      "amobegreber",
+      "apv",
+      "risikovurdering",
+      "at",
+      "arbejdsmiljoeloven",
+    ],
   },
   {
     id: "naerved",
@@ -5031,6 +5045,8 @@ export const curatedSuggestions = [
   "amobegreber",
   "risikovurdering",
   "sikkerhedsrunde",
+  "arbejdsmiljoeloven",
+  "at",
 ] as const;
 
 export function getToolBySlug(slug: string): ToolDefinition | undefined {

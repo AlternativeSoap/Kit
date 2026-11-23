@@ -1364,6 +1364,26 @@ export const da: Dictionary = {
       name: "DMI",
       description: "Dansk vejrudsigt og varsler.",
     },
+    at: {
+      name: "Arbejdstilsynet (at.dk)",
+      description:
+        "Regler, vejledning og tilsyn om dansk arbejdsmiljø. Brugbar for AMR og AMO.",
+    },
+    nfa: {
+      name: "NFA (nfa.dk)",
+      description:
+        "Det Nationale Forskningscenter for Arbejdsmiljø. Viden og forskning om arbejdsmiljø.",
+    },
+    retsinformation: {
+      name: "Retsinformation",
+      description:
+        "Officielle danske love og regler, herunder arbejdsmiljøloven.",
+    },
+    arbejdsmiljoeloven: {
+      name: "Arbejdsmiljøloven",
+      description:
+        "Den gældende lovbekendtgørelse af lov om arbejdsmiljø på Retsinformation.",
+    },
     skat: {
       name: "skat.dk",
       description: "Skattestyrelsens selvbetjening og information.",

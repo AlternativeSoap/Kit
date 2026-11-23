@@ -170,6 +170,15 @@ input[type="search"] {
   outline: none;
 }
 
+/* Fields and the home search shell draw their own soft focus ring.
+   Suppress the global square outline so it does not sit inside the control. */
+.kit-field:focus,
+.kit-field:focus-visible,
+.kit-search-input:focus,
+.kit-search-input:focus-visible {
+  outline: none;
+}
+
 /* Comfortable tap targets on touch devices.
    !important beats utility overrides like sm:min-h-0 on tablets. */
 @media (pointer: coarse) {

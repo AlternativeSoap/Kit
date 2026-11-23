@@ -1314,6 +1314,26 @@ export const en: Dictionary = {
       description:
         "Answer questions about weight, frequency, and posture. Get a score and concrete advice.",
     },
+    at: {
+      name: "Danish Working Environment Authority (at.dk)",
+      description:
+        "Official rules, guidance, and inspections for Danish workplace health and safety.",
+    },
+    nfa: {
+      name: "NFA (nfa.dk)",
+      description:
+        "The National Research Centre for the Working Environment. Research and knowledge on Danish OHS.",
+    },
+    retsinformation: {
+      name: "Retsinformation",
+      description:
+        "Official Danish laws and regulations, including the Working Environment Act.",
+    },
+    arbejdsmiljoeloven: {
+      name: "Working Environment Act",
+      description:
+        "The consolidated Danish Working Environment Act on Retsinformation.",
+    },
   },
   salary: {
     monthly: "Monthly salary",
