@@ -269,7 +269,23 @@ export type BuiltinToolId =
   | "holdlod"
   | "blodtype"
   | "lejeforhojelse"
-  | "feriedage";
+  | "feriedage"
+  | "abc"
+  | "eoq"
+  | "genbestil"
+  | "sikkerhedslager"
+  | "minmax"
+  | "periodisk"
+  | "oee"
+  | "smed"
+  | "amobegreber"
+  | "risikovurdering"
+  | "apv"
+  | "amrquiz"
+  | "naerved"
+  | "sikkerhedsrunde"
+  | "amodroftelse"
+  | "loeft";
 
 /** kit = first-party tools and closely related utilities; web = popular destinations */
 export type ToolSurface = "kit" | "web";

@@ -1234,6 +1234,86 @@ export const en: Dictionary = {
       description:
         "Track accrued and remaining vacation days from start date, yearly allowance, and days used.",
     },
+    abc: {
+      name: "ABC analysis",
+      description:
+        "Classify inventory by value with adjustable A/B thresholds. Paste CSV, see ranked classes, optional dual value/volume codes.",
+    },
+    eoq: {
+      name: "EOQ / Wilson formula",
+      description:
+        "Find the economic order quantity that balances order cost and holding cost, with a cost curve sample table.",
+    },
+    genbestil: {
+      name: "Reorder point",
+      description:
+        "Calculate when to reorder from demand, lead time, and safety stock or service level.",
+    },
+    sikkerhedslager: {
+      name: "Safety stock",
+      description:
+        "Size safety stock from demand variation, lead time, and service level. Optional lead-time variability.",
+    },
+    minmax: {
+      name: "Min/Max inventory",
+      description:
+        "Set minimum and maximum stock from demand, lead time, safety stock, and order quantity.",
+    },
+    periodisk: {
+      name: "Periodic review",
+      description:
+        "Compute the order-up-to level for fixed review intervals, including lead time and safety stock.",
+    },
+    oee: {
+      name: "OEE calculator",
+      description:
+        "Measure Overall Equipment Effectiveness from availability, performance, and quality, or from raw times and counts.",
+    },
+    smed: {
+      name: "SMED savings",
+      description:
+        "Estimate time and money saved by shorter changeovers, with optional payback on improvement cost.",
+    },
+    amobegreber: {
+      name: "AMO glossary",
+      description:
+        "Short explanations of AMR, AMO, APV and more, plus who is responsible and what the topic areas cover.",
+    },
+    risikovurdering: {
+      name: "Risk assessment",
+      description:
+        "Judge how likely something is and how bad it could be. Use the score to prioritise fixes.",
+    },
+    apv: {
+      name: "Workplace assessment (APV)",
+      description:
+        "Find problems, judge them, make a plan, and follow up. Saves locally in your browser.",
+    },
+    amrquiz: {
+      name: "AMR knowledge quiz",
+      description:
+        "15 short questions about responsibility, APV, near misses, and the representative role.",
+    },
+    naerved: {
+      name: "Near miss report",
+      description:
+        "Write what almost went wrong, what you did, and what should change.",
+    },
+    sikkerhedsrunde: {
+      name: "Safety walk",
+      description:
+        "Walk through clear questions on warehouse, forklift, body strain, mental work life, or chemicals.",
+    },
+    amodroftelse: {
+      name: "Annual health and safety discussion",
+      description:
+        "Agenda and notes for the yearly meeting on status, problems, and goals for next year.",
+    },
+    loeft: {
+      name: "Lifting screen",
+      description:
+        "Answer questions about weight, frequency, and posture. Get a score and concrete advice.",
+    },
   },
   salary: {
     monthly: "Monthly salary",

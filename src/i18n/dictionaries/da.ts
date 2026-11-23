@@ -1532,6 +1532,86 @@ export const da: Dictionary = {
       description:
         "Hold styr på optjente og resterende feriedage ud fra startdato, årsnorm og brugte dage.",
     },
+    abc: {
+      name: "ABC-analyse",
+      description:
+        "Klassificér lager efter værdi med justerbare A/B-grænser. Indsæt CSV, se rangerede klasser, valgfri dobbelt værdi/volumen.",
+    },
+    eoq: {
+      name: "EOQ / Wilson-formel",
+      description:
+        "Find den økonomiske ordremængde der balancerer ordre- og lageromkostninger, med en omkostningskurve som tabel.",
+    },
+    genbestil: {
+      name: "Genbestillingspunkt",
+      description:
+        "Beregn hvornår du skal bestille ud fra forbrug, leveringstid og sikkerhedslager eller serviceniveau.",
+    },
+    sikkerhedslager: {
+      name: "Sikkerhedslager",
+      description:
+        "Dimensionér sikkerhedslager ud fra forbrugsudsving, leveringstid og serviceniveau. Valgfri usikkerhed i leveringstid.",
+    },
+    minmax: {
+      name: "Min/Max lager",
+      description:
+        "Sæt minimum og maksimum lager ud fra forbrug, leveringstid, sikkerhedslager og ordremængde.",
+    },
+    periodisk: {
+      name: "Periodisk gennemgang",
+      description:
+        "Beregn order-up-to niveau for faste gennemgangsintervaller inkl. leveringstid og sikkerhedslager.",
+    },
+    oee: {
+      name: "OEE-beregner",
+      description:
+        "Mål Overall Equipment Effectiveness fra tilgængelighed, ydelse og kvalitet, eller fra tider og antal.",
+    },
+    smed: {
+      name: "SMED-besparelser",
+      description:
+        "Estimer tid og penge sparet ved kortere omstilling, med valgfri tilbagebetaling på forbedringsomkostning.",
+    },
+    amobegreber: {
+      name: "AMO-ordbog",
+      description:
+        "Korte forklaringer af AMR, AMO, APV og flere ord, plus hvem der har ansvar, og hvad områderne dækker.",
+    },
+    risikovurdering: {
+      name: "Risikovurdering",
+      description:
+        "Vurder hvor sandsynligt noget er, og hvor slemt det kan blive. Brug scoren til at prioritere løsninger.",
+    },
+    apv: {
+      name: "Arbejdspladsvurdering (APV)",
+      description:
+        "Find problemer, vurder dem, lav en plan og tjek op. Gemmes lokalt i din browser.",
+    },
+    amrquiz: {
+      name: "AMR-videnstest",
+      description:
+        "15 korte spørgsmål om ansvar, APV, nærved-ulykker og din rolle som AMR.",
+    },
+    naerved: {
+      name: "Nærved-rapport",
+      description:
+        "Skriv hvad der næsten gik galt, hvad I gjorde, og hvad der bør ændres.",
+    },
+    sikkerhedsrunde: {
+      name: "Sikkerhedsrunde",
+      description:
+        "Gå en runde med klare spørgsmål om lager, truck, krop, psykisk arbejdsmiljø eller kemi.",
+    },
+    amodroftelse: {
+      name: "Årlig arbejdsmiljødrøftelse",
+      description:
+        "Dagsorden og noter til det årlige møde om status, problemer og mål for næste år.",
+    },
+    loeft: {
+      name: "Løfte-screening",
+      description:
+        "Svar på spørgsmål om vægt, hyppighed og stilling. Få en score og konkrete råd.",
+    },
   },
   salary: {
     monthly: "Månedsløn",

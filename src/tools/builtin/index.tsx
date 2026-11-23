@@ -528,6 +528,64 @@ const LejeforhojelseTool = lazyPrefill(() =>
 const FeriedageTool = lazyPrefill(() =>
   import("./feriedage/FeriedageTool").then((m) => ({ default: m.FeriedageTool })),
 );
+const AbcTool = lazyPrefill(() =>
+  import("./abc/AbcTool").then((m) => ({ default: m.AbcTool })),
+);
+const EoqTool = lazyPrefill(() =>
+  import("./eoq/EoqTool").then((m) => ({ default: m.EoqTool })),
+);
+const GenbestilTool = lazyPrefill(() =>
+  import("./genbestil/GenbestilTool").then((m) => ({ default: m.GenbestilTool })),
+);
+const SikkerhedslagerTool = lazyPrefill(() =>
+  import("./sikkerhedslager/SikkerhedslagerTool").then((m) => ({
+    default: m.SikkerhedslagerTool,
+  })),
+);
+const MinmaxTool = lazyPrefill(() =>
+  import("./minmax/MinmaxTool").then((m) => ({ default: m.MinmaxTool })),
+);
+const PeriodiskTool = lazyPrefill(() =>
+  import("./periodisk/PeriodiskTool").then((m) => ({ default: m.PeriodiskTool })),
+);
+const OeeTool = lazyPrefill(() =>
+  import("./oee/OeeTool").then((m) => ({ default: m.OeeTool })),
+);
+const SmedTool = lazyPrefill(() =>
+  import("./smed/SmedTool").then((m) => ({ default: m.SmedTool })),
+);
+const AmobegreberTool = lazyPlain(() =>
+  import("./amobegreber/AmobegreberTool").then((m) => ({
+    default: m.AmobegreberTool,
+  })),
+);
+const RisikovurderingTool = lazyPlain(() =>
+  import("./risikovurdering/RisikovurderingTool").then((m) => ({
+    default: m.RisikovurderingTool,
+  })),
+);
+const ApvTool = lazyPlain(() =>
+  import("./apv/ApvTool").then((m) => ({ default: m.ApvTool })),
+);
+const AmrquizTool = lazyPlain(() =>
+  import("./amrquiz/AmrquizTool").then((m) => ({ default: m.AmrquizTool })),
+);
+const NaervedTool = lazyPlain(() =>
+  import("./naerved/NaervedTool").then((m) => ({ default: m.NaervedTool })),
+);
+const SikkerhedsrundeTool = lazyPlain(() =>
+  import("./sikkerhedsrunde/SikkerhedsrundeTool").then((m) => ({
+    default: m.SikkerhedsrundeTool,
+  })),
+);
+const AmodroftelseTool = lazyPlain(() =>
+  import("./amodroftelse/AmodroftelseTool").then((m) => ({
+    default: m.AmodroftelseTool,
+  })),
+);
+const LoeftTool = lazyPlain(() =>
+  import("./loeft/LoeftTool").then((m) => ({ default: m.LoeftTool })),
+);
 const HealthSuiteTool = dynamic(
   () =>
     import("./HealthSuiteTool").then((m) => ({ default: m.HealthSuiteTool })),
@@ -1021,6 +1079,38 @@ export function BuiltinToolView({
       return <LejeforhojelseTool prefill={prefill} />;
     case "feriedage":
       return <FeriedageTool prefill={prefill} />;
+    case "abc":
+      return <AbcTool prefill={prefill} />;
+    case "eoq":
+      return <EoqTool prefill={prefill} />;
+    case "genbestil":
+      return <GenbestilTool prefill={prefill} />;
+    case "sikkerhedslager":
+      return <SikkerhedslagerTool prefill={prefill} />;
+    case "minmax":
+      return <MinmaxTool prefill={prefill} />;
+    case "periodisk":
+      return <PeriodiskTool prefill={prefill} />;
+    case "oee":
+      return <OeeTool prefill={prefill} />;
+    case "smed":
+      return <SmedTool prefill={prefill} />;
+    case "amobegreber":
+      return <AmobegreberTool />;
+    case "risikovurdering":
+      return <RisikovurderingTool />;
+    case "apv":
+      return <ApvTool />;
+    case "amrquiz":
+      return <AmrquizTool />;
+    case "naerved":
+      return <NaervedTool />;
+    case "sikkerhedsrunde":
+      return <SikkerhedsrundeTool />;
+    case "amodroftelse":
+      return <AmodroftelseTool />;
+    case "loeft":
+      return <LoeftTool />;
     // Overlaps: route weaker duplicates into stronger tools.
     case "csvjson":
       return <CsvExcelTool prefill={prefill} />;
