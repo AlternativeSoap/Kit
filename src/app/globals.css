@@ -161,7 +161,12 @@ input[type="search"] {
   }
 }
 
-:focus-visible {
+/* Soft focus ring for links/buttons. Form fields style their own focus. */
+a:focus-visible,
+button:focus-visible,
+summary:focus-visible,
+[role="button"]:focus-visible,
+[tabindex]:not([tabindex="-1"]):focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
@@ -170,12 +175,12 @@ input[type="search"] {
   outline: none;
 }
 
-/* Fields and the home search shell draw their own soft focus ring.
-   Suppress the global square outline so it does not sit inside the control. */
-.kit-field:focus,
-.kit-field:focus-visible,
-.kit-search-input:focus,
-.kit-search-input:focus-visible {
+input:focus,
+input:focus-visible,
+textarea:focus,
+textarea:focus-visible,
+select:focus,
+select:focus-visible {
   outline: none;
 }
 
@@ -1468,4 +1473,17 @@ html[data-theme="dark"] .kit-die-table {
   .kit-die-piece.is-rolling .kit-die-face-flat {
     animation: none !important;
   }
+}
+
+/* Home search: never show an inner focus square. The shell already rings. */
+#kit-search,
+#kit-search:focus,
+#kit-search:focus-visible,
+.kit-search-input,
+.kit-search-input:focus,
+.kit-search-input:focus-visible {
+  outline: none !important;
+  outline-offset: 0 !important;
+  box-shadow: none !important;
+  -webkit-tap-highlight-color: transparent;
 }

@@ -52,7 +52,8 @@ export const SearchField = forwardRef<HTMLInputElement, SearchFieldProps>(
           <input
             ref={ref}
             id={id}
-            type="search"
+            type="text"
+            inputMode="search"
             enterKeyHint="search"
             autoComplete="off"
             autoCorrect="off"
@@ -67,11 +68,12 @@ export const SearchField = forwardRef<HTMLInputElement, SearchFieldProps>(
             onFocus={onFocus}
             onBlur={onBlur}
             onKeyDown={onKeyDown}
-            className={`kit-search-input w-full min-w-0 bg-transparent text-foreground outline-none placeholder:text-muted ${
+            className={`kit-search-input w-full min-w-0 border-0 bg-transparent text-foreground shadow-none ring-0 outline-none placeholder:text-muted focus:border-0 focus:shadow-none focus:ring-0 focus:outline-none focus-visible:border-0 focus-visible:shadow-none focus-visible:ring-0 focus-visible:outline-none ${
               compact
                 ? "text-base leading-5"
                 : "text-base leading-snug sm:text-[17px]"
             }`}
+            style={{ outline: "none", boxShadow: "none" }}
           />
         </div>
       </div>
